@@ -22,7 +22,7 @@ implementação, uma task por PR, teste primeiro (TDD)
    ▼
 PR → dev (template marca a spec e os critérios cobertos)
    ▼
-docs/features/<feature>.md atualizado (última task)
+docs/<feature>.md atualizado (última task)
 ```
 
 | Etapa | Arquivo | Quem escreve | Quem aprova | Pergunta que responde |
@@ -32,7 +32,7 @@ docs/features/<feature>.md atualizado (última task)
 | Plano | `plan.md` | dev da história | outro dev | **Como**: camadas, providers, dados, testes |
 | Tasks | `tasks.md` + sub-issues | dev da história | — | **Em que ordem**, em PRs pequenos |
 | Código | `lib/`, `test/` | quem pega a sub-issue | 1 revisão | Os critérios passam? |
-| Doc de domínio | `docs/features/<feature>.md` | quem fecha a última task | revisão do PR | O que existe e por quê |
+| Doc da feature | `docs/<feature>.md` | quem fecha a última task | revisão do PR | O que existe e por quê |
 
 Numeração: `NNN` sequencial em `docs/specs/` (`001-category-tree`,
 `002-anonymous-auth`...). O número não muda depois de criado.
@@ -62,6 +62,24 @@ leva mais de um dia, escreva a spec. Uma spec curta custa 30 minutos.
   sobe para `docs/contexto.md` §11.
 - **Critério de aceitação = teste.** O PR lista qual teste cobre cada CA.
 - **Fora de escopo é explícito.** O que não entra fica escrito, com destino.
+
+## Onde ficam os moldes
+
+| Molde | Arquivo |
+|---|---|
+| Spec | [`.claude/skills/spec-feature/references/spec.md`](../.claude/skills/spec-feature/references/spec.md) |
+| Plano | [`.claude/skills/spec-feature/references/plan.md`](../.claude/skills/spec-feature/references/plan.md) |
+| Tasks | [`.claude/skills/spec-feature/references/tasks.md`](../.claude/skills/spec-feature/references/tasks.md) |
+| Doc da feature | [`.claude/skills/implement-task/references/feature-doc.md`](../.claude/skills/implement-task/references/feature-doc.md) |
+| Brief de marketing | [`docs/marketing/briefs/_template.md`](marketing/briefs/_template.md) |
+
+Os moldes ficam junto das skills que os usam (mesmo padrão do the-final-backend:
+`SKILL.md` + `references/`). Quem escreve spec sem agente copia o molde para
+`docs/specs/NNN-slug/`. A pasta `docs/specs/` nasce com a primeira spec.
+
+A doc da feature fica direto em `docs/`, um arquivo por feature (`docs/swipe.md`,
+`docs/restaurantes.md`), escrita quando a feature é entregue. Ela explica o que
+existe e por quê; a spec explica o que ia ser feito.
 
 ## Com agentes de IA
 
