@@ -56,7 +56,7 @@ def main() -> None:
 
     project = Project.from_env()
     if not project:
-        warn("PROJECT_NUMBER não definido; nada a fazer")
+        warn("board não configurado (PROJECT_NUMBER ou PROJECT_TOKEN ausente); nada a fazer")
         return
 
     repo = repo_slug()

@@ -107,6 +107,10 @@ class Project:
         number = os.environ.get("PROJECT_NUMBER")
         if not number:
             return None
+        # GITHUB_TOKEN cannot see organization projects; without PROJECT_TOKEN, skip the board
+        if os.environ.get("GITHUB_ACTIONS") and not os.environ.get("PROJECT_TOKEN"):
+            warn("PROJECT_TOKEN não configurado: pulando a atualização do board")
+            return None
         owner = os.environ.get("PROJECT_OWNER") or repo_slug().split("/")[0]
         return cls(owner, int(number))
 
