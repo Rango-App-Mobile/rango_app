@@ -1,0 +1,2 @@
+blank_issues_enabled: false
+# Épicos e histórias do roadmap são editados em .github/backlog/backlog.yml (sincronizados pelo workflow "Backlog sync").

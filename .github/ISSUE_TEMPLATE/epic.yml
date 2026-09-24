@@ -1,0 +1,19 @@
+name: Épico
+description: Prefira declarar épicos no .github/backlog/backlog.yml. Use este só para épicos emergenciais.
+labels: ["type:epic"]
+body:
+  - type: dropdown
+    id: frente
+    attributes:
+      label: Frente
+      options: [dev, marketing, produto]
+    validations: { required: true }
+  - type: textarea
+    id: objetivo
+    attributes:
+      label: Objetivo
+    validations: { required: true }
+  - type: textarea
+    id: fora
+    attributes:
+      label: Fora de escopo

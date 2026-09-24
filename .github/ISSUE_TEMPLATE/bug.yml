@@ -1,0 +1,31 @@
+name: Bug
+description: Algo não funciona como deveria
+labels: ["type:bug", "frente:dev"]
+body:
+  - type: textarea
+    id: passos
+    attributes:
+      label: Passos para reproduzir
+      value: |
+        1. 
+        2. 
+    validations: { required: true }
+  - type: textarea
+    id: esperado
+    attributes:
+      label: Esperado x obtido
+    validations: { required: true }
+  - type: input
+    id: ambiente
+    attributes:
+      label: Ambiente
+      description: "Aparelho/emulador, sistema, branch/commit"
+  - type: dropdown
+    id: prioridade
+    attributes:
+      label: Prioridade
+      options: [alta, media, baixa]
+  - type: textarea
+    id: evidencias
+    attributes:
+      label: Prints, vídeos ou logs

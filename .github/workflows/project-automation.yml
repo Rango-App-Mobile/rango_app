@@ -1,0 +1,43 @@
+name: Project automation
+
+# Complementa os workflows nativos do Project (auto-add, fechada -> Done, PR merged -> Done):
+# - branch criada como feat/<issue>-slug  -> issue vai para "In Progress"
+# - PR aberto com "Closes #<issue>"       -> issue vai para "In Review"
+# Precisa do secret PROJECT_TOKEN e da variável PROJECT_NUMBER (ver docs/processo/git-e-prs.md).
+
+on:
+  create:
+  pull_request:
+    types: [opened, reopened, ready_for_review, edited]
+
+permissions:
+  contents: read
+
+jobs:
+  move:
+    if: vars.PROJECT_NUMBER != '' && (github.event_name != 'create' || github.event.ref_type == 'branch')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - name: Move issues
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PROJECT_TOKEN: ${{ secrets.PROJECT_TOKEN }}
+          PROJECT_NUMBER: ${{ vars.PROJECT_NUMBER }}
+          PROJECT_OWNER: ${{ github.repository_owner }}
+          EVENT: ${{ github.event_name }}
+          BRANCH: ${{ github.event.ref }}
+          PR_BODY: ${{ github.event.pull_request.body }}
+          PR_DRAFT: ${{ github.event.pull_request.draft }}
+          PR_BRANCH: ${{ github.event.pull_request.head.ref }}
+        run: |
+          cd .github/scripts
+          if [ "$EVENT" = "create" ]; then
+            python project_status.py --status "In Progress" --from-branch "$BRANCH"
+          elif [ "$PR_DRAFT" = "true" ]; then
+            python project_status.py --status "In Progress" --from-text "$PR_BODY" --from-branch "$PR_BRANCH"
+          else
+            python project_status.py --status "In Review" --from-text "$PR_BODY" --from-branch "$PR_BRANCH"
+          fi

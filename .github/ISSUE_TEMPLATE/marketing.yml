@@ -1,0 +1,37 @@
+name: Iniciativa de marketing
+description: Conteúdo, campanha, pesquisa ou material de divulgação
+labels: ["type:story", "frente:marketing"]
+body:
+  - type: textarea
+    id: objetivo
+    attributes:
+      label: Objetivo
+      description: O que queremos que aconteça (ex. 50 pessoas na lista de interesse)
+    validations: { required: true }
+  - type: input
+    id: publico
+    attributes:
+      label: Público
+      description: Qual persona de docs/marketing/posicionamento.md
+  - type: dropdown
+    id: canal
+    attributes:
+      label: Canal
+      multiple: true
+      options: [Instagram, TikTok, LinkedIn, Landing page, Presencial/evento, Seminário/aula, Outro]
+  - type: input
+    id: metrica
+    attributes:
+      label: Métrica de sucesso
+    validations: { required: true }
+  - type: textarea
+    id: entregaveis
+    attributes:
+      label: Entregáveis
+      value: |
+        - [ ] 
+  - type: input
+    id: brief
+    attributes:
+      label: Brief
+      description: docs/marketing/briefs/NNN-slug.md (obrigatório para campanhas e pesquisas)

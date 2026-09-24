@@ -1,0 +1,20 @@
+name: Tarefa
+description: Trabalho técnico ou sub-issue de uma história (geralmente vem do tasks.md da spec)
+labels: ["type:task", "frente:dev"]
+body:
+  - type: input
+    id: parent
+    attributes:
+      label: História/épico pai
+      description: "Ex.: #12. Depois de criar, adicione esta issue como sub-issue do pai."
+  - type: textarea
+    id: oque
+    attributes:
+      label: O que fazer
+    validations: { required: true }
+  - type: textarea
+    id: pronto
+    attributes:
+      label: Pronto quando
+      value: |
+        - [ ] 

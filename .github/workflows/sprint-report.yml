@@ -1,0 +1,30 @@
+name: Sprint report
+
+# Toda terça às 20h (horário de Brasília), véspera da aula, comenta o resumo da sprint atual
+# na issue "Sprint N — acompanhamento". Também pode ser rodado manualmente.
+
+on:
+  schedule:
+    - cron: "0 23 * * 2"
+  workflow_dispatch:
+    inputs:
+      sprint:
+        description: "Número da sprint (vazio = sprint atual)"
+        required: false
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  report:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - name: Report
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SPRINT: ${{ inputs.sprint }}
+        run: python .github/scripts/sprint_report.py --comment ${SPRINT:+--sprint "$SPRINT"}

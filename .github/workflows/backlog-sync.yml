@@ -1,0 +1,41 @@
+name: Backlog sync
+
+# Sincroniza .github/backlog/backlog.yml -> labels, milestones (sprints), issues, sub-issues e board.
+# Roda sozinho quando o backlog.yml muda na main, ou manualmente em Actions > Backlog sync.
+
+on:
+  push:
+    branches: [main]
+    paths: [".github/backlog/backlog.yml", ".github/scripts/backlog_sync.py"]
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Só mostrar o que mudaria"
+        type: boolean
+        default: true
+
+concurrency:
+  group: backlog-sync
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: pip install pyyaml
+      - name: Sync
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PROJECT_TOKEN: ${{ secrets.PROJECT_TOKEN }}
+          PROJECT_NUMBER: ${{ vars.PROJECT_NUMBER }}
+          PROJECT_OWNER: ${{ github.repository_owner }}
+        run: |
+          python .github/scripts/backlog_sync.py \
+            ${{ (github.event_name == 'workflow_dispatch' && inputs.dry_run) && '--dry-run' || '' }}

@@ -1,0 +1,71 @@
+name: CI
+
+# Mesmos checks que você roda localmente antes de abrir o PR:
+#   dart format --output=none --set-exit-if-changed .
+#   flutter analyze
+#   flutter test
+# Arquivos gerados (*.g.dart, *.freezed.dart) são versionados: o CI não roda build_runner.
+# Enquanto o projeto Flutter não existe (sem pubspec.yaml), os jobs são pulados sem falhar.
+
+on:
+  pull_request:
+  push:
+    branches: [main, dev]
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  detect:
+    runs-on: ubuntu-latest
+    outputs:
+      flutter: ${{ steps.check.outputs.flutter }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: check
+        run: echo "flutter=$([ -f pubspec.yaml ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
+
+  format:
+    needs: detect
+    if: needs.detect.outputs.flutter == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with: { channel: stable, cache: true }
+      - run: flutter pub get
+      # Arquivos gerados (*.g.dart, *.freezed.dart) não entram no format check.
+      - run: dart format --output=none --set-exit-if-changed $(git ls-files '*.dart' | grep -v -E '\.(g|freezed)\.dart$')
+
+  analyze:
+    needs: detect
+    if: needs.detect.outputs.flutter == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with: { channel: stable, cache: true }
+      - run: flutter pub get
+      - run: flutter analyze
+
+  test:
+    needs: detect
+    if: needs.detect.outputs.flutter == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with: { channel: stable, cache: true }
+      - run: flutter pub get
+      - run: flutter test --coverage
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage
+          path: coverage/lcov.info
+          if-no-files-found: ignore

@@ -1,0 +1,477 @@
+# Fonte do backlog do Rango.
+#
+# Este arquivo é a origem de labels, milestones (sprints) e issues de épicos/histórias.
+# Ao ser alterado na `main` (ou via "Run workflow" em Actions > Backlog sync), o script
+# .github/scripts/backlog_sync.py cria ou atualiza tudo no GitHub, sem duplicar.
+#
+# Regras:
+# - `id` é a chave estável do item. NÃO mude o id de um item que já virou issue
+#   (o script encontra a issue pelo marcador <!-- backlog-id: ... --> no corpo).
+# - Mudou título, labels, sprint, descrição ou critérios? Basta editar aqui e rodar o sync.
+# - Remover um item daqui NÃO fecha a issue: o sync só avisa. Feche manualmente se for o caso.
+# - `done: true` fecha a issue no próximo sync.
+# - O corpo da issue só é reescrito quando a descrição/critérios mudam aqui. Discussões
+#   ficam nos comentários da issue, não no corpo.
+#
+# Campos de uma história:
+#   id, title, sprint (1..6 ou omitido = backlog futuro), frente (dev|marketing|produto),
+#   area, priority (alta|media|baixa), estimate (pontos: 1,2,3,5,8), description,
+#   acceptance (lista de critérios), done (opcional)
+
+labels:
+  - { name: "type:epic",       color: "5319e7", description: "Épico: agrupa histórias" }
+  - { name: "type:story",      color: "1d76db", description: "História de usuário" }
+  - { name: "type:task",       color: "0e8a16", description: "Tarefa técnica / sub-issue" }
+  - { name: "type:bug",        color: "d73a4a", description: "Algo não funciona como deveria" }
+  - { name: "type:sprint",     color: "bfdadc", description: "Issue de acompanhamento da sprint (review/retro)" }
+  - { name: "frente:dev",      color: "0052cc", description: "Frente de desenvolvimento do app" }
+  - { name: "frente:marketing", color: "e99695", description: "Frente de marketing e divulgação" }
+  - { name: "frente:produto",  color: "fbca04", description: "Frente de produto/UX" }
+  - { name: "area:infra",      color: "c5def5", description: "Repo, CI, setup, arquitetura" }
+  - { name: "area:auth",       color: "c5def5", description: "Sessão anônima / Firebase Auth" }
+  - { name: "area:swipe",      color: "c5def5", description: "Fluxo de swipe e convergência" }
+  - { name: "area:restaurants", color: "c5def5", description: "Busca e exibição de restaurantes" }
+  - { name: "area:docs",       color: "c5def5", description: "Documentação e processo" }
+  - { name: "area:marca",      color: "f9d0c4", description: "Identidade, posicionamento" }
+  - { name: "area:canais",     color: "f9d0c4", description: "Redes sociais, landing page, campanhas" }
+  - { name: "area:pesquisa",   color: "f9d0c4", description: "Pesquisa e validação com usuários" }
+  - { name: "area:pitch",      color: "f9d0c4", description: "Seminário, pitch, apresentação" }
+  - { name: "priority:alta",   color: "b60205", description: "" }
+  - { name: "priority:media",  color: "fbca04", description: "" }
+  - { name: "priority:baixa",  color: "cfd3d7", description: "" }
+  - { name: "blocked",         color: "000000", description: "Impedido; explicar no comentário" }
+
+# Sprints de 2 semanas. Cada uma termina na aula de review (data = due_on).
+milestones:
+  - { sprint: 1, due_on: "2026-09-24", description: "Construção do primeiro incremento (10/09 → 24/09)" }
+  - { sprint: 2, due_on: "2026-10-08", description: "Evolução do fluxo principal (24/09 → 08/10)" }
+  - { sprint: 3, due_on: "2026-10-22", description: "Consolidação para o seminário de andamento de 22/10 (08/10 → 22/10)" }
+  - { sprint: 4, due_on: "2026-11-05", description: "Evolução orientada por feedback do seminário (22/10 → 05/11)" }
+  - { sprint: 5, due_on: "2026-11-19", description: "Consolidação funcional e técnica (05/11 → 19/11)" }
+  - { sprint: 6, due_on: "2026-12-03", description: "Estabilização e preparação do pitch; apresentação final em 03/12 (19/11 → 03/12)" }
+
+epics:
+  - id: E0
+    title: "Fundação do projeto (repo, arquitetura, processo)"
+    frente: dev
+    area: infra
+    description: >
+      Deixar o repositório pronto para o time trabalhar: gestão no GitHub, projeto Flutter,
+      arquitetura MVVM feature-first e processo SDD documentado.
+    stories:
+      - id: E0-S1
+        title: "Configurar gestão do projeto no GitHub (backlog, board, templates, CI)"
+        sprint: 1
+        frente: dev
+        area: infra
+        priority: alta
+        estimate: 3
+        done: true
+        description: "Backlog versionado, board no Projects, templates de issue/PR, workflows de CI e automação."
+        acceptance:
+          - "backlog.yml sincroniza labels, milestones e issues sem duplicar"
+          - "Issues aparecem no board com Sprint e Frente"
+          - "Templates de issue e PR disponíveis"
+      - id: E0-S2
+        title: "Inicializar projeto Flutter com dependências e lints"
+        sprint: 2
+        frente: dev
+        area: infra
+        priority: alta
+        estimate: 2
+        description: "Seguir docs/guia-setup.md passos 0–2."
+        acceptance:
+          - "flutter analyze e flutter test passam"
+          - "CI roda format, analyze e test no PR"
+      - id: E0-S3
+        title: "Estruturar arquitetura MVVM feature-first com exemplos por camada"
+        sprint: 2
+        frente: dev
+        area: infra
+        priority: alta
+        estimate: 3
+        description: "Seguir docs/guia-setup.md passos 3–4 (camadas, exemplos, env)."
+        acceptance:
+          - "lib/ organizado em app/, core/ e features/<feature>/{model,data,view_model,view}"
+          - "Um teste de exemplo por camada passando"
+          - "Segredos fora do git (env.json no .gitignore)"
+      - id: E0-S4
+        title: "Estruturar SDD: AGENTS.md, CLAUDE.md, rules, skills e templates de spec"
+        sprint: 2
+        frente: dev
+        area: docs
+        priority: alta
+        estimate: 3
+        description: "Seguir docs/guia-setup.md passo 5."
+        acceptance:
+          - "AGENTS.md e CLAUDE.md na raiz, rules com paths:, skills com SKILL.md"
+          - "docs/specs/_templates e docs/processo/sdd.md criados"
+
+  - id: E1
+    title: "Sessão anônima (Firebase Auth)"
+    frente: dev
+    area: auth
+    description: "Identificar a sessão do usuário sem exigir cadastro (contexto.md §3 e §4)."
+    stories:
+      - id: E1-S1
+        title: "Configurar Firebase no app (flutterfire)"
+        sprint: 2
+        frente: dev
+        area: auth
+        priority: alta
+        estimate: 2
+        description: "Criar/usar o projeto Firebase do time e gerar firebase_options.dart para Android e iOS."
+        acceptance:
+          - "App inicializa o Firebase em Android e iOS"
+          - "Configuração documentada no README"
+      - id: E1-S2
+        title: "Como usuário, quero começar a usar o app sem cadastro"
+        sprint: 2
+        frente: dev
+        area: auth
+        priority: alta
+        estimate: 3
+        description: "Login anônimo automático ao abrir o app, atrás de um AuthRepository."
+        acceptance:
+          - "Ao abrir o app pela primeira vez, uma sessão anônima é criada sem interação"
+          - "Reabrir o app reaproveita o mesmo usuário anônimo"
+          - "Falha de rede exibe estado de erro com tentar novamente"
+
+  - id: E2
+    title: "Swipe convergente (do amplo ao específico)"
+    frente: dev
+    area: swipe
+    description: "Sessão de escolhas binárias que afunila até um tipo de comida específico (contexto.md §6)."
+    stories:
+      - id: E2-S1
+        title: "Definir a árvore de categorias de comida (spec 001)"
+        sprint: 2
+        frente: produto
+        area: swipe
+        priority: alta
+        estimate: 3
+        description: "Definir níveis, pares de escolha e folhas (tipos de comida que viram busca no Places)."
+        acceptance:
+          - "Árvore com pelo menos 3 níveis e 12 tipos de comida finais"
+          - "Cada folha tem o termo de busca usado no Google Places"
+          - "Spec aprovada em PR"
+      - id: E2-S2
+        title: "Como usuário, quero escolher entre duas opções por swipe até chegar num tipo de comida"
+        sprint: 2
+        frente: dev
+        area: swipe
+        priority: alta
+        estimate: 5
+        description: "Tela de swipe + SwipeSessionNotifier consumindo o CategoryRepository."
+        acceptance:
+          - "Swipe para um lado escolhe a opção da esquerda e para o outro a da direita (botões como alternativa acessível)"
+          - "Cada escolha avança um nível da árvore"
+          - "É possível desfazer a última escolha e reiniciar a sessão"
+      - id: E2-S3
+        title: "Como usuário, quero ver o tipo de comida em que convergi"
+        sprint: 3
+        frente: dev
+        area: swipe
+        priority: alta
+        estimate: 2
+        description: "Tela de resultado convergido com o caminho percorrido e ação para buscar restaurantes."
+        acceptance:
+          - "Mostra o tipo final e o caminho (ex.: salgado → massa → macarrão)"
+          - "Botão leva à lista de restaurantes"
+      - id: E2-S4
+        title: "Salvar sessão e escolhas no Firestore"
+        sprint: 4
+        frente: dev
+        area: swipe
+        priority: media
+        estimate: 3
+        description: "Persistir Session e SwipeChoice por usuário anônimo (contexto.md §8)."
+        acceptance:
+          - "Cada sessão concluída é salva com escolhas e resultado"
+          - "ViewModel não importa Firestore (acesso via SessionRepository)"
+
+  - id: E3
+    title: "Recomendação de restaurantes reais (Google Places)"
+    frente: dev
+    area: restaurants
+    description: "Consultar restaurantes próximos que atendem o tipo convergido (contexto.md §4 e §6)."
+    stories:
+      - id: E3-S1
+        title: "Obter a localização do usuário com permissão"
+        sprint: 3
+        frente: dev
+        area: restaurants
+        priority: alta
+        estimate: 3
+        description: "geolocator + permissões Android/iOS + fallback quando negado."
+        acceptance:
+          - "Pede permissão com justificativa clara"
+          - "Permissão negada mostra estado explicativo e caminho para configurações"
+      - id: E3-S2
+        title: "Buscar restaurantes próximos por tipo de comida (PlacesService)"
+        sprint: 3
+        frente: dev
+        area: restaurants
+        priority: alta
+        estimate: 5
+        description: "Integração com Google Places API (Nearby/Text Search) atrás de interface testável."
+        acceptance:
+          - "Retorna nome, endereço, distância e avaliação"
+          - "Chave da API fora do código e restrita ao app"
+          - "Testes do service com respostas simuladas"
+      - id: E3-S3
+        title: "Como usuário, quero ver a lista de restaurantes recomendados"
+        sprint: 3
+        frente: dev
+        area: restaurants
+        priority: alta
+        estimate: 3
+        description: "Lista ordenada por distância com nome, distância e avaliação."
+        acceptance:
+          - "Estados de carregando, vazio e erro"
+          - "Fluxo completo swipe → resultado → lista demonstrável no seminário"
+      - id: E3-S4
+        title: "Como usuário, quero ver os detalhes de um restaurante"
+        sprint: 4
+        frente: dev
+        area: restaurants
+        priority: media
+        estimate: 3
+        description: "Tela de detalhe com endereço, avaliação, horário e fotos (se disponíveis)."
+        acceptance:
+          - "Abre a partir da lista e volta mantendo a posição"
+      - id: E3-S5
+        title: "Como usuário, quero abrir o restaurante no app de delivery ou no mapa"
+        sprint: 4
+        frente: dev
+        area: restaurants
+        priority: media
+        estimate: 2
+        description: "url_launcher para Maps e busca do restaurante no app de delivery."
+        acceptance:
+          - "Abre no Google Maps/Apple Maps"
+          - "Abre busca pelo nome no app de delivery ou no navegador como fallback"
+
+  - id: E4
+    title: "Qualidade, segurança e release"
+    frente: dev
+    area: infra
+    description: "Deixar o MVP estável e apresentável."
+    stories:
+      - id: E4-S1
+        title: "Tratar estados de erro, vazio, sem GPS e sem rede em todo o fluxo"
+        sprint: 5
+        frente: dev
+        area: infra
+        priority: alta
+        estimate: 3
+        description: "Padronizar Failure → mensagens e telas de erro."
+        acceptance:
+          - "Nenhuma tela fica em branco ou trava em carregando"
+      - id: E4-S2
+        title: "Escrever e testar regras de segurança do Firestore"
+        sprint: 5
+        frente: dev
+        area: auth
+        priority: alta
+        estimate: 3
+        description: "Cada usuário anônimo só lê e escreve as próprias sessões."
+        acceptance:
+          - "Regras versionadas no repo"
+          - "Testes com o emulador cobrindo acesso próprio e acesso negado"
+      - id: E4-S3
+        title: "Cobertura de testes das ViewModels e repositórios"
+        sprint: 5
+        frente: dev
+        area: infra
+        priority: media
+        estimate: 3
+        description: "Completar testes unitários das camadas view_model e data."
+        acceptance:
+          - "Todas as ViewModels com testes de estados principais"
+      - id: E4-S4
+        title: "Gerar build de release para demonstração"
+        sprint: 6
+        frente: dev
+        area: infra
+        priority: alta
+        estimate: 3
+        description: "APK assinado (e TestFlight se houver conta) para o pitch."
+        acceptance:
+          - "Build instalável em aparelho real"
+          - "Passo a passo de build documentado"
+      - id: E4-S5
+        title: "Estabilização final (bug bash)"
+        sprint: 6
+        frente: dev
+        area: infra
+        priority: alta
+        estimate: 3
+        description: "Sessão de testes em grupo e correção dos bugs críticos."
+        acceptance:
+          - "Nenhum bug de prioridade alta aberto em 03/12"
+
+  - id: E5
+    title: "Marketing e divulgação"
+    frente: marketing
+    area: canais
+    description: >
+      Posicionar o Rango, construir presença e validar a proposta com usuários reais.
+      Cada iniciativa tem um brief em docs/marketing/briefs/.
+    stories:
+      - id: E5-S1
+        title: "Definir frentes, papéis e responsáveis do time"
+        sprint: 1
+        frente: produto
+        area: docs
+        priority: alta
+        estimate: 1
+        description: "Registrar em docs/processo/time-e-rituais.md quem está em cada frente."
+        acceptance:
+          - "Cada integrante com frente principal definida"
+          - "CODEOWNERS atualizado com os @ do time"
+      - id: E5-S2
+        title: "Posicionamento e persona"
+        sprint: 2
+        frente: marketing
+        area: marca
+        priority: alta
+        estimate: 3
+        description: "Completar docs/marketing/posicionamento.md a partir do benchmark do acordo."
+        acceptance:
+          - "Persona principal e proposta de valor em uma frase"
+          - "Mensagens-chave contra os concorrentes do benchmark"
+      - id: E5-S3
+        title: "Identidade visual (logo, paleta, tipografia, tom de voz)"
+        sprint: 2
+        frente: marketing
+        area: marca
+        priority: alta
+        estimate: 5
+        description: "Completar docs/marketing/identidade.md; entregar logo e ícone do app."
+        acceptance:
+          - "Logo e ícone em formatos para app e redes"
+          - "Paleta compartilhada com a frente dev (tema do app)"
+      - id: E5-S4
+        title: "Criar perfis nas redes e calendário de conteúdo"
+        sprint: 2
+        frente: marketing
+        area: canais
+        priority: media
+        estimate: 2
+        description: "Perfis do Rango e docs/marketing/calendario-conteudo.md preenchido até a Sprint 3."
+        acceptance:
+          - "Perfis criados com bio e identidade"
+          - "Ao menos 1 post por semana planejado"
+      - id: E5-S5
+        title: "Landing page do Rango"
+        sprint: 3
+        frente: marketing
+        area: canais
+        priority: media
+        estimate: 3
+        description: "Página simples com proposta de valor e formulário de interesse."
+        acceptance:
+          - "Página publicada e linkada nas redes"
+          - "Captura de contatos interessados"
+      - id: E5-S6
+        title: "Material do seminário de andamento (22/10)"
+        sprint: 3
+        frente: marketing
+        area: pitch
+        priority: alta
+        estimate: 3
+        description: "Slides e roteiro de demo junto com a frente dev."
+        acceptance:
+          - "Slides revisados pelo time até 20/10"
+          - "Roteiro de demo ensaiado"
+      - id: E5-S7
+        title: "Pesquisa e teste de usabilidade com usuários"
+        sprint: 4
+        frente: marketing
+        area: pesquisa
+        priority: alta
+        estimate: 5
+        description: "Entrevistas e teste do app com pelo menos 5 pessoas do público-alvo."
+        acceptance:
+          - "Roteiro de entrevista e resultados em docs/marketing/"
+          - "Achados viram issues priorizadas no backlog"
+      - id: E5-S8
+        title: "Campanha de pré-lançamento"
+        sprint: 5
+        frente: marketing
+        area: canais
+        priority: media
+        estimate: 3
+        description: "Série de posts e chamada para a lista de interessados."
+        acceptance:
+          - "Meta de interessados definida no brief e medida"
+      - id: E5-S9
+        title: "Pitch final, vídeo demo e screenshots da loja"
+        sprint: 6
+        frente: marketing
+        area: pitch
+        priority: alta
+        estimate: 5
+        description: "Material da apresentação final de 03/12."
+        acceptance:
+          - "Pitch ensaiado dentro do tempo definido pela disciplina"
+          - "Vídeo demo de até 2 minutos"
+
+  - id: E6
+    title: "Produto e UX"
+    frente: produto
+    area: swipe
+    description: "Protótipos e priorização que alimentam as frentes dev e marketing."
+    stories:
+      - id: E6-S1
+        title: "Protótipo navegável do fluxo do MVP"
+        sprint: 2
+        frente: produto
+        area: swipe
+        priority: alta
+        estimate: 3
+        description: "Telas de swipe, resultado, lista e detalhe (ex.: Figma)."
+        acceptance:
+          - "Protótipo linkado na issue e em docs/contexto.md"
+      - id: E6-S2
+        title: "Repriorizar o backlog com o feedback do seminário"
+        sprint: 4
+        frente: produto
+        area: docs
+        priority: alta
+        estimate: 2
+        description: "Transformar o feedback de 22/10 em mudanças no backlog.yml."
+        acceptance:
+          - "Decisões registradas em docs/contexto.md §11"
+
+  - id: E7
+    title: "Evolução futura (pós-MVP)"
+    frente: dev
+    area: swipe
+    description: "Itens fora do MVP (contexto.md §9). Sem sprint até o time decidir puxar."
+    stories:
+      - id: E7-S1
+        title: "Sessão em grupo (vários usuários votando na mesma sessão)"
+        frente: dev
+        area: swipe
+        priority: baixa
+        estimate: 8
+        description: "Cloud Functions + Firestore em tempo real; convite por código."
+        acceptance: []
+      - id: E7-S2
+        title: "Histórico de sessões e favoritos"
+        frente: dev
+        area: swipe
+        priority: baixa
+        estimate: 5
+        description: ""
+        acceptance: []
+      - id: E7-S3
+        title: "Filtros avançados (preço, dieta, distância)"
+        frente: dev
+        area: restaurants
+        priority: baixa
+        estimate: 5
+        description: ""
+        acceptance: []
