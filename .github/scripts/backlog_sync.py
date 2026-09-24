@@ -265,7 +265,8 @@ class Sync:
             project.set_field(item_id, "Area", item.area)
             if item.estimate is not None:
                 project.set_field(item_id, "Estimate", item.estimate)
-            if created:  # never override a status the team moved by hand
+            # set Status when the item is new or has none yet; never override a status the team moved by hand
+            if created or not project.current_status(item_id):
                 planned = item.sprint or any(s.sprint for s in self.items if s.epic is item)
                 status = "Done" if item.done else ("Todo" if planned else "Backlog")
                 project.set_field(item_id, "Status", status)

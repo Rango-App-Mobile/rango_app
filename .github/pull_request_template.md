@@ -10,14 +10,27 @@ Closes #
 - [ ] Spec / documentação (docs/specs, docs/features, AGENTS.md, rules, skills)
 - [ ] Marketing / produto (docs/marketing, assets)
 
+## Spec
+
+- [ ] Não precisa (bug, chore, docs; ver `docs/sdd.md`)
+- [ ] `docs/specs/NNN-slug/`, task(s): T
+
+## Critérios de aceitação cobertos
+
+| CA | Teste |
+|---|---|
+| CA1 | `test/...` |
+
 ## Checklist — código
 
-- [ ] `dart format`, `flutter analyze` e `flutter test` passam localmente
-- [ ] Segue a spec (`docs/specs/NNN-…`) ou explica abaixo por que não precisou
+- [ ] `dart format --output=none --set-exit-if-changed .`, `flutter analyze` e `flutter test` passam (sem `env.json`)
 - [ ] View não tem lógica de negócio; ViewModel não importa Firebase/HTTP
 - [ ] Testes novos para o comportamento novo (ViewModel e/ou repositório)
+- [ ] Mexeu em model? Gerados (`*.g.dart`, `*.freezed.dart`) no commit
+- [ ] Dependência nova? Justificativa em Observações
 - [ ] Nenhum segredo no diff (chaves ficam em `env.json`, fora do git)
-- [ ] Mudou modelo de dados/regra? `docs/contexto.md` atualizado
+- [ ] Mudou coleção/campo do Firestore? `docs/contexto.md` §8 atualizado
+- [ ] Mudou decisão? `docs/contexto.md` §11 atualizado
 - [ ] História concluída? `docs/features/<feature>.md` criado/atualizado
 
 ## Checklist — docs/marketing

@@ -17,4 +17,4 @@ reais. Segue o mesmo board e as mesmas sprints do time (épico **E5** no `backlo
 3. Produza as peças. Arquivos pesados (imagens, vídeos) ficam na pasta compartilhada do time; no repo vão só os links e as versões finais leves.
 4. Ao terminar, registre no brief o **resultado** (métrica atingida?) e feche a issue.
 
-Pontos de contato com as outras frentes estão em [time-e-rituais.md](../processo/time-e-rituais.md#as-frentes).
+Pontos de contato com as outras frentes estão em [time-e-rituais.md](../time-e-rituais.md#as-frentes).

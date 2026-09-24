@@ -1,7 +1,7 @@
 # Time, frentes e rituais
 
 Como o time do Rango se organiza para tocar o projeto ao longo das 6 sprints (cronograma em
-[contexto.md §10](../contexto.md#10-cronograma-e-sprints)).
+[contexto.md §10](contexto.md#10-cronograma-e-sprints)).
 
 ## Integrantes e frentes
 

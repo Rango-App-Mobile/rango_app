@@ -105,7 +105,7 @@ epics:
         description: "Seguir docs/guia-setup.md passo 5."
         acceptance:
           - "AGENTS.md e CLAUDE.md na raiz, rules com paths:, skills com SKILL.md"
-          - "docs/specs/_templates e docs/processo/sdd.md criados"
+          - "docs/specs/_templates e docs/sdd.md criados"
 
   - id: E1
     title: "Sessão anônima (Firebase Auth)"
@@ -326,7 +326,7 @@ epics:
         area: docs
         priority: alta
         estimate: 1
-        description: "Registrar em docs/processo/time-e-rituais.md quem está em cada frente."
+        description: "Registrar em docs/time-e-rituais.md quem está em cada frente."
         acceptance:
           - "Cada integrante com frente principal definida"
           - "CODEOWNERS atualizado com os @ do time"

@@ -10,7 +10,7 @@ time só precisa ler as seções 3 (estrutura) e 5 (SDD).
 **O que sai no fim:** um PR `chore/setup-flutter` → `dev` com o app rodando uma
 tela de escolhas binárias sobre dados falsos, testes de model, ViewModel e
 widget, e os arquivos que orientam humanos e agentes (`AGENTS.md`,
-`.claude/`, `docs/specs/`, `docs/processo/sdd.md`).
+`.claude/`, `docs/specs/`, `docs/sdd.md`).
 
 **O que fica de fora de propósito:** Firebase, Google Places e permissão de
 localização. Cada um tem a sua história (ver [Próximos passos](#próximos-passos)).
@@ -1326,6 +1326,11 @@ git commit -m "chore: add compile-time env config and keep secrets out of git"
 
 ## Passo 5 — SDD: arquivos para humanos e agentes
 
+> **Já feito no repositório.** Os arquivos deste passo foram criados a partir
+> dos blocos abaixo (com pequenos ajustes no `AGENTS.md` e no PR template).
+> Use esta seção para entender o que cada um faz e rode só o checkpoint do
+> fim. Se mudar uma regra, mude no arquivo real, não aqui.
+
 **Objetivo:** o repositório explica sozinho como trabalhar nele. Qualquer
 pessoa, ou agente (Claude Code, Codex, Cursor, Copilot), lê as mesmas regras,
 e toda história passa por spec → plan → tasks antes de virar código.
@@ -1341,7 +1346,7 @@ e toda história passa por spec → plan → tasks antes de virar código.
 | `.claude/skills/*/SKILL.md` | Claude Code | Rotinas repetíveis: escrever spec, implementar task, revisar PR, status da sprint |
 | `docs/specs/_templates/` | quem escreve spec | Moldes de `spec.md`, `plan.md`, `tasks.md` |
 | `docs/features/_template.md` | quem conclui uma feature | Molde do documento de domínio que fica depois do merge |
-| `docs/processo/sdd.md` | o time | O ciclo completo e quando a spec é obrigatória |
+| `docs/sdd.md` | o time | O ciclo completo e quando a spec é obrigatória |
 | `.github/pull_request_template.md` | quem abre PR | Checklist que liga PR à spec e ao CI |
 
 **Por que `AGENTS.md` e `CLAUDE.md`:** `AGENTS.md` é o formato aberto que
@@ -1444,14 +1449,14 @@ Regras por área ficam em `.claude/rules/` e valem para humanos também:
   sprint review.
 - Antes de abrir PR: `dart format .`, `flutter analyze`, `flutter test`. São os
   três passos do CI.
-- Detalhes de branch, revisão e merge: `docs/processo/git-e-prs.md`. Times e
-  rituais: `docs/processo/time-e-rituais.md`.
+- Detalhes de branch, revisão e merge: `docs/git-e-prs.md`. Times e
+  rituais: `docs/time-e-rituais.md`.
 
 ## Processo SDD
 
 Toda história de produto passa por **spec → plan → tasks** em
 `docs/specs/NNN-slug/` antes do código. Bug e tarefa pequena podem pular a
-spec. O ciclo completo e o critério estão em `docs/processo/sdd.md`; os moldes
+spec. O ciclo completo e o critério estão em `docs/sdd.md`; os moldes
 em `docs/specs/_templates/`.
 
 Ao implementar uma task: leia a `spec.md` e o `plan.md` da pasta, escreva o
@@ -1714,7 +1719,7 @@ description: Use when the user wants to write, draft or start a spec for a user 
 # Spec de feature — Rango
 
 Transforma uma história (issue do GitHub) em `spec.md`, depois `plan.md` e
-`tasks.md`, seguindo `docs/processo/sdd.md`.
+`tasks.md`, seguindo `docs/sdd.md`.
 
 ## Regra principal
 
@@ -2215,7 +2220,7 @@ deixa para depois".>
 - <o que ficou em aberto, com issue>
 ````
 
-### 5.8 `docs/processo/sdd.md`
+### 5.8 `docs/sdd.md`
 
 ````markdown
 # Processo SDD (Spec-Driven Development)
@@ -2306,7 +2311,7 @@ spec e de CI).
 
 ## Spec
 
-- [ ] Não precisa (bug, chore, docs; ver `docs/processo/sdd.md`)
+- [ ] Não precisa (bug, chore, docs; ver `docs/sdd.md`)
 - [ ] `docs/specs/NNN-slug/` — task(s): T
 
 ## Critérios de aceitação cobertos
@@ -2341,7 +2346,7 @@ spec e de CI).
 **✅ Checkpoint do passo 5**
 
 ```bash
-find AGENTS.md CLAUDE.md .claude docs/specs docs/features docs/processo/sdd.md .github/pull_request_template.md -type f | sort
+find AGENTS.md CLAUDE.md .claude docs/specs docs/features docs/sdd.md .github/pull_request_template.md -type f | sort
 ```
 
 Deve listar todos os arquivos acima.
@@ -2390,7 +2395,7 @@ git commit -m "chore(claude): add project skills for sdd, review and sprint stat
 ```
 
 ```bash
-git add docs/specs docs/features docs/processo/sdd.md .github/pull_request_template.md
+git add docs/specs docs/features docs/sdd.md .github/pull_request_template.md
 ```
 
 ```bash
@@ -2467,10 +2472,10 @@ em vez de baixar o `sdk:` do `pubspec.yaml` no escuro.
 minutos):
 
 1. Clonar a branch, `flutter pub get`, `flutter test`, `flutter run`.
-2. Ler `AGENTS.md` e `docs/processo/sdd.md` inteiros: são o contrato do time.
+2. Ler `AGENTS.md` e `docs/sdd.md` inteiros: são o contrato do time.
 3. Conferir a tabela de imports (§3.2 deste guia) contra o código de `swipe`.
 
-Merge conforme `docs/processo/git-e-prs.md`.
+Merge conforme `docs/git-e-prs.md`.
 
 **✅ Checkpoint**
 

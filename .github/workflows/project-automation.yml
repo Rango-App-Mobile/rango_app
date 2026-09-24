@@ -3,7 +3,7 @@ name: Project automation
 # Complementa os workflows nativos do Project (auto-add, fechada -> Done, PR merged -> Done):
 # - branch criada como feat/<issue>-slug  -> issue vai para "In Progress"
 # - PR aberto com "Closes #<issue>"       -> issue vai para "In Review"
-# Precisa do secret PROJECT_TOKEN e da variável PROJECT_NUMBER (ver docs/processo/git-e-prs.md).
+# Precisa do secret PROJECT_TOKEN e da variável PROJECT_NUMBER (ver docs/git-e-prs.md).
 
 on:
   create:
