@@ -7,7 +7,7 @@ Closes #
 ## Tipo
 
 - [ ] Código do app (frente dev)
-- [ ] Spec / documentação (docs/specs, docs/features, AGENTS.md, rules, skills)
+- [ ] Spec / documentação (docs/, CLAUDE.md, AGENTS.md, .claude/)
 - [ ] Marketing / produto (docs/marketing, assets)
 
 ## Spec
@@ -31,7 +31,7 @@ Closes #
 - [ ] Nenhum segredo no diff (chaves ficam em `env.json`, fora do git)
 - [ ] Mudou coleção/campo do Firestore? `docs/contexto.md` §8 atualizado
 - [ ] Mudou decisão? `docs/contexto.md` §11 atualizado
-- [ ] História concluída? `docs/features/<feature>.md` criado/atualizado
+- [ ] História concluída? `docs/<feature>.md` criado/atualizado
 
 ## Checklist — docs/marketing
 
