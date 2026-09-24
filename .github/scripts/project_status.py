@@ -14,28 +14,11 @@ from __future__ import annotations
 import argparse
 import re
 
-from gh_common import Project, graphql, issue_node_id, log, repo_slug, warn
+from gh_common import Project, issue_node_id, log, repo_slug, warn
 
 ORDER = ["Backlog", "Todo", "In Progress", "In Review", "Done"]
 CLOSING = re.compile(r"\b(?:close[sd]?|fix(?:e[sd])?|resolve[sd]?)\s+#(\d+)", re.IGNORECASE)
 BRANCH = re.compile(r"^(?:feat|fix|chore|docs|refactor|test)/(\d+)-")
-
-
-def current_status(project: Project, item_id: str) -> str | None:
-    data = graphql(
-        """
-        query($item: ID!) {
-          node(id: $item) {
-            ... on ProjectV2Item {
-              fieldValueByName(name: "Status") { ... on ProjectV2ItemFieldSingleSelectValue { name } }
-            }
-          }
-        }
-        """,
-        item=item_id,
-    )
-    value = (data["node"] or {}).get("fieldValueByName")
-    return value["name"] if value else None
 
 
 def main() -> None:
@@ -66,7 +49,7 @@ def main() -> None:
         except RuntimeError as err:
             warn(f"#{number}: {err}")
             continue
-        status = current_status(project, item_id)
+        status = project.current_status(item_id)
         if status in ORDER and ORDER.index(status) >= ORDER.index(args.status):
             log(f"#{number}: já está em '{status}', mantendo")
             continue

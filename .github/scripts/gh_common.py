@@ -147,6 +147,22 @@ class Project:
                 return item["id"]
         return None
 
+    def current_status(self, item_id: str) -> str | None:
+        data = graphql(
+            """
+            query($item: ID!) {
+              node(id: $item) {
+                ... on ProjectV2Item {
+                  fieldValueByName(name: "Status") { ... on ProjectV2ItemFieldSingleSelectValue { name } }
+                }
+              }
+            }
+            """,
+            item=item_id,
+        )
+        value = (data["node"] or {}).get("fieldValueByName")
+        return value["name"] if value else None
+
     def set_field(self, item_id: str, field_name: str, value) -> None:
         field = self.fields.get(field_name)
         if not field:

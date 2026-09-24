@@ -12,7 +12,7 @@ Projeto da disciplina Projeto de Desenvolvimento I (Senac), 2º semestre de 2026
 |---|---|
 | Gestão (backlog, board, CI, templates) | ✅ pronto |
 | Projeto Flutter + arquitetura MVVM | ⏳ Sprint 2: seguir o [guia de setup](docs/guia-setup.md) |
-| Processo SDD (AGENTS.md, rules, skills, specs) | ⏳ Sprint 2: [guia de setup, passo 5](docs/guia-setup.md) |
+| Processo SDD (AGENTS.md, rules, skills, specs) | ✅ pronto: [AGENTS.md](AGENTS.md), [processo SDD](docs/sdd.md) |
 | Firebase + sessão anônima | ⏳ Sprint 2 |
 | Swipe convergente | ⏳ Sprint 2 |
 | Restaurantes (Google Places) | ⏳ Sprint 3 |
@@ -24,8 +24,10 @@ Projeto da disciplina Projeto de Desenvolvimento I (Senac), 2º semestre de 2026
 | [docs/contexto.md](docs/contexto.md) | **Fonte canônica**: produto, stack, arquitetura, regras, modelo de dados, cronograma, decisões |
 | [docs/acordo-projeto.md](docs/acordo-projeto.md) · [PDF v1.1](docs/acordo-projeto-v1.1.pdf) | Acordo de projeto (escopo, benchmark, cronograma e frentes) |
 | [docs/guia-setup.md](docs/guia-setup.md) | Passo a passo: Flutter, dependências, MVVM, SDD |
-| [docs/processo/time-e-rituais.md](docs/processo/time-e-rituais.md) | Frentes, papéis, rituais por aula, DoR/DoD |
-| [docs/processo/git-e-prs.md](docs/processo/git-e-prs.md) | Branches, commits, PRs e automações do GitHub |
+| [docs/time-e-rituais.md](docs/time-e-rituais.md) | Frentes, papéis, rituais por aula, DoR/DoD |
+| [docs/git-e-prs.md](docs/git-e-prs.md) | Branches, commits, PRs e automações do GitHub |
+| [docs/sdd.md](docs/sdd.md) | Ciclo spec → plan → tasks e quando a spec é obrigatória |
+| [AGENTS.md](AGENTS.md) · [CLAUDE.md](CLAUDE.md) | Instruções para agentes de IA (e humanos): regras, comandos, workflow |
 | [docs/marketing/](docs/marketing/README.md) | Posicionamento, identidade, calendário de conteúdo, briefs |
 
 ## Como contribuir (resumo)
@@ -40,7 +42,7 @@ git switch dev && git pull && git switch -c feat/<issue>-<slug>
 3. Histórias com lógica nova começam por uma spec em `docs/specs/` (processo SDD).
 4. Abra o PR para `dev` com `Closes #<issue>`, espere o CI verde e 1 aprovação.
 
-Detalhes em [git-e-prs.md](docs/processo/git-e-prs.md).
+Detalhes em [git-e-prs.md](docs/git-e-prs.md).
 
 ## Backlog
 

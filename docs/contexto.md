@@ -168,7 +168,7 @@ Sprints de **2 semanas**, sempre terminando na aula de review. O backlog de cada
 | 5 | 05/11 → 19/11 | Erros e estados vazios, regras do Firestore, testes; pré-lançamento |
 | 6 | 19/11 → 03/12 | Estabilização, build de release, pitch e vídeo demo |
 
-Rituais e frentes: [processo/time-e-rituais.md](processo/time-e-rituais.md).
+Rituais e frentes: [time-e-rituais.md](time-e-rituais.md).
 
 ## 11. Decisões
 

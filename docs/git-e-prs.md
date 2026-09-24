@@ -11,7 +11,7 @@
 | `docs/<issue>-<slug>` | Specs, docs, marketing | — |
 | `chore/<issue>-<slug>` | Setup, CI, dependências | — |
 
-Sempre comece pelo **número da issue** (`feat/14-swipe-screen`). Assim o board move a issue para *In Progress* sozinho.
+Sempre comece pelo **número da issue** (`feat/14-swipe-screen`). Assim o board move a issue para *In Progress* sozinho. Manutenção que ainda não tem issue (ex.: arrumação antes do backlog fechar) pode usar `chore/<slug>`.
 
 ```bash
 git switch dev && git pull
@@ -23,10 +23,10 @@ git switch -c feat/14-swipe-screen
 
 ## Commits
 
-Convencionais, **em inglês**, no imperativo, com a issue no fim:
+Convencionais, **em inglês**, no imperativo, com a issue no fim. O escopo entre parênteses (feature) é opcional:
 
 ```
-feat: add swipe session notifier (#14)
+feat(swipe): add swipe session notifier (#14)
 fix: keep list position when returning from detail (#31)
 docs: add spec 001 category tree (#9)
 chore: configure very_good_analysis (#5)
@@ -47,7 +47,7 @@ dart format . && flutter analyze && flutter test
 ```
 
 - Merge com **squash** (histórico limpo em `dev`). Na review da sprint, `dev` → `main` com merge commit.
-- Revisão assistida: a skill `pr-review-rango` (ver [guia de setup, passo 5](../guia-setup.md)) aplica o checklist do projeto. O humano decide o que comentar.
+- Revisão assistida: a skill `pr-review-rango` (ver [guia de setup, passo 5](guia-setup.md)) aplica o checklist do projeto. O humano decide o que comentar.
 
 ## Proteção de branches
 

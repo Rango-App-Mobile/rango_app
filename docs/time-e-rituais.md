@@ -1,7 +1,7 @@
 # Time, frentes e rituais
 
 Como o time do Rango se organiza para tocar o projeto ao longo das 6 sprints (cronograma em
-[contexto.md §10](../contexto.md#10-cronograma-e-sprints)).
+[contexto.md §10](contexto.md#10-cronograma-e-sprints)).
 
 ## Integrantes e frentes
 
@@ -20,7 +20,7 @@ Todas as frentes usam o **mesmo board** (GitHub Projects, campo *Frente*) e as m
 
 | Frente | Cuida de | Produz | Onde documenta |
 |---|---|---|---|
-| **Dev (app)** | Features do app, testes, CI, arquitetura | Código + PRs | `docs/specs/`, `docs/features/` |
+| **Dev (app)** | Features do app, testes, CI, arquitetura | Código + PRs | `docs/specs/`, `docs/<feature>.md` |
 | **Marketing e divulgação** | Posicionamento, identidade visual, redes sociais, landing page, pesquisa com usuários, seminário e pitch | Briefs, peças, posts, material de apresentação | `docs/marketing/` |
 | **Produto/UX** (pode ser acumulada) | Priorizar o backlog, protótipos, conteúdo da árvore de categorias, critérios de aceitação | Protótipos, specs de produto, `backlog.yml` | `docs/contexto.md`, `docs/specs/` |
 
