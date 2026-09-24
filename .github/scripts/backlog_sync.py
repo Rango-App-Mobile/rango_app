@@ -249,7 +249,7 @@ class Sync:
     def project(self, issues: dict[str, dict]) -> None:
         project = Project.from_env()
         if not project:
-            log("PROJECT_NUMBER não definido: pulando sync do board")
+            log("board não configurado (PROJECT_NUMBER ou PROJECT_TOKEN ausente): pulando sync do board")
             return
         for item in self.items:
             issue = issues.get(item.id)
