@@ -32,6 +32,9 @@ labels:
   - { name: "area:swipe",      color: "c5def5", description: "Fluxo de swipe e convergência" }
   - { name: "area:restaurants", color: "c5def5", description: "Busca e exibição de restaurantes" }
   - { name: "area:docs",       color: "c5def5", description: "Documentação e processo" }
+  - { name: "area:ui",         color: "c5def5", description: "Design system no app: tema, ícones, componentes, navegação" }
+  - { name: "area:historico",  color: "c5def5", description: "Histórico de rangos decididos" }
+  - { name: "area:perfil",     color: "c5def5", description: "Perfil, preferências e dados da conta" }
   - { name: "area:marca",      color: "f9d0c4", description: "Identidade, posicionamento" }
   - { name: "area:canais",     color: "f9d0c4", description: "Redes sociais, landing page, campanhas" }
   - { name: "area:pesquisa",   color: "f9d0c4", description: "Pesquisa e validação com usuários" }
@@ -110,10 +113,12 @@ epics:
           - "docs/sdd.md descreve o ciclo e aponta os moldes"
 
   - id: E1
-    title: "Sessão anônima (Firebase Auth)"
+    title: "Sessão e conta (Firebase Auth)"
     frente: dev
     area: auth
-    description: "Identificar a sessão do usuário sem exigir cadastro (contexto.md §3 e §4)."
+    description: >
+      Visitante navega sem cadastro (sessão anônima, nada salvo); quem entra com conta tem
+      escolhas, histórico, estatísticas e preferências salvos no Firebase (contexto.md §6, §7 e §11).
     stories:
       - id: E1-S1
         title: "Configurar Firebase no app (flutterfire)"
@@ -133,11 +138,32 @@ epics:
         area: auth
         priority: alta
         estimate: 3
-        description: "Login anônimo automático ao abrir o app, atrás de um AuthRepository."
+        description: >
+          Login anônimo automático ao abrir o app, atrás de um AuthRepository. É o modo
+          visitante: o app funciona inteiro, mas nada do visitante é salvo (sem histórico,
+          estatísticas nem preferências). Avatar Button Type=Guest na Top Bar.
         acceptance:
           - "Ao abrir o app pela primeira vez, uma sessão anônima é criada sem interação"
           - "Reabrir o app reaproveita o mesmo usuário anônimo"
           - "Falha de rede exibe estado de erro com tentar novamente"
+          - "Nenhuma escolha do visitante é gravada no Firestore"
+      - id: E1-S3
+        title: "Como usuário, quero entrar ou criar uma conta para salvar meus rangos"
+        sprint: 4
+        frente: dev
+        area: auth
+        priority: alta
+        estimate: 5
+        description: >
+          Botão "Entrar ou criar conta" do Profile Sheet (Figma 11 Perfil). Método de login
+          (e-mail, Google, Apple) definido na spec, com as telas desenhadas pela frente de
+          Produto (E6-S3). A conta nasce ligando o usuário anônimo atual (linkWithCredential),
+          para manter o uid.
+        acceptance:
+          - "Visitante entra ou cria conta a partir do Profile Sheet"
+          - "Depois do login, o Avatar Button e o Profile Sheet mostram a pessoa (Type=Photo quando houver foto)"
+          - "Sair da conta volta ao modo visitante"
+          - "Erros de login (rede, credencial inválida, conta já existente) têm mensagem e saída"
 
   - id: E2
     title: "Swipe convergente (do amplo ao específico)"
@@ -152,10 +178,14 @@ epics:
         area: swipe
         priority: alta
         estimate: 3
-        description: "Definir níveis, pares de escolha e folhas (tipos de comida que viram busca no Places)."
+        description: >
+          Definir níveis, pares de escolha e folhas (tipos de comida que viram busca no Places).
+          Pelo Figma (01–03), cada nó também tem a linha de exemplos do Food Card
+          ("Coxinha, pastel, pizza"), a cor (modo Food Theme) e a foto.
         acceptance:
           - "Árvore com pelo menos 3 níveis e 12 tipos de comida finais"
           - "Cada folha tem o termo de busca usado no Google Places"
+          - "Cada nó tem rótulo, exemplos, cor do Food Theme e foto (ver E8-S7)"
           - "Spec aprovada em PR"
       - id: E2-S2
         title: "Como usuário, quero escolher entre duas opções por swipe até chegar num tipo de comida"
@@ -164,11 +194,17 @@ epics:
         area: swipe
         priority: alta
         estimate: 5
-        description: "Tela de swipe + SwipeSessionNotifier consumindo o CategoryRepository."
+        description: >
+          Telas 01 Home, 02 e 03 do Figma: dois Food Card Size=Hero inclinados com o Sticker
+          "ou" entre eles, Page Header com a pergunta do nível. A escolha é por toque ou
+          arrastando o card. Home usa Top Bar Principal + Tab Bar; os níveis seguintes, Top Bar
+          Fluxo. O ViewModel da tela de swipe de exemplo (E0-S3) já expõe choose/reset.
         acceptance:
-          - "Swipe para um lado escolhe a opção da esquerda e para o outro a da direita (botões como alternativa acessível)"
-          - "Cada escolha avança um nível da árvore"
-          - "É possível desfazer a última escolha e reiniciar a sessão"
+          - "Tocar ou arrastar um card escolhe aquela opção (o toque é a alternativa acessível ao gesto)"
+          - "Cada escolha avança um nível da árvore, com título e subtítulo do nível"
+          - "O voltar da Top Bar desfaz a última escolha; na Home não há voltar"
+          - "Cada card usa a cor (Food Theme) e a foto da categoria"
+          - "Com 'reduzir movimento' ligado, os cards não animam a entrada"
       - id: E2-S3
         title: "Como usuário, quero ver o tipo de comida em que convergi"
         sprint: 3
@@ -176,10 +212,14 @@ epics:
         area: swipe
         priority: alta
         estimate: 2
-        description: "Tela de resultado convergido com o caminho percorrido e ação para buscar restaurantes."
+        description: >
+          Tela 04 Deu match do Figma: Food Card Hero da comida final com o caminho e o chip
+          "N escolhas", Sticker Lime "Deu match!", Page Header Medium, Button Primary
+          "Ver restaurantes perto" e Ghost "Recomeçar".
         acceptance:
           - "Mostra o tipo final e o caminho (ex.: salgado → massa → macarrão)"
-          - "Botão leva à lista de restaurantes"
+          - "'Ver restaurantes perto' leva ao mapa de restaurantes (E3-S3)"
+          - "'Recomeçar' volta à Home com a sessão zerada"
       - id: E2-S4
         title: "Salvar sessão e escolhas no Firestore"
         sprint: 4
@@ -187,9 +227,13 @@ epics:
         area: swipe
         priority: media
         estimate: 3
-        description: "Persistir Session e SwipeChoice por usuário anônimo (contexto.md §8)."
+        description: >
+          Persistir Session e SwipeChoice de quem tem conta (contexto.md §8). Visitante não
+          grava nada. A sessão guarda também o restaurante escolhido e o canal do pedido
+          (delivery, mapa, ligação), que alimentam o Histórico e o "Pedir de novo".
         acceptance:
-          - "Cada sessão concluída é salva com escolhas e resultado"
+          - "Cada sessão concluída por usuário com conta é salva com escolhas, resultado e restaurante escolhido"
+          - "Sessão de visitante não é salva"
           - "ViewModel não importa Firestore (acesso via SessionRepository)"
 
   - id: E3
@@ -205,10 +249,14 @@ epics:
         area: restaurants
         priority: alta
         estimate: 3
-        description: "geolocator + permissões Android/iOS + fallback quando negado."
+        description: >
+          geolocator + permissões Android/iOS + fallback quando negado. Estado negado = tela
+          09 Localização negada do Figma (Empty State com Icon/Pin, Button Primary
+          "Permitir localização" e Secondary "Abrir ajustes do celular").
         acceptance:
           - "Pede permissão com justificativa clara"
-          - "Permissão negada mostra estado explicativo e caminho para configurações"
+          - "Permissão negada mostra a tela 09 com 'Permitir localização' e 'Abrir ajustes do celular'"
+          - "Negada para sempre: o botão principal abre os ajustes do sistema"
       - id: E3-S2
         title: "Buscar restaurantes próximos por tipo de comida (PlacesService)"
         sprint: 3
@@ -218,30 +266,45 @@ epics:
         estimate: 5
         description: "Integração com Google Places API (Nearby/Text Search) atrás de interface testável."
         acceptance:
-          - "Retorna nome, endereço, distância e avaliação"
+          - "Retorna nome, tipo de cozinha, endereço, coordenadas, distância, avaliação e foto"
+          - "Telefone disponível para o botão 'Ligar' (E3-S5), buscado só do restaurante escolhido"
           - "Chave da API fora do código e restrita ao app"
           - "Testes do service com respostas simuladas"
       - id: E3-S3
-        title: "Como usuário, quero ver a lista de restaurantes recomendados"
+        title: "Como usuário, quero ver os restaurantes recomendados no mapa"
         sprint: 3
         frente: dev
         area: restaurants
         priority: alta
-        estimate: 3
-        description: "Lista ordenada por distância com nome, distância e avaliação."
+        estimate: 5
+        description: >
+          Telas 05 Restaurantes no mapa e 08 Restaurantes carregando do Figma. Mapa centrado
+          na pessoa (User Location), um Map Pin por restaurante na cor da comida escolhida,
+          chips com a comida e "N lugares em até X km". Tocar num pin o seleciona e mostra a
+          prévia (Restaurant Card Layout=Row); tocar na prévia abre o contato (E3-S4). Pacote
+          de mapa é dependência nova: decidir no plano com o time (contexto.md §12).
         acceptance:
-          - "Estados de carregando, vazio e erro"
-          - "Fluxo completo swipe → resultado → lista demonstrável no seminário"
+          - "Mapa e localização aparecem na hora; o chip avisa que a busca está rodando e os pins entram quando o Places responde"
+          - "Só um pin selecionado por vez, com balão de nome e nota"
+          - "Botão de recentralizar na pessoa"
+          - "Estados de vazio (nenhum lugar no raio) e erro com saída"
+          - "Fluxo completo swipe → resultado → mapa → contato demonstrável no seminário"
       - id: E3-S4
-        title: "Como usuário, quero ver os detalhes de um restaurante"
+        title: "Como usuário, quero ver o restaurante escolhido e como pedir"
         sprint: 4
         frente: dev
         area: restaurants
-        priority: media
+        priority: alta
         estimate: 3
-        description: "Tela de detalhe com endereço, avaliação, horário e fotos (se disponíveis)."
+        description: >
+          Tela 06 Opções de contato do Figma (substitui a tela de detalhe): Restaurant Card
+          Layout=Vertical com nota, distância e tempo, chip "Salvo no seu histórico" (só com
+          conta), a pergunta "Como você quer pedir?" com Pedir no delivery, Abrir no mapa e
+          Ligar, e os atalhos Ir para o histórico e Voltar ao início.
         acceptance:
-          - "Abre a partir da lista e volta mantendo a posição"
+          - "Abre a partir da prévia do mapa e o voltar retorna ao mapa com o mesmo pin selecionado"
+          - "Com conta, a escolha é salva no histórico ao abrir a tela; visitante não vê o chip nem o atalho do histórico"
+          - "'Voltar ao início' leva à Home com a sessão zerada"
       - id: E3-S5
         title: "Como usuário, quero abrir o restaurante no app de delivery ou no mapa"
         sprint: 4
@@ -249,10 +312,27 @@ epics:
         area: restaurants
         priority: media
         estimate: 2
-        description: "url_launcher para Maps e busca do restaurante no app de delivery."
+        description: >
+          Botões da tela 06: url_launcher para Maps, busca do restaurante no app de delivery
+          (o preferido nas preferências, E10-S3) e ligação.
         acceptance:
           - "Abre no Google Maps/Apple Maps"
           - "Abre busca pelo nome no app de delivery ou no navegador como fallback"
+          - "'Ligar' abre o discador com o telefone do restaurante; sem telefone, o botão não aparece"
+      - id: E3-S6
+        title: "Como usuário, quero ver os restaurantes também em lista"
+        sprint: 5
+        frente: dev
+        area: restaurants
+        priority: media
+        estimate: 3
+        description: >
+          Visualização alternativa ao mapa, com os mesmos resultados e a mesma seleção. O mapa
+          continua sendo a tela padrão. Layout desenhado antes pela frente de Produto (E6-S4).
+        acceptance:
+          - "Alternar entre mapa e lista mantém os resultados sem nova busca"
+          - "Lista com Restaurant Card Layout=Row, ordenada pela mesma regra do mapa"
+          - "Tocar num item abre o contato (E3-S4)"
 
   - id: E4
     title: "Qualidade, segurança e release"
@@ -277,7 +357,7 @@ epics:
         area: auth
         priority: alta
         estimate: 3
-        description: "Cada usuário anônimo só lê e escreve as próprias sessões."
+        description: "Cada usuário só lê e escreve as próprias sessões e preferências; visitante não grava nada."
         acceptance:
           - "Regras versionadas no repo"
           - "Testes com o emulador cobrindo acesso próprio e acesso negado"
@@ -433,7 +513,11 @@ epics:
         area: swipe
         priority: alta
         estimate: 3
-        description: "Telas de swipe, resultado, lista e detalhe (ex.: Figma)."
+        done: true
+        description: >
+          Feito no Figma (https://www.figma.com/design/s7aWG29SRZn5tjGGzY6svm): design system,
+          marca, 21 componentes e 12 telas em alta fidelidade com protótipo (escolhas, mapa,
+          contato, histórico e perfil).
         acceptance:
           - "Protótipo linkado na issue e em docs/contexto.md"
       - id: E6-S2
@@ -446,6 +530,270 @@ epics:
         description: "Transformar o feedback de 22/10 em mudanças no backlog.yml."
         acceptance:
           - "Decisões registradas em docs/contexto.md §11"
+      - id: E6-S3
+        title: "Desenhar login, criar conta e os estados de visitante"
+        sprint: 3
+        frente: produto
+        area: perfil
+        priority: alta
+        estimate: 3
+        description: >
+          O Figma ainda não tem as telas de entrar/criar conta nem o que o visitante vê no
+          Histórico e no Profile Sheet (sem histórico, estatísticas nem preferências). Precisa
+          estar pronto antes de E1-S3, E9-S1 e E10-S1 (Sprint 4).
+        acceptance:
+          - "Telas de entrar, criar conta e erro de login em 📱 Telas, só com instâncias"
+          - "Histórico e Profile Sheet no modo visitante, com o convite para entrar"
+          - "Método de login decidido com a frente dev e registrado em docs/contexto.md §11"
+      - id: E6-S4
+        title: "Desenhar a lista de restaurantes (alternativa ao mapa)"
+        sprint: 4
+        frente: produto
+        area: restaurants
+        priority: media
+        estimate: 2
+        description: "Layout da lista e do controle que alterna mapa ↔ lista, para E3-S6."
+        acceptance:
+          - "Tela e controle de alternância no Figma, com Restaurant Card Layout=Row"
+
+  - id: E8
+    title: "Design system no app (Figma → Flutter)"
+    frente: dev
+    area: ui
+    description: >
+      Levar para o Flutter o design system do Figma (https://www.figma.com/design/s7aWG29SRZn5tjGGzY6svm):
+      tokens, tipografia, ícones, marca e os componentes da página Components. O card de
+      Handoff de cada componente diz onde ele mora no código. Tokens em lib/app/theme/,
+      widgets compartilhados em lib/core/widgets/. Dependência nova só com o time de acordo.
+    stories:
+      - id: E8-S1
+        title: "Tema do app a partir dos tokens do Figma"
+        sprint: 2
+        frente: dev
+        area: ui
+        priority: alta
+        estimate: 3
+        description: >
+          Coleções Primitives, Color, Space & Radius e Food Theme (10 modos), os 13 estilos de
+          texto (Bowlby One, Aleo, Lobster) e as sombras Elevation/Card e Elevation/Floating
+          viram o AppTheme. Food Theme como ThemeExtension, para um card trocar de cor pelo
+          modo da comida como no Figma.
+        acceptance:
+          - "Tokens com os mesmos nomes do Figma (color/text/secondary, space/md, radius/card...)"
+          - "Food Theme aplicável por widget, com os pares bg/on dos 10 modos"
+          - "Fontes empacotadas no app (funcionam offline) e licença OFL registrada"
+          - "Nenhum hex ou tamanho solto nas telas: tudo vem do tema"
+      - id: E8-S2
+        title: "Ícones do app (24 ícones do Figma)"
+        sprint: 2
+        frente: dev
+        area: ui
+        priority: alta
+        estimate: 2
+        description: "Exportar os 24 componentes de ✳️ Ícones e usá-los com a cor do tema (color/icon/*)."
+        acceptance:
+          - "Os 24 ícones disponíveis por nome (ex.: RangoIcons.arrowLeft)"
+          - "Tamanho e cor controlados pelo tema, sem arquivo duplicado por cor"
+      - id: E8-S3
+        title: "Componentes base: Button, Icon Button, Chip, Sticker e Page Header"
+        sprint: 2
+        frente: dev
+        area: ui
+        priority: alta
+        estimate: 3
+        description: "Widgets com as mesmas variantes e propriedades do Figma (Style, Size, Show icon, Color)."
+        acceptance:
+          - "Button Primary/Secondary/Ghost × Large/Medium, com ícone opcional"
+          - "Icon Button Surface/Inverse/Outline com alvo de 48 × 48"
+          - "Chip Outline/Solid/Soft, Sticker Mustard/Lime/Bubblegum, Page Header Large/Medium"
+          - "Teste de widget por componente e rótulos de acessibilidade"
+      - id: E8-S4
+        title: "Food Card com Food Theme e foto"
+        sprint: 2
+        frente: dev
+        area: ui
+        priority: alta
+        estimate: 3
+        description: >
+          O componente central do Rango: Size=Hero, Medium, Compact e Expanded, com título,
+          subtítulo (restaurante ou exemplos), chip opcional, foto recortada e a cor do modo
+          Food Theme.
+        acceptance:
+          - "As 4 variantes do Figma com as propriedades Title, Restaurant, Cuisine, Show chip e Show restaurant"
+          - "Trocar o Food Theme troca fundo, texto e chip juntos"
+          - "Título em até duas linhas sem estourar o card"
+      - id: E8-S5
+        title: "Navegação do app: Top Bar, Tab Bar e abas Home/Histórico"
+        sprint: 2
+        frente: dev
+        area: ui
+        priority: alta
+        estimate: 3
+        description: >
+          Top Bar Type=Principal (logo + Avatar Button) nas telas raiz e Type=Fluxo (só voltar)
+          no resto; Tab Bar flutuante com Tab Item Home e Histórico. go_router com uma pilha
+          por aba: o voltar do fluxo retorna à aba de origem.
+        acceptance:
+          - "Home e Histórico são abas com pilha própria"
+          - "Top Bar Principal só nas telas raiz; Fluxo em todas as outras, sem misturar logo e voltar"
+          - "Tab Bar some nas telas de fluxo (escolhas, mapa, contato)"
+          - "Avatar Button abre o Profile Sheet de qualquer tela raiz"
+      - id: E8-S6
+        title: "Ícone do app e splash com a marca V2"
+        sprint: 3
+        frente: dev
+        area: ui
+        priority: media
+        estimate: 2
+        description: >
+          App Icon Background=Green (principal) para Android e iOS, variante Ink para o ícone
+          escuro do iOS, e splash com Logo Layout=Stacked sobre color/bg/canvas. Artes
+          exportadas de 🍔 Marca.
+        acceptance:
+          - "Ícone certo em Android (adaptativo) e iOS, legível em 40 px"
+          - "Splash sem salto visual até a primeira tela"
+      - id: E8-S7
+        title: "Fotos das comidas: seleção, licença e assets"
+        sprint: 2
+        frente: produto
+        area: ui
+        priority: alta
+        estimate: 2
+        description: >
+          Uma foto por nó da árvore de categorias (E2-S1), no recorte do Food Card. As fotos
+          do Figma são de referência: confirmar licença de uso ou trocar.
+        acceptance:
+          - "Uma foto por categoria, com fonte e licença registradas em docs/"
+          - "Exportadas em tamanho e compressão para app (sem pesar no APK)"
+      - id: E8-S8
+        title: "Componentes de estado: Empty State, Empty Card, List End e Scrim"
+        sprint: 3
+        frente: dev
+        area: ui
+        priority: media
+        estimate: 2
+        description: "Estados de erro, vazio e fim de lista, e os véus Scrim Top (mapa) e Modal (sheets)."
+        acceptance:
+          - "Empty State com ícone, título/texto via Page Header Medium e ações fora dele"
+          - "Scrim Modal fecha a sheet ao tocar"
+
+  - id: E9
+    title: "Histórico de rangos"
+    frente: dev
+    area: historico
+    description: >
+      Aba Histórico do Figma (07b, 07d, 10 e 12): tudo que a pessoa com conta decidiu, por mês.
+      Entrou no MVP em 2026-09-30 (contexto.md §9 e §11). Visitante não tem histórico salvo.
+    stories:
+      - id: E9-S1
+        title: "Como usuário com conta, quero ver o histórico dos meus rangos"
+        sprint: 4
+        frente: dev
+        area: historico
+        priority: alta
+        estimate: 5
+        description: >
+          Telas 07b e 10 do Figma: Page Header "Seu histórico" com a contagem, Month Header
+          por mês, um Food Card Medium por decisão (comida, restaurante, data), List End com
+          "Decidir o próximo" e o estado vazio com Empty Card e "Decidir meu rango". Lê do
+          SessionRepository (E2-S4).
+        acceptance:
+          - "Decisões agrupadas por mês, da mais recente para a mais antiga"
+          - "Estado vazio com ação que leva à Home"
+          - "Visitante vê o convite para entrar desenhado em E6-S3, não uma lista vazia"
+          - "Carrega por páginas, sem ler o histórico inteiro de uma vez"
+      - id: E9-S2
+        title: "Como usuário com conta, quero abrir um rango do histórico e pedir de novo"
+        sprint: 5
+        frente: dev
+        area: historico
+        priority: media
+        estimate: 3
+        description: >
+          Tela 12 do Figma: o card tocado cresce (Food Card Size=Expanded, transição compartilhada)
+          e mostra data e hora, o caminho de escolhas, o restaurante e o canal do pedido, com
+          "Pedir de novo" e "Ver no mapa".
+        acceptance:
+          - "Transição do card da lista para o detalhe; sem animação com 'reduzir movimento'"
+          - "'Pedir de novo' repete o canal usado (delivery, mapa ou ligação)"
+          - "Voltar retorna ao Histórico na mesma posição"
+      - id: E9-S3
+        title: "Histórico em pastas (rolagem paginada)"
+        sprint: 5
+        frente: dev
+        area: historico
+        priority: baixa
+        estimate: 3
+        description: >
+          Tela 07d do Figma: cards retos empilhados como pastas; a rolagem faz snap card a card
+          e o card que sobe é arquivado atrás do próximo, deixando só a aba visível.
+        acceptance:
+          - "Snap card a card com a aba do card arquivado visível"
+          - "Com 'reduzir movimento', vira lista simples"
+
+  - id: E10
+    title: "Perfil e preferências"
+    frente: dev
+    area: perfil
+    description: >
+      Profile Sheet do Figma (11 Perfil), aberto pelo Avatar Button. Com conta: estatísticas,
+      preferências e dados salvos no Firebase. Visitante: só o convite para entrar e o "Sobre".
+    stories:
+      - id: E10-S1
+        title: "Profile Sheet: abrir, fechar e modos visitante/conta"
+        sprint: 4
+        frente: dev
+        area: perfil
+        priority: alta
+        estimate: 3
+        description: >
+          Folha que sobe da base (radius/sheet) sobre o Scrim Modal a 45%; fecha pelo X,
+          arrastando ou tocando no véu. Cabeçalho com Avatar Button e nome; visitante vê
+          "Entrar ou criar conta" (E1-S3).
+        acceptance:
+          - "Abre pelo Avatar Button e fecha pelos três caminhos"
+          - "Visitante: sem estatísticas nem preferências, com o convite para entrar"
+          - "Com conta: nome/foto da pessoa no cabeçalho"
+      - id: E10-S2
+        title: "Como usuário com conta, quero ver minhas estatísticas"
+        sprint: 5
+        frente: dev
+        area: perfil
+        priority: media
+        estimate: 2
+        description: "Três Stat no Profile Sheet: rangos decididos, comida favorita e restaurante favorito, calculados do histórico."
+        acceptance:
+          - "Valores batem com o histórico salvo"
+          - "Sem decisões ainda, os Stat mostram um estado neutro (sem '0' solto)"
+      - id: E10-S3
+        title: "Como usuário com conta, quero ajustar minhas preferências"
+        sprint: 5
+        frente: dev
+        area: perfil
+        priority: media
+        estimate: 3
+        description: >
+          List Row do Profile Sheet: Localização (status + abrir ajustes), Notificações
+          (liga/desliga) e App de delivery (qual abrir em "Pedir no delivery"). Salvas por
+          usuário no Firestore. O que as notificações avisam está em aberto (contexto.md §12).
+        acceptance:
+          - "Preferências salvas na conta e aplicadas em outro aparelho após login"
+          - "App de delivery escolhido é o usado por E3-S5"
+          - "Localização mostra o status real da permissão"
+      - id: E10-S4
+        title: "Privacidade, Sobre e apagar meus dados"
+        sprint: 5
+        frente: dev
+        area: perfil
+        priority: alta
+        estimate: 3
+        description: >
+          Linhas Privacidade e Sobre o Rango (versão do app) e a ação destrutiva "Apagar meus
+          dados" (List Row Trailing=Danger), que apaga conta, histórico e preferências.
+        acceptance:
+          - "'Apagar meus dados' pede confirmação e remove conta e dados do Firestore"
+          - "Depois de apagar, o app volta ao modo visitante"
+          - "Privacidade explica o uso da localização e o que é salvo"
 
   - id: E7
     title: "Evolução futura (pós-MVP)"
@@ -462,12 +810,12 @@ epics:
         description: "Cloud Functions + Firestore em tempo real; convite por código."
         acceptance: []
       - id: E7-S2
-        title: "Histórico de sessões e favoritos"
+        title: "Restaurantes e comidas favoritos"
         frente: dev
-        area: swipe
+        area: historico
         priority: baixa
         estimate: 5
-        description: ""
+        description: "O histórico entrou no MVP (épico E9, decisão de 2026-09-30); aqui fica só marcar favoritos."
         acceptance: []
       - id: E7-S3
         title: "Filtros avançados (preço, dieta, distância)"
@@ -476,4 +824,14 @@ epics:
         priority: baixa
         estimate: 5
         description: ""
+        acceptance: []
+      - id: E7-S4
+        title: "Onboarding que sugere entrar com conta"
+        frente: dev
+        area: auth
+        priority: baixa
+        estimate: 5
+        description: >
+          Primeira abertura do app apresenta o Rango e sugere o login; quem recusar segue como
+          visitante (decisão de 2026-09-30). Precisa de desenho da frente de Produto.
         acceptance: []

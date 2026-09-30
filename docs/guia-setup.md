@@ -503,8 +503,8 @@ só: a categoria escolhida no swipe é lida pela tela de resultado e pela de
 restaurantes. Por isso `models/` e `data/` ficam compartilhados. É o mesmo
 desenho da documentação oficial de arquitetura do Flutter.
 
-Telas previstas: `swipe` (Sprint 2), `result` e `restaurants` (Sprint 3),
-`restaurant_detail` (Sprint 4). A pasta de uma tela nasce com a história dela.
+Telas previstas: as de `docs/contexto.md` §5, com a numeração do Figma (`swipe`,
+`result`, `restaurants`, `restaurant_contact`, `login`, `history`, `history_detail`). A pasta de uma tela nasce com a história dela.
 O login anônimo não tem tela: é um repositório em `data/`.
 
 **Nomes dentro da pasta de uma tela** (`lib/screens/<tela>/`):
