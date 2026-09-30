@@ -57,7 +57,7 @@ epics:
     area: infra
     description: >
       Deixar o repositório pronto para o time trabalhar: gestão no GitHub, projeto Flutter,
-      arquitetura MVVM feature-first e processo SDD documentado.
+      arquitetura MVVM por telas e processo SDD documentado.
     stories:
       - id: E0-S1
         title: "Configurar gestão do projeto no GitHub (backlog, board, templates, CI)"
@@ -84,7 +84,7 @@ epics:
           - "flutter analyze e flutter test passam"
           - "CI roda format, analyze e test no PR"
       - id: E0-S3
-        title: "Estruturar arquitetura MVVM feature-first com exemplos por camada"
+        title: "Estruturar arquitetura MVVM por telas com a tela de swipe de exemplo"
         sprint: 2
         frente: dev
         area: infra
@@ -92,7 +92,7 @@ epics:
         estimate: 3
         description: "Seguir docs/guia-setup.md passos 3–4 (camadas, exemplos, env)."
         acceptance:
-          - "lib/ organizado em app/, core/ e features/<feature>/{model,data,view_model,view}"
+          - "lib/ organizado em app/, core/, models/, data/ e screens/<tela>/ (View + ViewModel)"
           - "Um teste de exemplo por camada passando"
           - "Segredos fora do git (env.json no .gitignore)"
       - id: E0-S4
@@ -102,6 +102,7 @@ epics:
         area: docs
         priority: alta
         estimate: 3
+        done: true
         description: "Documentação para agentes no padrão do the-final-backend (ver docs/guia-setup.md passo 5)."
         acceptance:
           - "CLAUDE.md e AGENTS.md na raiz, em inglês"
@@ -287,7 +288,7 @@ epics:
         area: infra
         priority: media
         estimate: 3
-        description: "Completar testes unitários das camadas view_model e data."
+        description: "Completar testes unitários dos ViewModels das telas, dos models e dos repositórios."
         acceptance:
           - "Todas as ViewModels com testes de estados principais"
       - id: E4-S4

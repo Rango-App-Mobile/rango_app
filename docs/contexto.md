@@ -70,27 +70,33 @@ O detalhamento completo está no [acordo](acordo-projeto.md#2-benchmark-de-conco
 
 ## 5. Arquitetura
 
-MVVM com uma camada Repository/Service, organizada por **feature** (feature-first):
+MVVM com uma camada Repository/Service, organizada **por telas**: cada tela tem
+a sua pasta com View e ViewModel lado a lado; models e repositórios ficam em
+pastas compartilhadas, porque várias telas usam os mesmos dados.
 
 ```
 lib/
-├─ app/            # MaterialApp, rotas (go_router), tema
-├─ core/           # config/env, erros (Failure), widgets compartilhados
-└─ features/<feature>/
-   ├─ model/       # classes imutáveis, Dart puro (sem Flutter)
-   ├─ data/        # repositórios/serviços: único lugar que fala com Firebase/HTTP
-   ├─ view_model/  # Notifiers Riverpod: estado + métodos chamados pela View
-   └─ view/        # widgets: renderizam estado e capturam interação
+├─ app/                 # MaterialApp, rotas (go_router), tema
+├─ core/                # config/env, erros (Failure), widgets compartilhados
+├─ models/              # dados do domínio, imutáveis, Dart puro (sem Flutter)
+├─ data/                # repositórios/serviços: único lugar que fala com Firebase/HTTP/GPS
+└─ screens/<tela>/
+   ├─ <tela>_screen.dart      # View: renderiza o estado e captura interação
+   ├─ <tela>_view_model.dart  # ViewModel: Notifier Riverpod (estado + ações da tela)
+   ├─ <tela>_state.dart       # estado da tela (freezed), quando precisar
+   └─ widgets/                # widgets usados só por essa tela
 ```
 
-| Camada | Responsabilidade | Pode depender de | Não pode depender de |
-|---|---|---|---|
-| View | Renderizar e capturar interação | view_model, model, core/widgets | data, Firebase, HTTP |
-| ViewModel | Estado da tela, orquestrar casos de uso | model, interfaces de data | Flutter widgets, Firebase/HTTP diretamente |
-| Model | Dados imutáveis (FoodCategory, SwipeChoice, Session, Restaurant) | nada além de Dart | Flutter |
-| Data | Abstrair a origem dos dados (FirestoreRepository, PlacesService) | model, SDKs externos | view, view_model |
+| Camada | Onde | Responsabilidade | Pode depender de | Não pode depender de |
+|---|---|---|---|---|
+| View | `screens/<tela>/<tela>_screen.dart` | Renderizar e capturar interação | o ViewModel da própria tela, models, `core/widgets` | `data/`, Firebase, HTTP |
+| ViewModel | `screens/<tela>/<tela>_view_model.dart` | Estado da tela, orquestrar as ações | models, interfaces de `data/` | widgets, `BuildContext`, Firebase/HTTP diretamente, o ViewModel de outra tela |
+| Model | `models/` | Dados imutáveis e regras de negócio (FoodCategory, CategoryTree, SwipeChoice, Session, Restaurant) | nada além de Dart | Flutter |
+| Data | `data/` | Abstrair a origem dos dados (CategoryRepository, FirestoreRepository, PlacesService) | models, SDKs externos | `screens/` |
 
-Features previstas: `auth`, `swipe`, `restaurants`. Como montar a estrutura: [guia de setup](guia-setup.md).
+Telas previstas: `swipe` (Sprint 2), `result` e `restaurants` (Sprint 3),
+`restaurant_detail` (Sprint 4). A sessão anônima não tem tela: é um repositório
+em `data/`. Como montar a estrutura: [guia de setup](guia-setup.md), passo 3.
 
 ## 6. Fluxo do MVP
 
@@ -121,7 +127,7 @@ users/{uid}/sessions/{sessionId}
   result: { categoryId, label, placesQuery }
 ```
 
-Árvore de categorias: começa como dado local versionado no app (`features/swipe/data`). Mover para o Firestore é decisão futura (§12).
+Árvore de categorias: começa como dado local versionado no app (`lib/data/`). Mover para o Firestore é decisão futura (§12).
 
 ## 9. Escopo: MVP vs. futuro
 
@@ -174,11 +180,13 @@ Rituais e frentes: [time-e-rituais.md](time-e-rituais.md).
 
 | Data | Decisão | Motivo |
 |---|---|---|
-| 2026-09-24 | Organização feature-first dentro do MVVM | Cada pessoa pega uma feature com menos conflito de merge |
+| 2026-09-24 | ~~Organização feature-first dentro do MVVM~~ (substituída em 2026-09-28) | Cada pessoa pega uma feature com menos conflito de merge |
 | 2026-09-24 | Backlog versionado em `backlog.yml` + GitHub Issues/Projects | Fonte única editável por PR, sincronizada por Actions |
 | 2026-09-24 | Branches `main` (entregas) e `dev` (integração) | Mesmo fluxo do the-final-backend; `main` só recebe o que foi para review |
 | 2026-09-24 | Firebase entra na Sprint 2, não no scaffold | O app deve compilar e passar no CI sem depender do projeto Firebase do time |
 | 2026-09-24 | Time dividido em frentes (Dev, Marketing e divulgação, Produto/UX) | Divulgação e validação com usuários fazem parte da avaliação |
+| 2026-09-28 | Branch padrão do repositório é a `dev` | O `Closes #N` só fecha issues em merge na branch padrão, e os PRs vão para a `dev` |
+| 2026-09-28 | MVVM organizado **por telas** (`screens/<tela>/` com View + ViewModel), com `models/` e `data/` compartilhados; substitui o feature-first | Mais simples para o time entender: a pasta espelha o que o usuário vê. Dados são usados por várias telas, então não pertencem a uma só. Mesmo desenho da documentação oficial de arquitetura do Flutter |
 
 ## 12. Em aberto
 

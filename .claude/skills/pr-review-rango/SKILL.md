@@ -64,7 +64,7 @@ ls docs/ docs/specs/ 2>/dev/null
 
 | The diff touches… | Read |
 |---|---|
-| Any feature code | `docs/contexto.md` §5 (layers) and §7 (business rules) |
+| Any app code (`lib/`) | `docs/contexto.md` §5 (MVVM by screens) and §7 (business rules) |
 | A story with a spec | `docs/specs/NNN-slug/{spec,plan,tasks}.md` — the PR body should name it |
 | Firestore, models persisted | `docs/contexto.md` §8 |
 | A feature already shipped | `docs/<feature>.md` |

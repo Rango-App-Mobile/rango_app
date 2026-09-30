@@ -13,9 +13,9 @@ paths:
 - Types in `UpperCamelCase`, members and functions in `lowerCamelCase`,
   constants in `lowerCamelCase` (not `SCREAMING_CAPS`).
 - Files in `snake_case` with their role in the name:
-  `swipe_session_notifier.dart`, `firestore_category_repository.dart`,
-  `swipe_screen.dart`, `food_category.dart`.
-- Consistent suffixes: `...Screen`, `...Notifier`, `...State`, `...Repository`,
+  `swipe_screen.dart`, `swipe_view_model.dart`, `swipe_state.dart`,
+  `firestore_category_repository.dart`, `food_category.dart`.
+- Consistent suffixes: `...Screen`, `...ViewModel`, `...State`, `...Repository`,
   `...Service`, `...Failure`. Fakes are `Fake...`.
 - No invented abbreviations: `category`, not `cat`; `restaurant`, not `rest`.
 
@@ -25,7 +25,7 @@ paths:
   possible (the lints enforce it).
 - No `dynamic`. If a type is really unknown, `Object?` and narrow it.
 - No `!` to silence the analyzer — fix the type or handle the null.
-- `package:rango_app/...` imports, never relative imports across features.
+- `package:rango_app/...` imports, never relative imports across folders.
 - No `print`. `debugPrint` only while developing; remove it before the PR.
 - Comments explain **why**. If one has to explain *what*, rewrite the code.
 - One public class per file, named like the file (small private helpers are
@@ -40,7 +40,7 @@ paths:
 
 ## Errors
 
-- Code outside `data/` never sees an SDK exception. `data/` catches
+- Code outside `lib/data/` never sees an SDK exception. `lib/data/` catches
   `FirebaseException`, `DioException`, permission errors and returns a
   `Failure` (`lib/core/error/failure.dart`). The screen draws from the type.
 - Never swallow an error with an empty `catch {}` without a comment explaining
@@ -50,8 +50,9 @@ paths:
 
 ## Tests
 
-- `test/` mirrors `lib/`: `lib/features/swipe/view_model/x.dart` →
-  `test/features/swipe/view_model/x_test.dart`.
+- `test/` mirrors `lib/`: `lib/screens/swipe/swipe_view_model.dart` →
+  `test/screens/swipe/swipe_view_model_test.dart`; `lib/models/x.dart` →
+  `test/models/x_test.dart`.
 - Test names describe behavior, in English: `'converges after choosing down to
   a leaf'`, not `'test choose'`.
 - **Model:** plain unit test, no providers.
