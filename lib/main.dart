@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:rango_app/app/app.dart';
 
 void main() {
-  runApp(
-    const MaterialApp(
-      home: Scaffold(body: Center(child: Text('Rango'))),
-    ),
-  );
+  runApp(const ProviderScope(child: RangoApp()));
 }
