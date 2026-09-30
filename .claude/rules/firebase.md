@@ -1,5 +1,5 @@
 ---
-paths: "lib/**/data/**"
+paths: "lib/data/**"
 ---
 
 # Data layer: Firebase, Places, device services
@@ -16,7 +16,7 @@ Firestore data model in `docs/contexto.md` §8.
   the default implementation. Swapping Fake for Firestore changes only its body.
 - Convert everything to models at the edge: `FoodCategory.fromJson(doc.data())`.
   `DocumentSnapshot`, `dio`'s `Response` and `geolocator`'s `Position` never
-  leave `data/`.
+  leave `lib/data/`.
 - Catch `FirebaseException`, `DioException` and permission errors and return a
   `Failure`. The View draws the error from its type without knowing the SDK.
 

@@ -10,18 +10,19 @@
 
 | Camada | Arquivo | Novo / alterado | O que muda |
 |---|---|---|---|
-| model | `lib/features/<f>/model/...` | | |
-| data | `lib/features/<f>/data/...` | | |
-| view_model | `lib/features/<f>/view_model/...` | | |
-| view | `lib/features/<f>/view/...` | | |
+| model | `lib/models/...` | | |
+| data | `lib/data/...` | | |
+| view_model | `lib/screens/<tela>/<tela>_view_model.dart` | | |
+| estado da tela | `lib/screens/<tela>/<tela>_state.dart` | | |
+| view | `lib/screens/<tela>/<tela>_screen.dart` (+ `widgets/`) | | |
 | app | `lib/app/router.dart` | | |
 
 ## Providers
 
 | Provider | Tipo | Depende de | Quem observa |
 |---|---|---|---|
-| `xRepositoryProvider` | `Provider<XRepository>` | — | `XNotifier` |
-| `xProvider` | `AsyncNotifierProvider<XNotifier, XState>` | `xRepositoryProvider` | `XScreen` |
+| `xRepositoryProvider` | `Provider<XRepository>` | — | `XViewModel` |
+| `xViewModelProvider` | `AsyncNotifierProvider<XViewModel, XState>` | `xRepositoryProvider` | `XScreen` |
 
 ## Modelo de dados
 
@@ -33,7 +34,7 @@ request/response externo, se houver.>
 
 | Critério | Teste | Tipo |
 |---|---|---|
-| CA1 | `test/features/<f>/.../x_test.dart` — `'...'` | unit / notifier / widget |
+| CA1 | `test/screens/<tela>/x_test.dart` ou `test/models/x_test.dart` — `'...'` | unit / view model / widget |
 
 ## Riscos
 

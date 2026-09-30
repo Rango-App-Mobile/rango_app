@@ -35,7 +35,7 @@ dart run build_runner watch --delete-conflicting-outputs   # while developing
 
 flutter run --dart-define-from-file=env.json   # env.json is local, never committed
 flutter test                                   # everything
-flutter test test/features/swipe               # one feature
+flutter test test/screens/swipe                # one screen
 
 dart format .
 flutter analyze
@@ -44,8 +44,9 @@ dart format --output=none --set-exit-if-changed .   # what CI runs
 python3 .github/scripts/backlog_sync.py --offline   # validates backlog.yml
 ```
 
-If you only touched a model or a ViewModel, `flutter test` on that feature's
-folder is enough — no need to start a simulator.
+If you only touched a model or a ViewModel, `flutter test` on that folder
+(`test/models/`, `test/screens/<screen>/`) is enough — no need to start a
+simulator.
 
 ## Structure
 
@@ -53,25 +54,31 @@ folder is enough — no need to start a simulator.
 lib/main.dart                 bootstrap: ProviderScope, (later) Firebase.initializeApp
 lib/app/                      composition: MaterialApp, GoRouter, theme
 lib/core/                     shared: config/env.dart, error/failure.dart, widgets/
-lib/features/<feature>/
-  model/                      immutable data (freezed), pure Dart
-  data/                       repositories/services: the only place that talks to
+lib/models/                   domain data shared by screens: immutable (freezed),
+                              pure Dart, business rules (e.g. CategoryTree)
+lib/data/                     repositories/services: the only place that talks to
                               Firebase, HTTP or GPS
-  view_model/                 Riverpod Notifiers: screen state + user actions
-  view/                       widgets: render state, capture interaction
+lib/screens/<screen>/         one folder per screen, View + ViewModel side by side:
+  <screen>_screen.dart        View: renders state, captures interaction
+  <screen>_view_model.dart    ViewModel: Riverpod Notifier + its provider
+  <screen>_state.dart         screen state (freezed), when more than a value
+  widgets/                    widgets used only by this screen
 test/                         mirrors lib/
 docs/                         canonical context, process, specs, marketing
 .github/backlog/backlog.yml   source of the backlog (epics, stories, sprints)
 .github/workflows/            CI, backlog sync, board automation, sprint report
 ```
 
-Features planned: `swipe` (choices, Sprint 2), `auth` (anonymous session,
-Sprint 2), `restaurants` (Places, Sprint 3). One feature is one folder under
-`lib/features/`; create only the layers the story needs.
+Architecture is **MVVM organized by screens** (`docs/contexto.md` §5, decision
+of 2026-09-28 in §11): each screen folder holds its View and ViewModel; models
+and repositories are shared because several screens use the same data.
+Screens planned: `swipe` (Sprint 2), `result` and `restaurants` (Sprint 3),
+`restaurant_detail` (Sprint 4). A screen folder is born with its story. The
+anonymous session has no screen: it is a repository in `lib/data/`.
 
-> **Current state:** the Flutter project is still being bootstrapped (issues #3
-> and #4, steps 1–4 of `docs/guia-setup.md`). Until then `lib/` and `test/` may
-> not exist. Do not scaffold it on your own — the team is following the guide.
+> **Current state:** the skeleton from `docs/guia-setup.md` steps 1–4 is in
+> place (issues #3 and #4): `swipe` is a reference slice with provisional
+> buttons over `FakeCategoryRepository`. New screens follow its shape.
 
 Docs in `docs/`, all in Portuguese:
 
@@ -85,7 +92,7 @@ Docs in `docs/`, all in Portuguese:
 | `time-e-rituais.md` | Team fronts (Dev, Marketing, Produto/UX), rituals, DoR/DoD |
 | `marketing/` | Positioning, identity, content calendar, briefs |
 | `specs/NNN-slug/` | One folder per spec (`spec.md`, `plan.md`, `tasks.md`) |
-| `<feature>.md` | One file per shipped feature: what exists and why |
+| `<feature>.md` | One file per shipped product feature (e.g. `swipe.md`): what exists and why |
 
 ## Stack
 
@@ -105,10 +112,11 @@ tests, which are slow and brittle.
 
 **A ViewModel never talks to Firebase, HTTP or GPS.** Only to a repository
 interface, obtained through a provider. That is the seam tests override to run
-without network.
+without network. A screen never imports another screen's ViewModel: what passes
+from one screen to the next goes through the route or a provider in `lib/data/`.
 
 **Models are pure Dart.** No `package:flutter`, Riverpod, Firebase or `dio` in
-`model/`. The convergence rule lives there and must be unit-testable instantly.
+`lib/models/`. The convergence rule lives there and must be unit-testable instantly.
 
 **State is immutable.** Models are `freezed`; state changes through `copyWith`
 and new lists. Riverpod only rebuilds when the reference changes.
@@ -122,7 +130,7 @@ commit as the model. CI does not run `build_runner`.
 The app and `flutter test` must work without the key — CI and a fresh clone do
 not have one.
 
-**Firebase lives only in `data/`.** Exception: `Firebase.initializeApp` in
+**Firebase lives only in `lib/data/`.** Exception: `Firebase.initializeApp` in
 `main.dart`.
 
 **Fakes first.** Each repository ships a `Fake...` in-memory implementation that

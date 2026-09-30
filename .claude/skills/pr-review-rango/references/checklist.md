@@ -3,12 +3,14 @@
 ## Part 1 — Invariants
 
 ### Layers (`docs/contexto.md` §5, `.claude/rules/flutter.md`)
-- [ ] `model/` imports no Flutter, Riverpod, Firebase or `dio`
-- [ ] `view/` imports nothing from `data/`
+- [ ] `lib/models/` imports no Flutter, Riverpod, Firebase or `dio`
+- [ ] Views (`*_screen.dart`, `widgets/`) import nothing from `lib/data/`
 - [ ] ViewModels reach repositories only through a provider and an interface
 - [ ] No `BuildContext` in a ViewModel; navigation happens in the View
-- [ ] `core/` does not import from `features/`; features do not import each
-      other's `data/` or `view_model/`
+- [ ] A screen does not import another screen's ViewModel or state
+- [ ] `lib/core/` does not import `models/`, `data/` or `screens/`
+- [ ] New screen follows `lib/screens/<screen>/{<screen>_screen, <screen>_view_model,
+      <screen>_state}.dart`; data used by several screens is in `models/`/`data/`
 
 ### State (`.claude/rules/riverpod.md`)
 - [ ] State is `freezed` and updated with `copyWith` / new lists (no mutation)
@@ -18,7 +20,7 @@
 - [ ] Every `AsyncValue` is drawn with loading, error and data
 
 ### Data (`.claude/rules/firebase.md`)
-- [ ] SDK exceptions become `Failure` inside `data/`
+- [ ] SDK exceptions become `Failure` inside `lib/data/`
 - [ ] API keys only through `Env`; nothing literal, not even in tests
 - [ ] `dio` with timeouts; Places calls with `X-Goog-FieldMask`; no header/URL
       logging

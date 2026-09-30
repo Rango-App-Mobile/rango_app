@@ -24,7 +24,7 @@ description: Use when the user asks to implement, code or start a task from a Ra
 3. `dart run build_runner build --delete-conflicting-outputs` if a model changed.
 4. `dart format .`, `flutter analyze`, `flutter test` — all green.
 5. Tick the item in `tasks.md` and propose the commit message
-   (`feat(<feature>): ... (#<issue>)`). Commit only if asked.
+   (`feat(<screen>): ... (#<issue>)`). Commit only if asked.
 
 ## When the task closes the story
 

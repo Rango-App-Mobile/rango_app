@@ -14,7 +14,7 @@ Also read, depending on the task:
   model, §11 decisions).
 - `.claude/rules/*.md` — rules per area. Each file's `paths:` frontmatter says
   which files it covers: `dart.md` (all Dart), `flutter.md` (`lib/`),
-  `riverpod.md` (`view_model/`), `firebase.md` (`data/`).
+  `riverpod.md` (`*_view_model.dart`), `firebase.md` (`lib/data/`).
 - `docs/sdd.md` — the spec → plan → tasks cycle. Product stories are specified
   in `docs/specs/NNN-slug/` before any code.
 - `.claude/skills/*/SKILL.md` — repeatable procedures (writing a spec,
@@ -23,8 +23,9 @@ Also read, depending on the task:
 
 Non-negotiables, in short:
 
-1. View has no business logic; ViewModel never touches Firebase/HTTP/GPS; models
-   are pure Dart.
+1. MVVM by screens (`lib/screens/<screen>/` = View + ViewModel; shared
+   `lib/models/` and `lib/data/`). View has no business logic; ViewModel never
+   touches Firebase/HTTP/GPS; models are pure Dart.
 2. Never read or commit `env.json` / `.env*`; no literal keys.
 3. Tests first; `dart format`, `flutter analyze` and `flutter test` must pass.
 4. Code and commits in English; docs, specs and UI text in Portuguese.

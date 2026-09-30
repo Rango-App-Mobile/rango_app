@@ -11,6 +11,8 @@
 | `docs/<issue>-<slug>` | Specs, docs, marketing | — |
 | `chore/<issue>-<slug>` | Setup, CI, dependências | — |
 
+A **branch padrão do repositório é a `dev`**: é nela que os PRs são mergeados, e o GitHub só fecha issues pelo `Closes #N` quando o merge acontece na branch padrão. Também é a `dev` que aparece ao abrir o repositório e a base sugerida para novos PRs. A `main` continua recebendo a `dev` a cada review.
+
 Sempre comece pelo **número da issue** (`feat/14-swipe-screen`). Assim o board move a issue para *In Progress* sozinho. Manutenção que ainda não tem issue (ex.: arrumação antes do backlog fechar) pode usar `chore/<slug>`.
 
 ```bash

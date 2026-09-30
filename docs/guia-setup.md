@@ -38,7 +38,7 @@ localização. Cada um tem a sua história (ver [Próximos passos](#próximos-pa
 | 0 | Ferramentas ok, branch criada a partir de `dev` | — |
 | 1 | Projeto Flutter inicializado, lints estritos, contador removido | 2 |
 | 2 | Dependências do MVP instaladas (sem Firebase) | 1 |
-| 3 | Estrutura MVVM feature-first + exemplo do swipe com testes | 3 |
+| 3 | Estrutura MVVM por telas + exemplo da tela de swipe com testes | 3 |
 | 4 | Configuração por ambiente e segredos fora do git | 1 |
 | 5 | `AGENTS.md`, `CLAUDE.md`, `.claude/`, templates e processo SDD | 4 |
 | 6 | PR aberto para `dev`, CI verde, revisão | — |
@@ -461,90 +461,87 @@ git commit -m "chore: add riverpod, go_router, freezed, dio and test dependencie
 
 ---
 
-## Passo 3 — Estrutura MVVM feature-first
+## Passo 3 — Estrutura MVVM por telas
 
 **Objetivo:** pastas no lugar, regras de import claras e uma fatia vertical
-funcionando (a sessão de escolhas sobre dados falsos) com teste em cada camada.
+funcionando (a tela de escolhas sobre dados falsos) com teste em cada camada.
 
 ### 3.1 A árvore
 
 ```
 lib/
-  main.dart                     só runApp(ProviderScope(...))
+  main.dart                       só runApp(ProviderScope(...))
   app/
-    app.dart                    MaterialApp.router + tema
-    router.dart                 GoRouter exposto por provider
-    theme/app_theme.dart        ThemeData do app
-  core/                         o que é compartilhado entre features
-    config/env.dart             valores de --dart-define (passo 4)
-    error/failure.dart          erros que o ViewModel sabe mostrar
-    widgets/                    widgets reutilizáveis sem regra de negócio
-  features/
-    auth/                       Sprint 2: login anônimo
-      model/ data/ view_model/ view/
-    swipe/                      escolhas binárias até convergir
-      model/                    FoodCategory, CategoryTree, SwipeState
-      data/                     CategoryRepository (+ Fake, depois Firestore)
-      view_model/               SwipeSessionNotifier
-      view/                     SwipeScreen
-    restaurants/                Sprint 3: Places + localização
-      model/ data/ view_model/ view/
-test/                           espelha lib/ (mesmo caminho, sufixo _test)
-  features/swipe/model/category_tree_test.dart
-  features/swipe/view_model/swipe_session_notifier_test.dart
-  features/swipe/view/swipe_screen_test.dart
+    app.dart                      MaterialApp.router + tema
+    router.dart                   GoRouter exposto por provider
+    theme/app_theme.dart          ThemeData do app
+  core/                           infraestrutura compartilhada
+    config/env.dart               valores de --dart-define (passo 4)
+    error/failure.dart            erros que o ViewModel sabe mostrar
+    widgets/                      widgets reutilizáveis sem regra de negócio
+  models/                         dados do domínio, usados por várias telas
+    food_category.dart
+    category_tree.dart            regra de convergência
+  data/                           repositórios e services (Firebase, HTTP, GPS)
+    category_repository.dart      interface + provider
+    fake_category_repository.dart
+  screens/                        uma pasta por tela: View + ViewModel
+    swipe/
+      swipe_screen.dart           View
+      swipe_view_model.dart       ViewModel (+ provider)
+      swipe_state.dart            estado da tela (freezed)
+test/                             espelha lib/ (mesmo caminho, sufixo _test)
+  models/category_tree_test.dart
+  screens/swipe/swipe_view_model_test.dart
+  screens/swipe/swipe_screen_test.dart
 ```
 
-**Por que feature-first:** cada história mexe quase sempre em uma pasta de
-`features/`. Duas pessoas em features diferentes quase não conflitam, e a
-revisão de um PR fica concentrada. Organizar por camada (`lib/models/`,
-`lib/views/`...) espalha toda história pelo projeto inteiro.
+**Por que por telas:** quem abre o projeto encontra o app do jeito que o usuário
+vê: cada tela é uma pasta com a sua View e o seu ViewModel, lado a lado. O que
+é **dado** (models) e **acesso a dado** (repositórios) não pertence a uma tela
+só: a categoria escolhida no swipe é lida pela tela de resultado e pela de
+restaurantes. Por isso `models/` e `data/` ficam compartilhados. É o mesmo
+desenho da documentação oficial de arquitetura do Flutter.
 
-O git não versiona pasta vazia. Crie as pastas das features futuras com um
-`.gitkeep` (ele sai quando o primeiro arquivo real chegar):
+Telas previstas: `swipe` (Sprint 2), `result` e `restaurants` (Sprint 3),
+`restaurant_detail` (Sprint 4). A pasta de uma tela nasce com a história dela.
+O login anônimo não tem tela: é um repositório em `data/`.
 
-```bash
-for f in auth restaurants; do for l in model data view_model view; do mkdir -p lib/features/$f/$l && touch lib/features/$f/$l/.gitkeep; done; done
-```
+**Nomes dentro da pasta de uma tela** (`lib/screens/<tela>/`):
 
-```bash
-mkdir -p lib/app/theme lib/core/config lib/core/error lib/core/widgets lib/features/swipe/model lib/features/swipe/data lib/features/swipe/view_model lib/features/swipe/view
-```
-
-```bash
-touch lib/core/widgets/.gitkeep
-```
-
-```bash
-mkdir -p test/features/swipe/model test/features/swipe/view_model test/features/swipe/view
-```
-
-**Commit** (só as pastas com `.gitkeep`; as vazias entram quando ganharem
-arquivo)
+| Arquivo | Papel |
+|---|---|
+| `<tela>_screen.dart` | View: o widget da tela |
+| `<tela>_view_model.dart` | ViewModel (`Notifier`/`AsyncNotifier`) e o provider dele |
+| `<tela>_state.dart` | Estado da tela, `freezed`, quando for mais que um valor simples |
+| `widgets/` | Widgets usados só por essa tela |
 
 ```bash
-git add lib
+mkdir -p lib/app/theme lib/core/config lib/core/error lib/core/widgets lib/models lib/data lib/screens/swipe
 ```
 
 ```bash
-git commit -m "chore: scaffold feature-first folders"
+mkdir -p test/models test/screens/swipe
 ```
+
+O git não versiona pasta vazia: elas entram no commit junto com os primeiros
+arquivos (3.3 em diante).
 
 ### 3.2 Quem pode importar quem
 
-| Camada | Pode importar | Não pode importar | Por quê |
+| Onde | Pode importar | Não pode importar | Por quê |
 |---|---|---|---|
-| `model/` | Dart puro, `freezed_annotation`, `json_annotation`, outros `model/` | `package:flutter/*`, Riverpod, Firebase, `dio`, `data/`, `view_model/`, `view/` | É a regra de negócio. Dart puro roda em teste unitário instantâneo e não muda quando a UI muda |
-| `data/` | `model/`, Riverpod (para declarar o provider do repositório), Firebase, `dio`, `geolocator`, `core/` | `view_model/`, `view/`, `package:flutter/material.dart` | Traduz o mundo externo (Firestore, HTTP, GPS) em models e `Failure`. Ninguém acima sabe que Firestore existe |
-| `view_model/` | `model/`, a **interface** e o provider de `data/`, Riverpod, `core/` | Firebase, `dio`, `geolocator`, widgets, `BuildContext` | O ViewModel guarda o estado da sessão e decide o que acontece. Sem Firebase/HTTP direto, o teste troca o repositório por um fake com um `override` |
-| `view/` | `view_model/`, `model/` (para ler), `core/widgets/`, Flutter, `url_launcher` | `data/`, Firebase, `dio` | Widget só desenha o estado e repassa gestos ao ViewModel. Regra de negócio em widget só é testável com teste de widget, que é lento |
+| `models/` | Dart puro, `freezed_annotation`, `json_annotation`, outros `models/` | `package:flutter/*`, Riverpod, Firebase, `dio`, `data/`, `screens/` | É a regra de negócio. Dart puro roda em teste unitário instantâneo e não muda quando a UI muda |
+| `data/` | `models/`, Riverpod (para declarar o provider do repositório), Firebase, `dio`, `geolocator`, `core/` | `screens/`, `package:flutter/material.dart` | Traduz o mundo externo (Firestore, HTTP, GPS) em models e `Failure`. Nenhuma tela sabe que Firestore existe |
+| `screens/<tela>/<tela>_view_model.dart` | `models/`, a **interface** e o provider de `data/`, Riverpod, `core/`, o `<tela>_state.dart` | Firebase, `dio`, `geolocator`, widgets, `BuildContext` | O ViewModel guarda o estado da tela e decide o que acontece. Sem Firebase/HTTP direto, o teste troca o repositório por um fake com um `override` |
+| `screens/<tela>/<tela>_screen.dart` e `widgets/` | o ViewModel **da própria tela**, `models/` (para ler), `core/widgets/`, Flutter, `url_launcher` | `data/`, Firebase, `dio` | Widget só desenha o estado e repassa gestos ao ViewModel. Regra de negócio em widget só é testável com teste de widget, que é lento |
+| `screens/A/` | `models/`, `data/` (interfaces), `core/` | o ViewModel de `screens/B/` | Uma tela não controla outra. O que passa de uma tela para a seguinte vai pela rota (parâmetro) ou por um provider em `data/`, decidido no plano da história |
 | `app/` | tudo acima | — | É a composição: rotas, tema, `ProviderScope` |
-| `core/` | Dart, Flutter (só em `core/widgets/`) | `features/` | Compartilhado não pode depender de uma feature específica |
-| feature A | `core/`, e o `model/` de feature B se precisar | `data/`, `view_model/`, `view/` de feature B | Se duas features precisam do mesmo estado, ele sobe para `core/` ou vira provider exportado por uma delas, decidido em plano |
+| `core/` | Dart, Flutter (só em `core/widgets/`) | `models/`, `data/`, `screens/` | Infraestrutura não pode depender do domínio nem de uma tela |
 
-### 3.3 Model: `FoodCategory`, `CategoryTree`, `SwipeState`
+### 3.3 Models: `FoodCategory` e `CategoryTree`
 
-`lib/features/swipe/model/food_category.dart`
+`lib/models/food_category.dart`
 
 ```dart
 import 'package:freezed_annotation/freezed_annotation.dart';
@@ -571,10 +568,10 @@ abstract class FoodCategory with _$FoodCategory {
 A lista é plana (cada nó aponta para o pai via `parentId`) porque é assim que
 ela vai morar numa coleção do Firestore. A árvore é montada em memória:
 
-`lib/features/swipe/model/category_tree.dart`
+`lib/models/category_tree.dart`
 
 ```dart
-import 'package:rango_app/features/swipe/model/food_category.dart';
+import 'package:rango_app/models/food_category.dart';
 
 /// Immutable view over the flat category list. Holds the convergence rule:
 /// every non-leaf node has exactly two children (a binary choice).
@@ -615,36 +612,13 @@ class CategoryTree {
 }
 ```
 
-`lib/features/swipe/model/swipe_state.dart`
-
-```dart
-import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:rango_app/features/swipe/model/food_category.dart';
-
-part 'swipe_state.freezed.dart';
-
-@freezed
-abstract class SwipeState with _$SwipeState {
-  const factory SwipeState({
-    required FoodCategory current,
-    required List<FoodCategory> options,
-    @Default(<FoodCategory>[]) List<FoodCategory> history,
-    FoodCategory? result,
-  }) = _SwipeState;
-
-  const SwipeState._();
-
-  bool get hasConverged => result != null;
-}
-```
-
 Notas:
 
 - No `freezed` 3 a classe precisa ser `abstract class` (ou `sealed class`) com
   `with _$Nome`. Sem o `abstract`, o erro é "Missing concrete implementation".
-- `const SwipeState._();` é o que permite getters próprios (`hasConverged`).
 - Os nomes do documento de arquitetura (`SwipeChoice`, `Session`, `Restaurant`)
-  chegam com as histórias que precisam deles. Não crie model sem uso.
+  chegam em `models/` com as histórias que precisam deles. Não crie model sem
+  uso.
 
 Gere o código:
 
@@ -670,12 +644,12 @@ recolhidos no diff do PR, crie `.gitattributes` na raiz:
 
 ### 3.4 Data: interface, fake e provider
 
-`lib/features/swipe/data/category_repository.dart`
+`lib/data/category_repository.dart`
 
 ```dart
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:rango_app/features/swipe/data/fake_category_repository.dart';
-import 'package:rango_app/features/swipe/model/food_category.dart';
+import 'package:rango_app/data/fake_category_repository.dart';
+import 'package:rango_app/models/food_category.dart';
 
 abstract interface class CategoryRepository {
   Future<List<FoodCategory>> fetchAll();
@@ -688,11 +662,11 @@ final categoryRepositoryProvider = Provider<CategoryRepository>(
 );
 ```
 
-`lib/features/swipe/data/fake_category_repository.dart`
+`lib/data/fake_category_repository.dart`
 
 ```dart
-import 'package:rango_app/features/swipe/data/category_repository.dart';
-import 'package:rango_app/features/swipe/model/food_category.dart';
+import 'package:rango_app/data/category_repository.dart';
+import 'package:rango_app/models/food_category.dart';
 
 class FakeCategoryRepository implements CategoryRepository {
   static const seed = [
@@ -742,23 +716,49 @@ Firestore vai devolver `Future`. Assim o ViewModel já nasce assíncrono e a tro
 para `FirestoreCategoryRepository` (spec 001) muda uma linha: o corpo do
 provider.
 
-### 3.5 ViewModel: `SwipeSessionNotifier`
+### 3.5 A tela de swipe: estado e ViewModel
 
-`lib/features/swipe/view_model/swipe_session_notifier.dart`
+O estado pertence à tela (é o que ela desenha), então mora na pasta dela.
+
+`lib/screens/swipe/swipe_state.dart`
+
+```dart
+import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:rango_app/models/food_category.dart';
+
+part 'swipe_state.freezed.dart';
+
+@freezed
+abstract class SwipeState with _$SwipeState {
+  const factory SwipeState({
+    required FoodCategory current,
+    required List<FoodCategory> options,
+    @Default(<FoodCategory>[]) List<FoodCategory> history,
+    FoodCategory? result,
+  }) = _SwipeState;
+
+  const SwipeState._();
+
+  bool get hasConverged => result != null;
+}
+```
+
+`const SwipeState._();` é o que permite getters próprios (`hasConverged`). Rode
+o `build_runner` de novo depois de criar este arquivo.
+
+`lib/screens/swipe/swipe_view_model.dart`
 
 ```dart
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:rango_app/features/swipe/data/category_repository.dart';
-import 'package:rango_app/features/swipe/model/category_tree.dart';
-import 'package:rango_app/features/swipe/model/food_category.dart';
-import 'package:rango_app/features/swipe/model/swipe_state.dart';
+import 'package:rango_app/data/category_repository.dart';
+import 'package:rango_app/models/category_tree.dart';
+import 'package:rango_app/models/food_category.dart';
+import 'package:rango_app/screens/swipe/swipe_state.dart';
 
-final swipeSessionProvider =
-    AsyncNotifierProvider<SwipeSessionNotifier, SwipeState>(
-      SwipeSessionNotifier.new,
-    );
+final swipeViewModelProvider =
+    AsyncNotifierProvider<SwipeViewModel, SwipeState>(SwipeViewModel.new);
 
-class SwipeSessionNotifier extends AsyncNotifier<SwipeState> {
+class SwipeViewModel extends AsyncNotifier<SwipeState> {
   late CategoryTree _tree;
 
   @override
@@ -797,8 +797,10 @@ class SwipeSessionNotifier extends AsyncNotifier<SwipeState> {
 
 Pontos para quem está aprendendo:
 
-- `AsyncNotifier` porque o estado inicial depende de I/O. A View recebe
-  `AsyncValue<SwipeState>` e desenha carregando/erro/dados sem `if` manual.
+- O ViewModel é um `AsyncNotifier` do Riverpod: é ele que faz o papel de
+  ViewModel do MVVM. `Async` porque o estado inicial depende de I/O; a View
+  recebe `AsyncValue<SwipeState>` e desenha carregando/erro/dados sem `if`
+  manual.
 - `build()` usa `ref.watch` no repositório: se o provider do repositório mudar
   (ex.: override em teste), o ViewModel se reconstrói.
 - O estado **nunca é mutado**: `[...current.history, option]` e `copyWith` criam
@@ -808,19 +810,19 @@ Pontos para quem está aprendendo:
 
 ### 3.6 View, router e app
 
-`lib/features/swipe/view/swipe_screen.dart`
+`lib/screens/swipe/swipe_screen.dart`
 
 ```dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:rango_app/features/swipe/view_model/swipe_session_notifier.dart';
+import 'package:rango_app/screens/swipe/swipe_view_model.dart';
 
 class SwipeScreen extends ConsumerWidget {
   const SwipeScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final session = ref.watch(swipeSessionProvider);
+    final session = ref.watch(swipeViewModelProvider);
 
     return Scaffold(
       appBar: AppBar(title: const Text('Rango')),
@@ -835,7 +837,7 @@ class SwipeScreen extends ConsumerWidget {
                 Text('Bora de ${result.label}!'),
                 TextButton(
                   onPressed: () =>
-                      ref.read(swipeSessionProvider.notifier).reset(),
+                      ref.read(swipeViewModelProvider.notifier).reset(),
                   child: const Text('Recomeçar'),
                 ),
               ],
@@ -846,8 +848,9 @@ class SwipeScreen extends ConsumerWidget {
                 Text(state.current.label),
                 for (final option in state.options)
                   ElevatedButton(
-                    onPressed: () =>
-                        ref.read(swipeSessionProvider.notifier).choose(option),
+                    onPressed: () => ref
+                        .read(swipeViewModelProvider.notifier)
+                        .choose(option),
                     child: Text(option.label),
                   ),
               ],
@@ -877,14 +880,15 @@ abstract final class AppTheme {
 }
 ```
 
-A cor é placeholder até a Produto/UX definir a identidade visual.
+A cor é placeholder até a frente de Marketing definir a identidade visual
+(`docs/marketing/identidade.md`).
 
 `lib/app/router.dart`
 
 ```dart
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:rango_app/features/swipe/view/swipe_screen.dart';
+import 'package:rango_app/screens/swipe/swipe_screen.dart';
 
 /// Provider (not a global) so the auth story can add a `redirect`
 /// that watches the auth state later.
@@ -958,6 +962,9 @@ final class UnexpectedFailure extends Failure {
 casos: quando alguém criar `LocationDeniedFailure`, toda tela que mostra erro
 aponta onde falta tratar.
 
+`core/widgets/` ainda está vazia; ela entra no git quando ganhar o primeiro
+widget compartilhado.
+
 **Commit**
 
 ```bash
@@ -965,7 +972,7 @@ git add lib .gitattributes
 ```
 
 ```bash
-git commit -m "feat(swipe): add category tree model, fake repository and swipe session"
+git commit -m "feat(swipe): add category tree, fake repository and swipe screen (#4)"
 ```
 
 ### 3.7 Testes
@@ -976,13 +983,13 @@ Apague o smoke test do passo 1:
 rm test/smoke_test.dart
 ```
 
-`test/features/swipe/model/category_tree_test.dart` (unitário, Dart puro)
+`test/models/category_tree_test.dart` (unitário, Dart puro)
 
 ```dart
 import 'package:flutter_test/flutter_test.dart';
-import 'package:rango_app/features/swipe/data/fake_category_repository.dart';
-import 'package:rango_app/features/swipe/model/category_tree.dart';
-import 'package:rango_app/features/swipe/model/food_category.dart';
+import 'package:rango_app/data/fake_category_repository.dart';
+import 'package:rango_app/models/category_tree.dart';
+import 'package:rango_app/models/food_category.dart';
 
 void main() {
   group('CategoryTree', () {
@@ -1024,17 +1031,17 @@ void main() {
 }
 ```
 
-`test/features/swipe/view_model/swipe_session_notifier_test.dart` (ViewModel
-com `ProviderContainer` e repositório trocado)
+`test/screens/swipe/swipe_view_model_test.dart` (ViewModel com
+`ProviderContainer` e repositório trocado)
 
 ```dart
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:rango_app/features/swipe/data/category_repository.dart';
-import 'package:rango_app/features/swipe/data/fake_category_repository.dart';
-import 'package:rango_app/features/swipe/model/food_category.dart';
-import 'package:rango_app/features/swipe/view_model/swipe_session_notifier.dart';
+import 'package:rango_app/data/category_repository.dart';
+import 'package:rango_app/data/fake_category_repository.dart';
+import 'package:rango_app/models/food_category.dart';
+import 'package:rango_app/screens/swipe/swipe_view_model.dart';
 
 class _MockCategoryRepository extends Mock implements CategoryRepository {}
 
@@ -1053,7 +1060,7 @@ void main() {
   });
 
   test('starts at the root with its two options', () async {
-    final state = await container.read(swipeSessionProvider.future);
+    final state = await container.read(swipeViewModelProvider.future);
 
     expect(state.current.id, 'root');
     expect(state.options.map((c) => c.id), ['savory', 'sweet']);
@@ -1061,33 +1068,33 @@ void main() {
   });
 
   test('converges after choosing down to a leaf', () async {
-    await container.read(swipeSessionProvider.future);
-    container.read(swipeSessionProvider.notifier)
+    await container.read(swipeViewModelProvider.future);
+    container.read(swipeViewModelProvider.notifier)
       ..choose(_byId('savory'))
       ..choose(_byId('pasta'))
       ..choose(_byId('pizza'));
 
-    final state = container.read(swipeSessionProvider).requireValue;
+    final state = container.read(swipeViewModelProvider).requireValue;
     expect(state.result?.id, 'pizza');
     expect(state.history.map((c) => c.id), ['savory', 'pasta', 'pizza']);
   });
 
   test('ignores an option that is not currently offered', () async {
-    await container.read(swipeSessionProvider.future);
-    container.read(swipeSessionProvider.notifier).choose(_byId('pizza'));
+    await container.read(swipeViewModelProvider.future);
+    container.read(swipeViewModelProvider.notifier).choose(_byId('pizza'));
 
-    final state = container.read(swipeSessionProvider).requireValue;
+    final state = container.read(swipeViewModelProvider).requireValue;
     expect(state.current.id, 'root');
     expect(state.history, isEmpty);
   });
 
   test('reset goes back to the root and clears history', () async {
-    await container.read(swipeSessionProvider.future);
-    container.read(swipeSessionProvider.notifier)
+    await container.read(swipeViewModelProvider.future);
+    container.read(swipeViewModelProvider.notifier)
       ..choose(_byId('sweet'))
       ..reset();
 
-    final state = container.read(swipeSessionProvider).requireValue;
+    final state = container.read(swipeViewModelProvider).requireValue;
     expect(state.current.id, 'root');
     expect(state.history, isEmpty);
   });
@@ -1101,7 +1108,7 @@ void main() {
     );
 
     await expectLater(
-      failing.read(swipeSessionProvider.future),
+      failing.read(swipeViewModelProvider.future),
       throwsA(isA<Exception>()),
     );
   });
@@ -1114,15 +1121,15 @@ void main() {
 - O fake serve para o caminho feliz; o mock (`mocktail`) serve para forçar o
   que o fake não faz, como falhar.
 
-`test/features/swipe/view/swipe_screen_test.dart` (widget)
+`test/screens/swipe/swipe_screen_test.dart` (widget)
 
 ```dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:rango_app/features/swipe/data/category_repository.dart';
-import 'package:rango_app/features/swipe/data/fake_category_repository.dart';
-import 'package:rango_app/features/swipe/view/swipe_screen.dart';
+import 'package:rango_app/data/category_repository.dart';
+import 'package:rango_app/data/fake_category_repository.dart';
+import 'package:rango_app/screens/swipe/swipe_screen.dart';
 
 void main() {
   testWidgets('walks the choices until a food type', (tester) async {
@@ -1185,7 +1192,7 @@ git add test
 ```
 
 ```bash
-git commit -m "test(swipe): cover category tree, session notifier and swipe screen"
+git commit -m "test(swipe): cover category tree, swipe view model and swipe screen (#4)"
 ```
 
 `git status` deve estar limpo agora. Se o `dart format .` mudou algo em `lib/`,
@@ -1348,8 +1355,8 @@ que é para agente está **em inglês**; os docs do projeto seguem em português
 | `.claude/settings.json` | Claude Code | O que roda sem pedir, o que pergunta, o que não pode ser lido (`env.json`, `.env*`) |
 | `.claude/rules/dart.md` | `lib/**/*.dart`, `test/**/*.dart` | Nomes, estilo, async, erros, testes |
 | `.claude/rules/flutter.md` | `lib/**` | Camadas MVVM, limites de import, widgets |
-| `.claude/rules/riverpod.md` | `lib/**/view_model/**` | Notifiers, estado imutável, overrides |
-| `.claude/rules/firebase.md` | `lib/**/data/**` | Repositórios, Firestore, Places, localização |
+| `.claude/rules/riverpod.md` | `lib/screens/**/*_view_model.dart` | Notifiers, estado imutável, overrides |
+| `.claude/rules/firebase.md` | `lib/data/**` | Repositórios, Firestore, Places, localização |
 | `.claude/skills/pr-review-rango/` | revisão de PR | `SKILL.md` + `references/checklist.md` |
 | `.claude/skills/security-review-rango/` | revisão de segurança | `SKILL.md` + `references/{vulnerability-checklist,known-deliberate}.md` |
 | `.claude/skills/spec-feature/` | escrever spec | `SKILL.md` + moldes `references/{spec,plan,tasks}.md` |
@@ -1384,7 +1391,7 @@ head -3 .claude/rules/*.md
 Todo arquivo começa com `---` e `paths:` (string ou lista).
 
 Se usa Claude Code: abra uma sessão na raiz e peça "quais regras se aplicam a
-`lib/features/swipe/view_model/`?". Ele deve citar `riverpod.md`, `flutter.md` e
+`lib/screens/swipe/swipe_view_model.dart`?". Ele deve citar `riverpod.md`, `flutter.md` e
 `dart.md`. Digite `/` e confira se as skills do projeto
 aparecem.
 
@@ -1470,7 +1477,7 @@ gh pr create --base dev --title "chore: set up flutter project, mvvm structure a
 O `--web` abre o navegador com o template preenchível. Na descrição:
 
 - **O que muda:** inicialização do Flutter (android/ios), lints, dependências
-  do MVP sem Firebase, estrutura MVVM feature-first com a fatia do swipe sobre
+  do MVP sem Firebase, estrutura MVVM por telas com a tela de swipe sobre
   dados falsos, env via `--dart-define-from-file`, arquivos de SDD.
 - **Spec:** "Não precisa (chore)".
 - **Observações:** Firebase e permissões de localização ficaram de fora de
