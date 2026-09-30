@@ -72,8 +72,10 @@ docs/                         canonical context, process, specs, marketing
 Architecture is **MVVM organized by screens** (`docs/contexto.md` §5, decision
 of 2026-09-28 in §11): each screen folder holds its View and ViewModel; models
 and repositories are shared because several screens use the same data.
-Screens planned: `swipe` (Sprint 2), `result` and `restaurants` (Sprint 3),
-`restaurant_detail` (Sprint 4). A screen folder is born with its story. The
+Screens planned (Figma numbering in `docs/contexto.md` §5): `swipe`, `result`,
+`restaurants` (map), `restaurant_contact`, `login`, `history`, `history_detail`,
+plus the Profile Sheet. The Figma file (link in §6) is the visual source: tokens
+go to `lib/app/theme/`, shared components to `lib/core/widgets/`. A screen folder is born with its story. The
 anonymous session has no screen: it is a repository in `lib/data/`.
 
 > **Current state:** the skeleton from `docs/guia-setup.md` steps 1–4 is in

@@ -94,22 +94,27 @@ lib/
 | Model | `models/` | Dados imutáveis e regras de negócio (FoodCategory, CategoryTree, SwipeChoice, Session, Restaurant) | nada além de Dart | Flutter |
 | Data | `data/` | Abstrair a origem dos dados (CategoryRepository, FirestoreRepository, PlacesService) | models, SDKs externos | `screens/` |
 
-Telas previstas: `swipe` (Sprint 2), `result` e `restaurants` (Sprint 3),
-`restaurant_detail` (Sprint 4). A sessão anônima não tem tela: é um repositório
-em `data/`. Como montar a estrutura: [guia de setup](guia-setup.md), passo 3.
+Telas previstas (numeração do Figma): `swipe` (01–03, Sprint 2), `result` (04)
+e `restaurants` (05, 08, Sprint 3), `restaurant_contact` (06) e `login` (Sprint 4),
+`history` (07, 10, Sprint 4), `history_detail` (12) e o Profile Sheet (11, Sprint 4–5).
+A sessão anônima não tem tela: é um repositório em `data/`. Como montar a estrutura: [guia de setup](guia-setup.md), passo 3.
 
 ## 6. Fluxo do MVP
 
-1. O usuário abre o app e a sessão anônima é criada automaticamente, sem cadastro.
-2. A primeira escolha é ampla (salgado vs. doce). Cada swipe seguinte afunila (salgado → massa → macarrão).
-3. Ao convergir num tipo específico, o app consulta o Google Places por restaurantes próximos que servem esse tipo.
-4. O usuário vê os restaurantes (nome, distância, avaliação) e abre o escolhido no delivery ou no mapa.
+Telas em alta fidelidade e protótipo: [Figma do Rango](https://www.figma.com/design/s7aWG29SRZn5tjGGzY6svm)
+(página 📱 Telas; design system e componentes nas páginas de Design System e Components).
+
+1. O usuário abre o app como **visitante**: a sessão anônima é criada automaticamente, sem cadastro.
+2. A primeira escolha é ampla (salgado vs. doce). Cada escolha seguinte, por toque ou arrastando o card, afunila (salgado → massa → macarrão).
+3. Ao convergir num tipo específico ("Deu match!"), o app consulta o Google Places por restaurantes próximos que servem esse tipo.
+4. O usuário vê os restaurantes **no mapa** (nome, nota, distância), escolhe um e decide como pedir: delivery, mapa ou ligação.
+5. Quem **entra com conta** (pelo perfil) tem as decisões salvas no **Histórico**, estatísticas e preferências. O visitante usa o fluxo inteiro, mas nada dele é salvo.
 
 ## 7. Regras de negócio
 
 > Preencher conforme as specs forem aprovadas. Cada regra cita a spec de origem.
 
-- **R1:** toda sessão pertence a um usuário anônimo do Firebase Auth. *(E1)*
+- **R1:** toda sessão pertence a um usuário do Firebase Auth: anônimo (visitante) ou com conta. Só sessões de usuário com conta são salvas no Firestore; do visitante não se grava histórico, estatística nem preferência. *(E1, decisão de 2026-09-30)*
 - **R2:** cada escolha avança exatamente um nível da árvore de categorias; a sessão termina numa folha. *(spec 001, a definir)*
 - **R3:** cada folha da árvore tem um termo de busca para o Google Places. *(spec 001)*
 - **R4:** a recomendação considera só restaurantes próximos à localização atual; o raio está em §12.
@@ -119,12 +124,15 @@ em `data/`. Como montar a estrutura: [guia de setup](guia-setup.md), passo 3.
 > Rascunho, a validar na spec de persistência (E2-S4).
 
 ```
-users/{uid}                       # uid anônimo do Firebase Auth
+users/{uid}                       # só usuário com conta (visitante não grava)
   createdAt
+  preferences: { deliveryApp, notifications }
 users/{uid}/sessions/{sessionId}
   startedAt, finishedAt
   choices: [{ level, optionA, optionB, chosen, at }]
   result: { categoryId, label, placesQuery }
+  restaurant: { placeId, name, cuisine, rating }   # escolhido na tela de contato
+  channel: delivery | map | call                   # alimenta o "Pedir de novo"
 ```
 
 Árvore de categorias: começa como dado local versionado no app (`lib/data/`). Mover para o Firestore é decisão futura (§12).
@@ -133,9 +141,11 @@ users/{uid}/sessions/{sessionId}
 
 | MVP (fase 1) | Evolução futura |
 |---|---|
-| Sessão solo, sem cadastro | Sessão em grupo (vários usuários votando, via Firebase/Functions) |
-| Convergência de gosto por swipe binário | Histórico de sessões e favoritos |
-| Recomendação de restaurante via Google Places | Filtros avançados (preço, dieta, distância) e notificações |
+| Sessão solo como visitante, sem cadastro | Sessão em grupo (vários usuários votando, via Firebase/Functions) |
+| Entrar com conta (opcional) para salvar os rangos | Onboarding que sugere o login na primeira abertura |
+| Convergência de gosto por swipe binário | Favoritos |
+| Recomendação de restaurante via Google Places, no mapa | Lista de restaurantes como visualização alternativa ao mapa (Sprint 5) |
+| Histórico de rangos, estatísticas e preferências (com conta) | Filtros avançados (preço, dieta, distância) e envio de notificações |
 
 ## 10. Cronograma e sprints
 
@@ -187,6 +197,10 @@ Rituais e frentes: [time-e-rituais.md](time-e-rituais.md).
 | 2026-09-24 | Time dividido em frentes (Dev, Marketing e divulgação, Produto/UX) | Divulgação e validação com usuários fazem parte da avaliação |
 | 2026-09-28 | Branch padrão do repositório é a `dev` | O `Closes #N` só fecha issues em merge na branch padrão, e os PRs vão para a `dev` |
 | 2026-09-28 | MVVM organizado **por telas** (`screens/<tela>/` com View + ViewModel), com `models/` e `data/` compartilhados; substitui o feature-first | Mais simples para o time entender: a pasta espelha o que o usuário vê. Dados são usados por várias telas, então não pertencem a uma só. Mesmo desenho da documentação oficial de arquitetura do Flutter |
+| 2026-09-30 | Histórico entra no MVP (aba Home/Histórico, como no Figma) | O Figma de Produto/UX pôs o Histórico na navegação principal; é o que dá motivo para voltar ao app |
+| 2026-09-30 | Visitante (anônimo) não salva nada; login opcional salva escolhas, histórico, estatísticas e preferências no Firebase | Separa quem só quer decidir agora de quem quer acompanhar os rangos. Onboarding sugerindo o login fica para o futuro |
+| 2026-09-30 | Restaurantes aparecem primeiro no mapa; a lista vem depois só como outra visualização | Segue o Figma (tela 05); o mapa mostra na hora o que está perto |
+| 2026-09-30 | A tela de detalhe do restaurante vira "Opções de contato" (delivery, mapa, ligar) | Segue o Figma (tela 06): a pessoa já escolheu, falta só decidir como pedir |
 
 ## 12. Em aberto
 
@@ -195,4 +209,8 @@ Rituais e frentes: [time-e-rituais.md](time-e-rituais.md).
 - Chamar o Places direto do app (chave restrita) ou via Cloud Function (proxy).
 - Árvore de categorias local ou no Firestore (editável sem publicar o app).
 - Como "abrir no delivery": deep link por app ou busca pelo nome no navegador.
+- Pacote de mapa: `google_maps_flutter` (mesma conta do Places, chave por plataforma) ou `flutter_map` (OSM, sem chave).
+- Método de login: e-mail, Google e/ou Apple (E6-S3 e E1-S3).
+- O que as notificações avisam (a preferência existe no perfil; o envio é futuro).
+- Fotos das comidas: licença das fotos do Figma ou banco próprio (E8-S7).
 - Nome definitivo e identidade (frente de marketing, Sprint 2).
