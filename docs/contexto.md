@@ -76,8 +76,8 @@ pastas compartilhadas, porque várias telas usam os mesmos dados.
 
 ```
 lib/
-├─ app/                 # MaterialApp, rotas (go_router), tema
-├─ core/                # config/env, erros (Failure), widgets compartilhados
+├─ app/                 # MaterialApp, rotas (go_router), ThemeData (theme/app_theme.dart)
+├─ core/                # config/env, erros (Failure), tokens do tema (theme/), widgets compartilhados
 ├─ models/              # dados do domínio, imutáveis, Dart puro (sem Flutter)
 ├─ data/                # repositórios/serviços: único lugar que fala com Firebase/HTTP/GPS
 └─ screens/<tela>/
@@ -201,6 +201,7 @@ Rituais e frentes: [time-e-rituais.md](time-e-rituais.md).
 | 2026-09-30 | Visitante (anônimo) não salva nada; login opcional salva escolhas, histórico, estatísticas e preferências no Firebase | Separa quem só quer decidir agora de quem quer acompanhar os rangos. Onboarding sugerindo o login fica para o futuro |
 | 2026-09-30 | Restaurantes aparecem primeiro no mapa; a lista vem depois só como outra visualização | Segue o Figma (tela 05); o mapa mostra na hora o que está perto |
 | 2026-09-30 | A tela de detalhe do restaurante vira "Opções de contato" (delivery, mapa, ligar) | Segue o Figma (tela 06): a pessoa já escolheu, falta só decidir como pedir |
+| 2026-10-15 | Tokens do design system em `lib/core/theme/` (ThemeExtensions `AppColors`, `AppTextStyles`, `FoodColors` e constantes `AppSpace`/`AppRadius`/`AppShadows`); `lib/app/theme/app_theme.dart` só monta o `ThemeData` | Os widgets compartilhados de `lib/core/widgets/` precisam dos tokens, e `core/` não importa `app/` |
 
 ## 12. Em aberto
 
