@@ -45,9 +45,11 @@ Layers and boundaries come from `docs/contexto.md` §5. The import table is in
   on the reviewer's phone.
 - Every screen has empty and error states with a way out (retry, back, settings
   for denied location).
-- Colors and text styles come from the theme (`Theme.of(context)`), never
-  literals: the palette is defined by the Marketing front
-  (`docs/marketing/identidade.md`) and changes in one place.
+- Colors and text come from the theme tokens in `lib/core/theme/`:
+  `context.colors`, `context.textStyles` and `context.foodColors`
+  (`theme_context.dart`). Spacing, radius and shadow come from `AppSpace`,
+  `AppRadius` and `AppShadows`. Never literals: the palette is defined by the
+  Marketing front (`docs/marketing/identidade.md`) and changes in one place.
 - UI strings in Portuguese, inline in the widget, until an i18n decision exists
   in `docs/contexto.md` §11.
 - Swipe gestures always have a button alternative (accessibility, and the

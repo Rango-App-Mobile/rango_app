@@ -53,7 +53,7 @@ simulator.
 ```
 lib/main.dart                 bootstrap: ProviderScope, (later) Firebase.initializeApp
 lib/app/                      composition: MaterialApp, GoRouter, theme
-lib/core/                     shared: config/env.dart, error/failure.dart, widgets/
+lib/core/                     shared: config/env.dart, error/failure.dart, theme/ (design tokens), widgets/
 lib/models/                   domain data shared by screens: immutable (freezed),
                               pure Dart, business rules (e.g. CategoryTree)
 lib/data/                     repositories/services: the only place that talks to
@@ -75,7 +75,8 @@ and repositories are shared because several screens use the same data.
 Screens planned (Figma numbering in `docs/contexto.md` §5): `swipe`, `result`,
 `restaurants` (map), `restaurant_contact`, `login`, `history`, `history_detail`,
 plus the Profile Sheet. The Figma file (link in §6) is the visual source: tokens
-go to `lib/app/theme/`, shared components to `lib/core/widgets/`. A screen folder is born with its story. The
+go to `lib/core/theme/` (only `app_theme.dart`, which composes the `ThemeData`,
+lives in `lib/app/theme/`), shared components to `lib/core/widgets/`. A screen folder is born with its story. The
 anonymous session has no screen: it is a repository in `lib/data/`.
 
 > **Current state:** the skeleton from `docs/guia-setup.md` steps 1–4 is in
