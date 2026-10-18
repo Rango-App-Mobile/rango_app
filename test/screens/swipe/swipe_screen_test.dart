@@ -1,31 +1,287 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:rango_app/app/theme/app_theme.dart';
+import 'package:rango_app/core/widgets/food_card.dart';
 import 'package:rango_app/data/category_repository.dart';
 import 'package:rango_app/data/fake_category_repository.dart';
+import 'package:rango_app/models/food_category.dart';
 import 'package:rango_app/screens/swipe/swipe_screen.dart';
 
+Future<void> pumpScreen(
+  WidgetTester tester, {
+  Size size = const Size(402, 874),
+  bool disableAnimations = false,
+  bool settle = true,
+}) async {
+  tester.view
+    ..physicalSize = size
+    ..devicePixelRatio = 1;
+  addTearDown(tester.view.reset);
+
+  await tester.pumpWidget(
+    ProviderScope(
+      overrides: [
+        categoryRepositoryProvider.overrideWithValue(FakeCategoryRepository()),
+      ],
+      child: MaterialApp(
+        theme: AppTheme.light,
+        builder: (context, child) => MediaQuery(
+          data: MediaQuery.of(
+            context,
+          ).copyWith(disableAnimations: disableAnimations),
+          child: child!,
+        ),
+        home: const SwipeScreen(),
+      ),
+    ),
+  );
+  if (settle) await tester.pumpAndSettle();
+}
+
+Finder cardTitled(String title) =>
+    find.ancestor(of: find.text(title), matching: find.byType(FoodCard));
+
+final Finder voltar = find.bySemanticsLabel('Voltar');
+
 void main() {
-  testWidgets('walks the choices until a food type', (tester) async {
+  testWidgets('root shows both options, the header and no back button', (
+    tester,
+  ) async {
+    await pumpScreen(tester);
+
+    expect(find.text('Salgado'), findsOneWidget);
+    expect(find.text('Doce'), findsOneWidget);
+    expect(find.textContaining('Bora decidir'), findsOneWidget);
+    expect(
+      find.text('Toque ou arraste o card que deu mais vontade.'),
+      findsOneWidget,
+    );
+    expect(find.text('ou'), findsOneWidget);
+    expect(voltar, findsNothing);
+  });
+
+  testWidgets('tapping a card advances to its children and shows Voltar', (
+    tester,
+  ) async {
+    await pumpScreen(tester);
+
+    await tester.tap(find.text('Salgado'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Massa'), findsOneWidget);
+    expect(find.text('Lanche'), findsOneWidget);
+    expect(find.text('Salgado'), findsNothing);
+    expect(voltar, findsOneWidget);
+  });
+
+  testWidgets('dragging a card far enough chooses it', (tester) async {
+    await pumpScreen(tester);
+
+    await tester.drag(find.text('Doce'), const Offset(150, 0));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Sorvete'), findsOneWidget);
+    expect(find.text('Bolo'), findsOneWidget);
+  });
+
+  testWidgets('a short drag snaps back without choosing', (tester) async {
+    await pumpScreen(tester);
+    final before = tester.getCenter(cardTitled('Salgado'));
+
+    await tester.drag(find.text('Salgado'), const Offset(40, 0));
+    await tester.pump();
+    await tester.pumpAndSettle();
+
+    expect(find.text('Salgado'), findsOneWidget);
+    expect(find.text('Massa'), findsNothing);
+    expect(tester.getCenter(cardTitled('Salgado')), before);
+  });
+
+  testWidgets('the card follows the finger while dragging', (tester) async {
+    await pumpScreen(tester);
+    final before = tester.getCenter(cardTitled('Salgado'));
+
+    final gesture = await tester.startGesture(before);
+    // The first move only gets past the drag slop; the second one is followed.
+    await gesture.moveBy(const Offset(40, 0));
+    await gesture.moveBy(const Offset(30, 0));
+    await tester.pump();
+
+    expect(tester.getCenter(cardTitled('Salgado')).dx, greaterThan(before.dx));
+    await gesture.up();
+    await tester.pumpAndSettle();
+  });
+
+  testWidgets('Voltar undoes the last choice', (tester) async {
+    await pumpScreen(tester);
+    await tester.tap(find.text('Salgado'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(voltar);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Salgado'), findsOneWidget);
+    expect(find.text('Doce'), findsOneWidget);
+    expect(voltar, findsNothing);
+  });
+
+  testWidgets('walks the choices until a food type and starts over', (
+    tester,
+  ) async {
+    await pumpScreen(tester);
+
+    await tester.tap(find.text('Salgado'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Massa'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Pizza'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Pizza'), findsOneWidget);
+    expect(find.text('Salgado, massa, pizza'), findsOneWidget);
+    expect(find.text('3 escolhas'), findsOneWidget);
+    expect(find.text('Agora é só escolher onde.'), findsOneWidget);
+    expect(
+      find.text('Vamos buscar restaurantes que servem pizza perto de você.'),
+      findsOneWidget,
+    );
+    expect(find.text('Recomeçar'), findsOneWidget);
+    expect(voltar, findsOneWidget);
+
+    await tester.tap(find.text('Recomeçar'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Salgado'), findsOneWidget);
+    expect(find.text('Doce'), findsOneWidget);
+    expect(voltar, findsNothing);
+  });
+
+  testWidgets('Voltar on the result returns to the last level', (tester) async {
+    await pumpScreen(tester);
+    await tester.tap(find.text('Salgado'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Massa'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Pizza'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(voltar);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Pizza'), findsOneWidget);
+    expect(find.text('Macarrão'), findsOneWidget);
+    expect(find.text('Recomeçar'), findsNothing);
+  });
+
+  testWidgets('with reduced motion the cards are visible after one pump', (
+    tester,
+  ) async {
+    await pumpScreen(tester, disableAnimations: true, settle: false);
+    await tester.pump();
+    await tester.pump();
+
+    expect(tester.hasRunningAnimations, isFalse);
+    final fade = tester.widget<FadeTransition>(
+      find
+          .ancestor(
+            of: find.byType(FoodCard).first,
+            matching: find.byType(FadeTransition),
+          )
+          .first,
+    );
+    expect(fade.opacity.value, 1);
+    expect(find.text('Salgado'), findsOneWidget);
+  });
+
+  testWidgets('with animations the cards fade in', (tester) async {
+    await pumpScreen(tester, settle: false);
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 50));
+
+    final fade = tester.widget<FadeTransition>(
+      find
+          .ancestor(
+            of: find.byType(FoodCard).first,
+            matching: find.byType(FadeTransition),
+          )
+          .first,
+    );
+    expect(fade.opacity.value, lessThan(1));
+    await tester.pumpAndSettle();
+    expect(fade.opacity.value, 1);
+  });
+
+  testWidgets('with reduced motion a short drag jumps straight back', (
+    tester,
+  ) async {
+    await pumpScreen(tester, disableAnimations: true);
+    final before = tester.getCenter(cardTitled('Salgado'));
+
+    await tester.drag(find.text('Salgado'), const Offset(40, 0));
+    await tester.pump();
+
+    expect(tester.hasRunningAnimations, isFalse);
+    expect(tester.getCenter(cardTitled('Salgado')), before);
+  });
+
+  testWidgets('fits a small phone without overflow, scrolling if needed', (
+    tester,
+  ) async {
+    await pumpScreen(tester, size: const Size(375, 667));
+    expect(tester.takeException(), isNull);
+
+    await tester.tap(find.text('Salgado'));
+    await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull);
+
+    await tester.tap(find.text('Massa'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Pizza'));
+    await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull);
+    expect(find.text('Recomeçar'), findsOneWidget);
+  });
+
+  testWidgets('offers a way out when the options fail to load', (tester) async {
+    tester.view
+      ..physicalSize = const Size(402, 874)
+      ..devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
+    final repository = _FlakyRepository();
     await tester.pumpWidget(
       ProviderScope(
-        overrides: [
-          categoryRepositoryProvider.overrideWithValue(
-            FakeCategoryRepository(),
-          ),
-        ],
-        child: const MaterialApp(home: SwipeScreen()),
+        retry: (_, _) => null,
+        overrides: [categoryRepositoryProvider.overrideWithValue(repository)],
+        child: MaterialApp(theme: AppTheme.light, home: const SwipeScreen()),
       ),
     );
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text('Salgado'));
-    await tester.pump();
-    await tester.tap(find.text('Massa'));
-    await tester.pump();
-    await tester.tap(find.text('Pizza'));
-    await tester.pump();
+    expect(find.text('Não deu para carregar as opções.'), findsOneWidget);
 
-    expect(find.text('Bora de Pizza!'), findsOneWidget);
+    await tester.tap(find.text('Tentar novamente'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Salgado'), findsOneWidget);
   });
+
+  testWidgets('shows a progress indicator while loading', (tester) async {
+    await pumpScreen(tester, settle: false);
+
+    expect(find.byType(CircularProgressIndicator), findsOneWidget);
+    await tester.pumpAndSettle();
+  });
+}
+
+class _FlakyRepository extends FakeCategoryRepository {
+  var _calls = 0;
+
+  @override
+  Future<List<FoodCategory>> fetchAll() async {
+    _calls++;
+    if (_calls == 1) throw Exception('offline');
+    return super.fetchAll();
+  }
 }
