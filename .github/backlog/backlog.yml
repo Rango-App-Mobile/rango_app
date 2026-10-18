@@ -82,6 +82,7 @@ epics:
         area: infra
         priority: alta
         estimate: 2
+        done: true
         description: "Seguir docs/guia-setup.md passos 0–2."
         acceptance:
           - "flutter analyze e flutter test passam"
@@ -93,6 +94,7 @@ epics:
         area: infra
         priority: alta
         estimate: 3
+        done: true
         description: "Seguir docs/guia-setup.md passos 3–4 (camadas, exemplos, env)."
         acceptance:
           - "lib/ organizado em app/, core/, models/, data/ e screens/<tela>/ (View + ViewModel)"
@@ -127,6 +129,7 @@ epics:
         area: auth
         priority: alta
         estimate: 2
+        done: true
         description: "Criar/usar o projeto Firebase do time e gerar firebase_options.dart para Android e iOS."
         acceptance:
           - "App inicializa o Firebase em Android e iOS"

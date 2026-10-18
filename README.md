@@ -13,7 +13,8 @@ Projeto da disciplina Projeto de Desenvolvimento I (Senac), 2º semestre de 2026
 | Gestão (backlog, board, CI, templates) | ✅ pronto |
 | Projeto Flutter + arquitetura MVVM | ⏳ Sprint 2: seguir o [guia de setup](docs/guia-setup.md) |
 | Processo SDD (AGENTS.md, rules, skills, specs) | ✅ pronto: [AGENTS.md](AGENTS.md), [processo SDD](docs/sdd.md) |
-| Firebase + sessão anônima | ⏳ Sprint 2 |
+| Firebase (configuração) | ✅ pronto: [como configurar](#firebase) |
+| Sessão anônima | ⏳ Sprint 2 |
 | Swipe convergente | ⏳ Sprint 2 |
 | Restaurantes (Google Places) | ⏳ Sprint 3 |
 
@@ -29,6 +30,29 @@ Projeto da disciplina Projeto de Desenvolvimento I (Senac), 2º semestre de 2026
 | [docs/sdd.md](docs/sdd.md) | Ciclo spec → plan → tasks e quando a spec é obrigatória |
 | [AGENTS.md](AGENTS.md) · [CLAUDE.md](CLAUDE.md) | Instruções para agentes de IA (e humanos): regras, comandos, workflow |
 | [docs/marketing/](docs/marketing/README.md) | Posicionamento, identidade, calendário de conteúdo, briefs |
+
+## Firebase
+
+O app usa o projeto Firebase `rango-f0485` (Android e iOS). Os arquivos de configuração já estão
+no repositório (`android/app/google-services.json`, `ios/Runner/GoogleService-Info.plist`,
+`lib/firebase_options.dart` e `firebase.json`), então um clone novo roda sem passos extras:
+
+```bash
+flutter pub get
+flutter run --dart-define-from-file=env.json
+```
+
+`Firebase.initializeApp` é chamado em `lib/main.dart`; fora dele, o Firebase só é acessado em
+`lib/data/`. Para regenerar a configuração (novo app ou plataforma), use o FlutterFire CLI e
+confira o diff antes de commitar:
+
+```bash
+dart pub global activate flutterfire_cli
+flutterfire configure --project=rango-f0485
+```
+
+As chaves do Firebase identificam o app e não são segredo; o acesso aos dados é protegido pelas
+regras de segurança do Firestore. Chaves sensíveis (Google Places) continuam só no `env.json` local.
 
 ## Como contribuir (resumo)
 
