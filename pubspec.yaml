@@ -31,6 +31,7 @@ dependencies:
   # Cupertino Icons font, used with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
   dio: ^5.11.1
+  firebase_auth: ^7.0.0
   firebase_core: ^5.0.0
   flutter:
     sdk: flutter

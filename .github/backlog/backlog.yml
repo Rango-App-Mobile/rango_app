@@ -141,6 +141,7 @@ epics:
         area: auth
         priority: alta
         estimate: 3
+        done: true
         description: >
           Login anônimo automático ao abrir o app, atrás de um AuthRepository. É o modo
           visitante: o app funciona inteiro, mas nada do visitante é salvo (sem histórico,

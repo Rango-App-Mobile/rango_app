@@ -14,7 +14,7 @@ Projeto da disciplina Projeto de Desenvolvimento I (Senac), 2º semestre de 2026
 | Projeto Flutter + arquitetura MVVM | ⏳ Sprint 2: seguir o [guia de setup](docs/guia-setup.md) |
 | Processo (AGENTS.md, rules, skills) | ✅ pronto: [AGENTS.md](AGENTS.md), [docs das features](docs/sdd.md) |
 | Firebase (configuração) | ✅ pronto: [como configurar](#firebase) |
-| Sessão anônima | ⏳ Sprint 2 |
+| Sessão anônima (visitante) | ✅ pronto: [como funciona](docs/auth.md) |
 | Swipe convergente | ⏳ Sprint 2 |
 | Restaurantes (Google Places) | ⏳ Sprint 3 |
 
