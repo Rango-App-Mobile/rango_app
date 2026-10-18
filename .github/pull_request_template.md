@@ -7,13 +7,8 @@ Closes #
 ## Tipo
 
 - [ ] Código do app (frente dev)
-- [ ] Spec / documentação (docs/, CLAUDE.md, AGENTS.md, .claude/)
+- [ ] Documentação (docs/, CLAUDE.md, AGENTS.md, .claude/)
 - [ ] Marketing / produto (docs/marketing, assets)
-
-## Spec
-
-- [ ] Não precisa (bug, chore, docs; ver `docs/sdd.md`)
-- [ ] `docs/specs/NNN-slug/`, task(s): T
 
 ## Critérios de aceitação cobertos
 

@@ -1,92 +1,38 @@
-# Processo SDD (Spec-Driven Development)
+# Documentação das features
 
-Toda história de produto é **escrita antes de ser codada**, em três arquivos
-curtos que ficam no repositório ao lado do código. Por que: com 2–4 pessoas em
-frentes diferentes, a spec é onde Dev, Produto/UX e Marketing concordam sobre o
-que vai ser entregue antes de alguém gastar dias no código errado. E é o que um
-agente de IA lê para implementar sem inventar.
+O time não escreve spec, plano ou lista de tasks antes de implementar. A
+história (issue gerada do `backlog.yml`) com os critérios de aceitação é o
+ponto de partida; a implementação vai direto para o código, com teste primeiro.
+
+`docs/` registra **o que foi entregue e como funciona**, não o que ia ser feito.
 
 ## O ciclo
 
 ```
-história (issue)
-   │  Produto/UX escreve a história com critérios de aceitação
+história (issue com critérios de aceitação)
    ▼
-spec.md  ── PR "docs(spec): NNN ..." → revisão de Produto/UX + 1 dev
+implementação, teste primeiro, PR → dev
    ▼
-plan.md  ── mesmo PR ou PR seguinte; revisão de 1 dev
-   ▼
-tasks.md ── cada item vira sub-issue da história
-   ▼
-implementação, uma task por PR, teste primeiro (TDD)
-   ▼
-PR → dev (template marca a spec e os critérios cobertos)
-   ▼
-docs/<feature>.md atualizado (última task)
+docs/<feature>.md criado ou atualizado no PR que conclui a história
 ```
 
-| Etapa | Arquivo | Quem escreve | Quem aprova | Pergunta que responde |
-|---|---|---|---|---|
-| História | issue | Produto/UX | time na planning | O que a pessoa usuária ganha? |
-| Spec | `docs/specs/NNN-slug/spec.md` | dev da história (com Produto/UX) | Produto/UX | **O quê** e como saber que ficou pronto |
-| Plano | `plan.md` | dev da história | outro dev | **Como**: camadas, providers, dados, testes |
-| Tasks | `tasks.md` + sub-issues | dev da história | — | **Em que ordem**, em PRs pequenos |
-| Código | `lib/`, `test/` | quem pega a sub-issue | 1 revisão | Os critérios passam? |
-| Doc da feature | `docs/<feature>.md` | quem fecha a última task | revisão do PR | O que existe e por quê |
+## A doc da feature
 
-Numeração: `NNN` sequencial em `docs/specs/` (`001-category-tree`,
-`002-anonymous-auth`...). O número não muda depois de criado.
+Um arquivo por feature, direto em `docs/` (`docs/swipe.md`, `docs/auth.md`,
+`docs/restaurantes.md`), em português, escrito quando a feature é entregue.
+Responde:
 
-## Quando a spec é obrigatória
+- **O fluxo:** o que a pessoa usuária vê e o que acontece em cada camada.
+- **Onde cada regra mora:** model, repositório, regras do Firestore, e por quê ali.
+- **Erros:** cada `Failure` e o que a tela mostra.
+- **Testes:** que arquivos cobrem o quê e o que se valida à mão.
 
-| Situação | Spec? | O que fazer |
-|---|---|---|
-| História nova de produto (tela, fluxo, regra) | **Sim** | Ciclo completo |
-| Mudança de modelo de dados (Firestore §8) | **Sim** | Spec curta + atualizar §8 no mesmo PR |
-| Integração externa (Firebase, Places, Functions) | **Sim** | Spec; riscos e custo no plano |
-| Bug com comportamento esperado claro | Não | Issue com passos para reproduzir; teste que falha primeiro |
-| Refatoração sem mudar comportamento | Não | Descrever no PR; testes existentes provam |
-| Chore (dependência, CI, lint), docs, texto de UI | Não | PR direto com descrição |
-| Spike / experimento | Não | Branch descartável; o aprendizado vira "Decisões" da spec seguinte |
+Molde: [`.claude/skills/implement-task/references/feature-doc.md`](../.claude/skills/implement-task/references/feature-doc.md).
 
-Na dúvida: se mais de uma pessoa vai precisar concordar com o resultado, ou se
-leva mais de um dia, escreva a spec. Uma spec curta custa 30 minutos.
+## O que continua valendo
 
-## Regras
-
-- **Spec aprovada antes do código.** PR de implementação sem spec aprovada (nos
-  casos obrigatórios) volta.
-- **Mudou de ideia no meio?** Atualize a spec no mesmo PR e registre em
-  "Decisões". Spec desatualizada é pior que spec nenhuma.
+- **Critério de aceitação = teste.** O PR lista qual teste cobre cada critério.
 - **Decisão que vale além da história** (arquitetura, stack, regra de negócio)
-  sobe para `docs/contexto.md` §11.
-- **Critério de aceitação = teste.** O PR lista qual teste cobre cada CA.
-- **Fora de escopo é explícito.** O que não entra fica escrito, com destino.
-
-## Onde ficam os moldes
-
-| Molde | Arquivo |
-|---|---|
-| Spec | [`.claude/skills/spec-feature/references/spec.md`](../.claude/skills/spec-feature/references/spec.md) |
-| Plano | [`.claude/skills/spec-feature/references/plan.md`](../.claude/skills/spec-feature/references/plan.md) |
-| Tasks | [`.claude/skills/spec-feature/references/tasks.md`](../.claude/skills/spec-feature/references/tasks.md) |
-| Doc da feature | [`.claude/skills/implement-task/references/feature-doc.md`](../.claude/skills/implement-task/references/feature-doc.md) |
-| Brief de marketing | [`docs/marketing/briefs/_template.md`](marketing/briefs/_template.md) |
-
-Os moldes ficam junto das skills que os usam (mesmo padrão do the-final-backend:
-`SKILL.md` + `references/`). Quem escreve spec sem agente copia o molde para
-`docs/specs/NNN-slug/`. A pasta `docs/specs/` nasce com a primeira spec.
-
-A doc da feature fica direto em `docs/`, um arquivo por feature (`docs/swipe.md`,
-`docs/restaurantes.md`), escrita quando a feature é entregue. Ela explica o que
-existe e por quê; a spec explica o que ia ser feito.
-
-## Com agentes de IA
-
-- `spec-feature` gera spec/plan/tasks a partir da issue e para a cada etapa
-  para revisão humana.
-- `implement-task` implementa uma task com teste primeiro, lendo a spec e o
-  plano.
-- `pr-review-rango` revisa o PR contra as regras e os critérios da spec.
-
-O agente propõe; uma pessoa do time aprova cada etapa.
+  vai para `docs/contexto.md` §11 no mesmo PR; mudou regra ou modelo de dados,
+  atualize §7 ou §8.
+- **Fora do escopo da história** vira issue nova no `backlog.yml`, não código a mais.

@@ -12,7 +12,7 @@ Projeto da disciplina Projeto de Desenvolvimento I (Senac), 2º semestre de 2026
 |---|---|
 | Gestão (backlog, board, CI, templates) | ✅ pronto |
 | Projeto Flutter + arquitetura MVVM | ⏳ Sprint 2: seguir o [guia de setup](docs/guia-setup.md) |
-| Processo SDD (AGENTS.md, rules, skills, specs) | ✅ pronto: [AGENTS.md](AGENTS.md), [processo SDD](docs/sdd.md) |
+| Processo (AGENTS.md, rules, skills) | ✅ pronto: [AGENTS.md](AGENTS.md), [docs das features](docs/sdd.md) |
 | Firebase (configuração) | ✅ pronto: [como configurar](#firebase) |
 | Sessão anônima | ⏳ Sprint 2 |
 | Swipe convergente | ⏳ Sprint 2 |
@@ -27,7 +27,7 @@ Projeto da disciplina Projeto de Desenvolvimento I (Senac), 2º semestre de 2026
 | [docs/guia-setup.md](docs/guia-setup.md) | Passo a passo: Flutter, dependências, MVVM, SDD |
 | [docs/time-e-rituais.md](docs/time-e-rituais.md) | Frentes, papéis, rituais por aula, DoR/DoD |
 | [docs/git-e-prs.md](docs/git-e-prs.md) | Branches, commits, PRs e automações do GitHub |
-| [docs/sdd.md](docs/sdd.md) | Ciclo spec → plan → tasks e quando a spec é obrigatória |
+| [docs/sdd.md](docs/sdd.md) | Como documentar as features entregues (sem spec antes do código) |
 | [AGENTS.md](AGENTS.md) · [CLAUDE.md](CLAUDE.md) | Instruções para agentes de IA (e humanos): regras, comandos, workflow |
 | [docs/marketing/](docs/marketing/README.md) | Posicionamento, identidade, calendário de conteúdo, briefs |
 
@@ -63,7 +63,7 @@ regras de segurança do Firestore. Chaves sensíveis (Google Places) continuam s
 git switch dev && git pull && git switch -c feat/<issue>-<slug>
 ```
 
-3. Histórias com lógica nova começam por uma spec em `docs/specs/` (processo SDD).
+3. Implemente a partir dos critérios da história, com teste primeiro; o PR que conclui a história cria ou atualiza `docs/<feature>.md`.
 4. Abra o PR para `dev` com `Closes #<issue>`, espere o CI verde e 1 aprovação.
 
 Detalhes em [git-e-prs.md](docs/git-e-prs.md).
