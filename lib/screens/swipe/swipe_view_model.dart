@@ -37,6 +37,22 @@ class SwipeViewModel extends AsyncNotifier<SwipeState> {
     );
   }
 
+  void undo() {
+    final current = state.requireValue;
+    if (!current.canUndo) return;
+
+    final history = current.history.sublist(0, current.history.length - 1);
+    final parent = history.isEmpty ? _tree.root : history.last;
+    state = AsyncData(
+      current.copyWith(
+        current: parent,
+        options: _tree.childrenOf(parent),
+        history: history,
+        result: null,
+      ),
+    );
+  }
+
   void reset() => state = AsyncData(_initialState());
 
   SwipeState _initialState() =>

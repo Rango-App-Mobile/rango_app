@@ -12,6 +12,15 @@ abstract class FoodCategory with _$FoodCategory {
     required String label,
     String? parentId,
     String? placesKeyword,
+
+    /// Line under the title on the card, e.g. "Coxinha, pastel, pizza".
+    String? examples,
+
+    /// Name of the Figma Food Theme mode: tomato, mustard, lilac, lime,
+    /// pistachio, sky, plum, copper, cocoa or bubblegum. A String so the
+    /// model stays pure Dart; the View resolves it with
+    /// `FoodTheme.values.byName`.
+    String? foodTheme,
   }) = _FoodCategory;
 
   factory FoodCategory.fromJson(Map<String, dynamic> json) =>
