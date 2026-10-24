@@ -57,12 +57,7 @@ class _ResultBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(
-        AppSpace.lg,
-        AppSpace.lg,
-        AppSpace.lg,
-        AppSpace.lg,
-      ),
+      padding: const EdgeInsets.all(AppSpace.lg),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         spacing: AppSpace.lg,

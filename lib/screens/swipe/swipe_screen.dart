@@ -1,41 +1,102 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:rango_app/core/theme/app_space.dart';
 import 'package:rango_app/core/theme/theme_context.dart';
 import 'package:rango_app/core/widgets/page_header.dart';
 import 'package:rango_app/core/widgets/rango_button.dart';
-import 'package:rango_app/core/widgets/rango_icon_button.dart';
+import 'package:rango_app/core/widgets/rango_tab_bar.dart';
+import 'package:rango_app/core/widgets/top_bar.dart';
 import 'package:rango_app/models/food_category.dart';
 import 'package:rango_app/screens/swipe/swipe_state.dart';
 import 'package:rango_app/screens/swipe/swipe_view_model.dart';
 import 'package:rango_app/screens/swipe/widgets/swipe_choice_cards.dart';
-import 'package:rango_app/screens/swipe/widgets/swipe_result.dart';
+
+/// Where the swipe screen lives, which decides its chrome.
+enum SwipeMode {
+  /// Home tab, level 1: Top Bar Principal and room for the floating Tab Bar.
+  root,
+
+  /// Levels 2+: full screen, Top Bar Flow. Voltar leaves the whole flow.
+  flow,
+}
 
 /// Binary-choice screen: two tilted cards, tap or drag one to pick it.
 class SwipeScreen extends ConsumerWidget {
-  const SwipeScreen({super.key});
+  const SwipeScreen({this.mode = SwipeMode.root, super.key});
+
+  final SwipeMode mode;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final session = ref.watch(swipeViewModelProvider);
     // Read at call time: invalidating the provider replaces the notifier.
     SwipeViewModel viewModel() => ref.read(swipeViewModelProvider.notifier);
+    final isFlow = mode == SwipeMode.flow;
 
-    return Scaffold(
+    // The root and the flow screen are both mounted and hear the same
+    // provider: only the one on top may navigate.
+    ref.listen(swipeViewModelProvider, (previous, next) {
+      final state = next.value;
+      if (state == null || !state.hasConverged) return;
+      if (!(ModalRoute.of(context)?.isCurrent ?? false)) return;
+
+      final path = state.history.map((c) => c.id).join(',');
+      final location = '/result?path=$path';
+      if (isFlow) {
+        context.pushReplacement(location);
+      } else {
+        unawaited(context.push(location));
+      }
+      viewModel().reset();
+    });
+
+    void exit() {
+      viewModel().reset();
+      context.pop();
+    }
+
+    void onChoose(FoodCategory option) {
+      viewModel().choose(option);
+      final next = ref.read(swipeViewModelProvider).value;
+      if (!isFlow && next != null && !next.hasConverged) {
+        unawaited(context.push('/choose'));
+      }
+    }
+
+    final body = Scaffold(
       body: SafeArea(
-        child: session.when(
-          loading: () => const Center(child: CircularProgressIndicator()),
-          error: (error, _) => _LoadError(
-            onRetry: () => ref.invalidate(swipeViewModelProvider),
-          ),
-          data: (state) => _SwipeContent(
-            state: state,
-            onUndo: () => viewModel().undo(),
-            onChoose: (option) => viewModel().choose(option),
-            onReset: () => viewModel().reset(),
-          ),
+        bottom: isFlow,
+        child: Column(
+          children: [
+            if (isFlow) TopBar.flow(onBack: exit) else const TopBar.principal(),
+            Expanded(
+              child: session.when(
+                loading: () => const Center(child: CircularProgressIndicator()),
+                error: (error, _) => _LoadError(
+                  onRetry: () => ref.invalidate(swipeViewModelProvider),
+                ),
+                data: (state) => _SwipeContent(
+                  state: state,
+                  bottomInset: isFlow ? 0 : RangoTabBar.reservedHeight,
+                  onChoose: onChoose,
+                ),
+              ),
+            ),
+          ],
         ),
       ),
+    );
+
+    if (!isFlow) return body;
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) exit();
+      },
+      child: body,
     );
   }
 }
@@ -43,68 +104,30 @@ class SwipeScreen extends ConsumerWidget {
 class _SwipeContent extends StatelessWidget {
   const _SwipeContent({
     required this.state,
-    required this.onUndo,
+    required this.bottomInset,
     required this.onChoose,
-    required this.onReset,
   });
 
   final SwipeState state;
-  final VoidCallback onUndo;
+  final double bottomInset;
   final ValueChanged<FoodCategory> onChoose;
-  final VoidCallback onReset;
-
-  /// Height of the Icon Button, reserved even when Voltar is hidden.
-  static const _backButtonSlot = 48.0;
 
   @override
   Widget build(BuildContext context) {
-    final result = state.result;
-    final header = result == null
-        ? PageHeader(title: state.title, subtitle: state.subtitle)
-        : PageHeader(
-            title: 'Agora é só escolher onde.',
-            subtitle:
-                'Vamos buscar restaurantes que servem '
-                '${result.label.toLowerCase()} perto de você.',
-            size: PageHeaderSize.medium,
-          );
-
     return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(vertical: AppSpace.md),
+      padding: EdgeInsets.only(bottom: bottomInset),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         spacing: AppSpace.md,
         children: [
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: AppSpace.lg),
-            // Fixed height so the header does not jump when Voltar appears.
-            child: SizedBox(
-              height: _backButtonSlot,
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: state.canUndo
-                    ? RangoIconButton(
-                        icon: Icons.arrow_back,
-                        semanticLabel: 'Voltar',
-                        onPressed: onUndo,
-                      )
-                    : null,
-              ),
-            ),
+            child: PageHeader(title: state.title, subtitle: state.subtitle),
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: AppSpace.lg),
-            child: header,
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpace.lg),
-            child: switch ((result, state.options)) {
-              (final result?, _) => SwipeResult(
-                result: result,
-                history: state.history,
-                onRestart: onReset,
-              ),
-              (null, [final first, final second]) => Center(
+            child: switch (state.options) {
+              [final first, final second] => Center(
                 child: SwipeChoiceCards(
                   key: ValueKey(state.current.id),
                   first: first,

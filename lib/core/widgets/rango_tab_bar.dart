@@ -20,6 +20,10 @@ class RangoTabBar extends StatelessWidget {
   /// Called on every tap, including on the already active tab.
   final ValueChanged<int> onSelected;
 
+  /// Bottom room screens under the floating Tab Bar leave free so the end of
+  /// a list is not hidden (Figma: "96 px de respiro").
+  static const reservedHeight = 96.0;
+
   static const _padding = 6.0;
   static const _itemWidth = 92.0;
   static const _itemHeight = 52.0;

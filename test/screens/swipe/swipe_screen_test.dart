@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:rango_app/app/theme/app_theme.dart';
 import 'package:rango_app/core/widgets/food_card.dart';
 import 'package:rango_app/data/category_repository.dart';
@@ -24,7 +25,7 @@ Future<void> pumpScreen(
       overrides: [
         categoryRepositoryProvider.overrideWithValue(FakeCategoryRepository()),
       ],
-      child: MaterialApp(
+      child: MaterialApp.router(
         theme: AppTheme.light,
         builder: (context, child) => MediaQuery(
           data: MediaQuery.of(
@@ -32,7 +33,7 @@ Future<void> pumpScreen(
           ).copyWith(disableAnimations: disableAnimations),
           child: child!,
         ),
-        home: const SwipeScreen(),
+        routerConfig: _router(),
       ),
     ),
   );
@@ -42,10 +43,26 @@ Future<void> pumpScreen(
 Finder cardTitled(String title) =>
     find.ancestor(of: find.text(title), matching: find.byType(FoodCard));
 
+GoRouter _router() => GoRouter(
+  initialLocation: '/home',
+  routes: [
+    GoRoute(path: '/home', builder: (_, _) => const SwipeScreen()),
+    GoRoute(
+      path: '/choose',
+      builder: (_, _) => const SwipeScreen(mode: SwipeMode.flow),
+    ),
+    GoRoute(
+      path: '/result',
+      builder: (_, state) =>
+          Text('RESULT ${state.uri.queryParameters['path']}'),
+    ),
+  ],
+);
+
 final Finder voltar = find.bySemanticsLabel('Voltar');
 
 void main() {
-  testWidgets('root shows both options, the header and no back button', (
+  testWidgets('root shows the options, the Top Bar Principal, no Voltar', (
     tester,
   ) async {
     await pumpScreen(tester);
@@ -58,10 +75,12 @@ void main() {
       findsOneWidget,
     );
     expect(find.text('ou'), findsOneWidget);
+    expect(find.text('Rango'), findsOneWidget);
+    expect(find.bySemanticsLabel('Abrir perfil'), findsOneWidget);
     expect(voltar, findsNothing);
   });
 
-  testWidgets('tapping a card advances to its children and shows Voltar', (
+  testWidgets('tapping a card opens the flow screen with Voltar only', (
     tester,
   ) async {
     await pumpScreen(tester);
@@ -69,10 +88,11 @@ void main() {
     await tester.tap(find.text('Salgado'));
     await tester.pumpAndSettle();
 
+    expect(find.text('Massa ou\nlanche?'), findsOneWidget);
     expect(find.text('Massa'), findsOneWidget);
     expect(find.text('Lanche'), findsOneWidget);
-    expect(find.text('Salgado'), findsNothing);
     expect(voltar, findsOneWidget);
+    expect(find.bySemanticsLabel('Abrir perfil'), findsNothing);
   });
 
   testWidgets('dragging a card far enough chooses it', (tester) async {
@@ -128,20 +148,40 @@ void main() {
     expect(tester.getCenter(cardTitled('Salgado')), before);
   });
 
-  testWidgets('Voltar undoes the last choice', (tester) async {
+  testWidgets('Voltar leaves the flow and resets the session', (tester) async {
     await pumpScreen(tester);
     await tester.tap(find.text('Salgado'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Massa'));
     await tester.pumpAndSettle();
 
     await tester.tap(voltar);
     await tester.pumpAndSettle();
 
+    expect(find.textContaining('Bora decidir'), findsOneWidget);
     expect(find.text('Salgado'), findsOneWidget);
     expect(find.text('Doce'), findsOneWidget);
     expect(voltar, findsNothing);
+
+    // The session really restarted: Doce leads to its own level 2.
+    await tester.tap(find.text('Doce'));
+    await tester.pumpAndSettle();
+    expect(find.text('Sorvete'), findsOneWidget);
   });
 
-  testWidgets('walks the choices until a food type and starts over', (
+  testWidgets('system back leaves the flow like Voltar', (tester) async {
+    await pumpScreen(tester);
+    await tester.tap(find.text('Salgado'));
+    await tester.pumpAndSettle();
+
+    await tester.binding.handlePopRoute();
+    await tester.pumpAndSettle();
+
+    expect(find.textContaining('Bora decidir'), findsOneWidget);
+    expect(voltar, findsNothing);
+  });
+
+  testWidgets('choosing a leaf opens the result with the path', (
     tester,
   ) async {
     await pumpScreen(tester);
@@ -150,43 +190,10 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text('Massa'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Pizza'));
+    await tester.tap(find.text('Macarrão'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Pizza'), findsOneWidget);
-    expect(find.text('Salgado, massa, pizza'), findsOneWidget);
-    expect(find.text('3 escolhas'), findsOneWidget);
-    expect(find.text('Agora é só escolher onde.'), findsOneWidget);
-    expect(
-      find.text('Vamos buscar restaurantes que servem pizza perto de você.'),
-      findsOneWidget,
-    );
-    expect(find.text('Recomeçar'), findsOneWidget);
-    expect(voltar, findsOneWidget);
-
-    await tester.tap(find.text('Recomeçar'));
-    await tester.pumpAndSettle();
-
-    expect(find.text('Salgado'), findsOneWidget);
-    expect(find.text('Doce'), findsOneWidget);
-    expect(voltar, findsNothing);
-  });
-
-  testWidgets('Voltar on the result returns to the last level', (tester) async {
-    await pumpScreen(tester);
-    await tester.tap(find.text('Salgado'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Massa'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Pizza'));
-    await tester.pumpAndSettle();
-
-    await tester.tap(voltar);
-    await tester.pumpAndSettle();
-
-    expect(find.text('Pizza'), findsOneWidget);
-    expect(find.text('Macarrão'), findsOneWidget);
-    expect(find.text('Recomeçar'), findsNothing);
+    expect(find.text('RESULT savory,pasta,spaghetti'), findsOneWidget);
   });
 
   testWidgets('with reduced motion the cards are visible after one pump', (
@@ -255,7 +262,7 @@ void main() {
     await tester.tap(find.text('Pizza'));
     await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);
-    expect(find.text('Recomeçar'), findsOneWidget);
+    expect(find.textContaining('RESULT'), findsOneWidget);
   });
 
   testWidgets('offers a way out when the options fail to load', (tester) async {

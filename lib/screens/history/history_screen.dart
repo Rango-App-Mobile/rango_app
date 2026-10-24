@@ -5,6 +5,7 @@ import 'package:rango_app/core/theme/theme_context.dart';
 import 'package:rango_app/core/widgets/empty_card.dart';
 import 'package:rango_app/core/widgets/page_header.dart';
 import 'package:rango_app/core/widgets/rango_button.dart';
+import 'package:rango_app/core/widgets/rango_tab_bar.dart';
 import 'package:rango_app/core/widgets/top_bar.dart';
 
 /// Histórico tab, empty state (Figma "10 Histórico vazio").
@@ -12,9 +13,6 @@ import 'package:rango_app/core/widgets/top_bar.dart';
 /// Static for now: there is no ViewModel until story #60 brings the data.
 class HistoryScreen extends StatelessWidget {
   const HistoryScreen({super.key});
-
-  /// Bottom room for the floating Tab Bar drawn over the screen by the shell.
-  static const bottomInset = 96.0;
 
   /// Figma shows a compact card here, not the 392 default of [EmptyCard].
   static const _emptyCardHeight = 232.0;
@@ -34,7 +32,7 @@ class HistoryScreen extends StatelessWidget {
                   AppSpace.lg,
                   0,
                   AppSpace.lg,
-                  bottomInset,
+                  RangoTabBar.reservedHeight,
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,

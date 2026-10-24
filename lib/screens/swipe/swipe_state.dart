@@ -16,8 +16,6 @@ abstract class SwipeState with _$SwipeState {
 
   bool get hasConverged => result != null;
 
-  bool get canUndo => history.isNotEmpty;
-
   /// Headline for the current level: "A ou\nb?" built from the two options.
   String get title {
     if (history.isEmpty || options.length != 2) {
