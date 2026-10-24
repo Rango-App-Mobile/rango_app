@@ -34,7 +34,12 @@ class SwipeChoiceCards extends StatefulWidget {
   static const double _firstAngle = 3 * math.pi / 180;
   static const double _secondAngle = -3 * math.pi / 180;
 
-  static const _stickerWidth = 80.0;
+  /// Figma "ou" Sticker instance: 80 x 80.
+  static const _stickerSize = 80.0;
+
+  /// Sticker position relative to card B's top-left. Figma-only offsets.
+  static const _stickerLeft = -24.0;
+  static const _stickerTop = -72.0;
   static const double _stickerAngle = 12 * math.pi / 180;
 
   static const _entranceDuration = Duration(milliseconds: 250);
@@ -116,17 +121,17 @@ class _SwipeChoiceCardsState extends State<SwipeChoiceCards>
               children: [
                 _card(widget.second, SwipeChoiceCards._secondAngle),
                 // Decorative: a pointer on it would steal taps from the cards.
+                // Sits on the seam, mostly over card A, so it never hides
+                // card B's title.
                 Positioned(
-                  left: -SwipeChoiceCards._stickerWidth / 2,
-                  top: -SwipeChoiceCards._stickerWidth / 4,
+                  left: SwipeChoiceCards._stickerLeft,
+                  top: SwipeChoiceCards._stickerTop,
                   child: IgnorePointer(
                     child: Transform.rotate(
                       angle: SwipeChoiceCards._stickerAngle,
-                      child: const SizedBox(
-                        width: SwipeChoiceCards._stickerWidth,
-                        child: FittedBox(
-                          child: RangoSticker(label: 'ou'),
-                        ),
+                      child: const RangoSticker(
+                        label: 'ou',
+                        size: Size.square(SwipeChoiceCards._stickerSize),
                       ),
                     ),
                   ),

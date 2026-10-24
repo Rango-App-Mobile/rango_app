@@ -113,6 +113,21 @@ void main() {
     await tester.pumpAndSettle();
   });
 
+  testWidgets('a cancelled drag snaps back without choosing', (tester) async {
+    await pumpScreen(tester);
+    final before = tester.getCenter(cardTitled('Salgado'));
+
+    final gesture = await tester.startGesture(before);
+    await gesture.moveBy(const Offset(40, 0));
+    await gesture.moveBy(const Offset(30, 0));
+    await tester.pump();
+    await gesture.cancel();
+    await tester.pumpAndSettle();
+
+    expect(find.text('Massa'), findsNothing);
+    expect(tester.getCenter(cardTitled('Salgado')), before);
+  });
+
   testWidgets('Voltar undoes the last choice', (tester) async {
     await pumpScreen(tester);
     await tester.tap(find.text('Salgado'));

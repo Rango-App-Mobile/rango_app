@@ -23,14 +23,19 @@ class RangoSticker extends StatelessWidget {
   const RangoSticker({
     required this.label,
     this.color = RangoStickerColor.mustard,
+    this.size = defaultSize,
     super.key,
   });
 
   final String label;
   final RangoStickerColor color;
 
-  static const _width = 212.0;
-  static const _height = 128.0;
+  /// Instances are resized in Figma (the "ou" of the swipe is 80 x 80); the
+  /// label keeps its text style instead of shrinking with the star.
+  final Size size;
+
+  /// Size of the main component in Figma.
+  static const defaultSize = Size(212, 128);
 
   @override
   Widget build(BuildContext context) {
@@ -38,14 +43,14 @@ class RangoSticker extends StatelessWidget {
       label: label,
       excludeSemantics: true,
       child: CustomPaint(
-        size: const Size(_width, _height),
+        size: size,
         painter: StarburstPainter(
           fill: color.foodTheme.background,
           stroke: context.colors.borderStrong,
         ),
         child: SizedBox(
-          width: _width,
-          height: _height,
+          width: size.width,
+          height: size.height,
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: AppSpace.md),
             child: Center(
