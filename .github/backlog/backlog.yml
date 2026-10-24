@@ -563,7 +563,7 @@ epics:
     description: >
       Levar para o Flutter o design system do Figma (https://www.figma.com/design/s7aWG29SRZn5tjGGzY6svm):
       tokens, tipografia, ícones, marca e os componentes da página Components. O card de
-      Handoff de cada componente diz onde ele mora no código. Tokens em lib/app/theme/,
+      Handoff de cada componente diz onde ele mora no código. Tokens em lib/core/theme/ (o ThemeData em lib/app/theme/),
       widgets compartilhados em lib/core/widgets/. Dependência nova só com o time de acordo.
     stories:
       - id: E8-S1
