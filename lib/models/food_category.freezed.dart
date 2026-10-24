@@ -20,7 +20,10 @@ mixin _$FoodCategory {
 /// pistachio, sky, plum, copper, cocoa or bubblegum. A String so the
 /// model stays pure Dart; the View resolves it with
 /// `FoodTheme.values.byName`.
- String? get foodTheme;
+ String? get foodTheme;/// Name of the dish photo bundled in `assets/images/food/` (without the
+/// `.jpg`), e.g. "pizza". Null draws the Food Card placeholder. A String
+/// for the same reason as [foodTheme]: the View builds the image.
+ String? get photo;
 /// Create a copy of FoodCategory
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -33,16 +36,16 @@ $FoodCategoryCopyWith<FoodCategory> get copyWith => _$FoodCategoryCopyWithImpl<F
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is FoodCategory&&(identical(other.id, id) || other.id == id)&&(identical(other.label, label) || other.label == label)&&(identical(other.parentId, parentId) || other.parentId == parentId)&&(identical(other.placesKeyword, placesKeyword) || other.placesKeyword == placesKeyword)&&(identical(other.examples, examples) || other.examples == examples)&&(identical(other.foodTheme, foodTheme) || other.foodTheme == foodTheme));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is FoodCategory&&(identical(other.id, id) || other.id == id)&&(identical(other.label, label) || other.label == label)&&(identical(other.parentId, parentId) || other.parentId == parentId)&&(identical(other.placesKeyword, placesKeyword) || other.placesKeyword == placesKeyword)&&(identical(other.examples, examples) || other.examples == examples)&&(identical(other.foodTheme, foodTheme) || other.foodTheme == foodTheme)&&(identical(other.photo, photo) || other.photo == photo));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,label,parentId,placesKeyword,examples,foodTheme);
+int get hashCode => Object.hash(runtimeType,id,label,parentId,placesKeyword,examples,foodTheme,photo);
 
 @override
 String toString() {
-  return 'FoodCategory(id: $id, label: $label, parentId: $parentId, placesKeyword: $placesKeyword, examples: $examples, foodTheme: $foodTheme)';
+  return 'FoodCategory(id: $id, label: $label, parentId: $parentId, placesKeyword: $placesKeyword, examples: $examples, foodTheme: $foodTheme, photo: $photo)';
 }
 
 
@@ -53,7 +56,7 @@ abstract mixin class $FoodCategoryCopyWith<$Res>  {
   factory $FoodCategoryCopyWith(FoodCategory value, $Res Function(FoodCategory) _then) = _$FoodCategoryCopyWithImpl;
 @useResult
 $Res call({
- String id, String label, String? parentId, String? placesKeyword, String? examples, String? foodTheme
+ String id, String label, String? parentId, String? placesKeyword, String? examples, String? foodTheme, String? photo
 });
 
 
@@ -70,7 +73,7 @@ class _$FoodCategoryCopyWithImpl<$Res>
 
 /// Create a copy of FoodCategory
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? label = null,Object? parentId = freezed,Object? placesKeyword = freezed,Object? examples = freezed,Object? foodTheme = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? label = null,Object? parentId = freezed,Object? placesKeyword = freezed,Object? examples = freezed,Object? foodTheme = freezed,Object? photo = freezed,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,label: null == label ? _self.label : label // ignore: cast_nullable_to_non_nullable
@@ -78,6 +81,7 @@ as String,parentId: freezed == parentId ? _self.parentId : parentId // ignore: c
 as String?,placesKeyword: freezed == placesKeyword ? _self.placesKeyword : placesKeyword // ignore: cast_nullable_to_non_nullable
 as String?,examples: freezed == examples ? _self.examples : examples // ignore: cast_nullable_to_non_nullable
 as String?,foodTheme: freezed == foodTheme ? _self.foodTheme : foodTheme // ignore: cast_nullable_to_non_nullable
+as String?,photo: freezed == photo ? _self.photo : photo // ignore: cast_nullable_to_non_nullable
 as String?,
   ));
 }
@@ -163,10 +167,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String label,  String? parentId,  String? placesKeyword,  String? examples,  String? foodTheme)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String label,  String? parentId,  String? placesKeyword,  String? examples,  String? foodTheme,  String? photo)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _FoodCategory() when $default != null:
-return $default(_that.id,_that.label,_that.parentId,_that.placesKeyword,_that.examples,_that.foodTheme);case _:
+return $default(_that.id,_that.label,_that.parentId,_that.placesKeyword,_that.examples,_that.foodTheme,_that.photo);case _:
   return orElse();
 
 }
@@ -184,10 +188,10 @@ return $default(_that.id,_that.label,_that.parentId,_that.placesKeyword,_that.ex
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String label,  String? parentId,  String? placesKeyword,  String? examples,  String? foodTheme)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String label,  String? parentId,  String? placesKeyword,  String? examples,  String? foodTheme,  String? photo)  $default,) {final _that = this;
 switch (_that) {
 case _FoodCategory():
-return $default(_that.id,_that.label,_that.parentId,_that.placesKeyword,_that.examples,_that.foodTheme);case _:
+return $default(_that.id,_that.label,_that.parentId,_that.placesKeyword,_that.examples,_that.foodTheme,_that.photo);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -204,10 +208,10 @@ return $default(_that.id,_that.label,_that.parentId,_that.placesKeyword,_that.ex
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String label,  String? parentId,  String? placesKeyword,  String? examples,  String? foodTheme)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String label,  String? parentId,  String? placesKeyword,  String? examples,  String? foodTheme,  String? photo)?  $default,) {final _that = this;
 switch (_that) {
 case _FoodCategory() when $default != null:
-return $default(_that.id,_that.label,_that.parentId,_that.placesKeyword,_that.examples,_that.foodTheme);case _:
+return $default(_that.id,_that.label,_that.parentId,_that.placesKeyword,_that.examples,_that.foodTheme,_that.photo);case _:
   return null;
 
 }
@@ -219,7 +223,7 @@ return $default(_that.id,_that.label,_that.parentId,_that.placesKeyword,_that.ex
 @JsonSerializable()
 
 class _FoodCategory implements FoodCategory {
-  const _FoodCategory({required this.id, required this.label, this.parentId, this.placesKeyword, this.examples, this.foodTheme});
+  const _FoodCategory({required this.id, required this.label, this.parentId, this.placesKeyword, this.examples, this.foodTheme, this.photo});
   factory _FoodCategory.fromJson(Map<String, dynamic> json) => _$FoodCategoryFromJson(json);
 
 @override final  String id;
@@ -233,6 +237,10 @@ class _FoodCategory implements FoodCategory {
 /// model stays pure Dart; the View resolves it with
 /// `FoodTheme.values.byName`.
 @override final  String? foodTheme;
+/// Name of the dish photo bundled in `assets/images/food/` (without the
+/// `.jpg`), e.g. "pizza". Null draws the Food Card placeholder. A String
+/// for the same reason as [foodTheme]: the View builds the image.
+@override final  String? photo;
 
 /// Create a copy of FoodCategory
 /// with the given fields replaced by the non-null parameter values.
@@ -247,16 +255,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _FoodCategory&&(identical(other.id, id) || other.id == id)&&(identical(other.label, label) || other.label == label)&&(identical(other.parentId, parentId) || other.parentId == parentId)&&(identical(other.placesKeyword, placesKeyword) || other.placesKeyword == placesKeyword)&&(identical(other.examples, examples) || other.examples == examples)&&(identical(other.foodTheme, foodTheme) || other.foodTheme == foodTheme));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _FoodCategory&&(identical(other.id, id) || other.id == id)&&(identical(other.label, label) || other.label == label)&&(identical(other.parentId, parentId) || other.parentId == parentId)&&(identical(other.placesKeyword, placesKeyword) || other.placesKeyword == placesKeyword)&&(identical(other.examples, examples) || other.examples == examples)&&(identical(other.foodTheme, foodTheme) || other.foodTheme == foodTheme)&&(identical(other.photo, photo) || other.photo == photo));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,label,parentId,placesKeyword,examples,foodTheme);
+int get hashCode => Object.hash(runtimeType,id,label,parentId,placesKeyword,examples,foodTheme,photo);
 
 @override
 String toString() {
-  return 'FoodCategory(id: $id, label: $label, parentId: $parentId, placesKeyword: $placesKeyword, examples: $examples, foodTheme: $foodTheme)';
+  return 'FoodCategory(id: $id, label: $label, parentId: $parentId, placesKeyword: $placesKeyword, examples: $examples, foodTheme: $foodTheme, photo: $photo)';
 }
 
 
@@ -267,7 +275,7 @@ abstract mixin class _$FoodCategoryCopyWith<$Res> implements $FoodCategoryCopyWi
   factory _$FoodCategoryCopyWith(_FoodCategory value, $Res Function(_FoodCategory) _then) = __$FoodCategoryCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String label, String? parentId, String? placesKeyword, String? examples, String? foodTheme
+ String id, String label, String? parentId, String? placesKeyword, String? examples, String? foodTheme, String? photo
 });
 
 
@@ -284,7 +292,7 @@ class __$FoodCategoryCopyWithImpl<$Res>
 
 /// Create a copy of FoodCategory
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? label = null,Object? parentId = freezed,Object? placesKeyword = freezed,Object? examples = freezed,Object? foodTheme = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? label = null,Object? parentId = freezed,Object? placesKeyword = freezed,Object? examples = freezed,Object? foodTheme = freezed,Object? photo = freezed,}) {
   return _then(_FoodCategory(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,label: null == label ? _self.label : label // ignore: cast_nullable_to_non_nullable
@@ -292,6 +300,7 @@ as String,parentId: freezed == parentId ? _self.parentId : parentId // ignore: c
 as String?,placesKeyword: freezed == placesKeyword ? _self.placesKeyword : placesKeyword // ignore: cast_nullable_to_non_nullable
 as String?,examples: freezed == examples ? _self.examples : examples // ignore: cast_nullable_to_non_nullable
 as String?,foodTheme: freezed == foodTheme ? _self.foodTheme : foodTheme // ignore: cast_nullable_to_non_nullable
+as String?,photo: freezed == photo ? _self.photo : photo // ignore: cast_nullable_to_non_nullable
 as String?,
   ));
 }

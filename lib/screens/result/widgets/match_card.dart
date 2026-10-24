@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:rango_app/core/theme/app_space.dart';
 import 'package:rango_app/core/theme/food_theme.dart';
 import 'package:rango_app/core/widgets/food_card.dart';
+import 'package:rango_app/core/widgets/food_photo.dart';
 import 'package:rango_app/core/widgets/rango_sticker.dart';
 import 'package:rango_app/models/food_category.dart';
 
@@ -37,6 +38,7 @@ class MatchCard extends StatelessWidget {
             subtitle: pathLabel,
             chipLabel: '$choiceCount escolhas',
             foodTheme: _resolveFoodTheme(result.foodTheme),
+            photo: foodPhoto(result.photo),
           ),
         ),
         Positioned(

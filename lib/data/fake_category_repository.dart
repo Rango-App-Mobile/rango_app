@@ -10,6 +10,7 @@ class FakeCategoryRepository implements CategoryRepository {
       parentId: 'root',
       examples: 'Coxinha, pastel, pizza',
       foodTheme: 'tomato',
+      photo: 'salgado',
     ),
     FoodCategory(
       id: 'sweet',
@@ -17,6 +18,7 @@ class FakeCategoryRepository implements CategoryRepository {
       parentId: 'root',
       examples: 'Brigadeiro, açaí, bolo',
       foodTheme: 'bubblegum',
+      photo: 'brigadeiro',
     ),
     FoodCategory(
       id: 'pasta',
@@ -24,6 +26,7 @@ class FakeCategoryRepository implements CategoryRepository {
       parentId: 'savory',
       examples: 'Macarrão, lasanha, nhoque',
       foodTheme: 'mustard',
+      photo: 'massa',
     ),
     FoodCategory(
       id: 'snack',
@@ -31,6 +34,7 @@ class FakeCategoryRepository implements CategoryRepository {
       parentId: 'savory',
       examples: 'Xis, hot dog, burger',
       foodTheme: 'copper',
+      photo: 'lanche',
     ),
     FoodCategory(
       id: 'spaghetti',
@@ -39,6 +43,7 @@ class FakeCategoryRepository implements CategoryRepository {
       placesKeyword: 'restaurante italiano',
       examples: 'Espaguete, penne, fettuccine',
       foodTheme: 'lime',
+      photo: 'macarrao',
     ),
     FoodCategory(
       id: 'pizza',
@@ -47,6 +52,7 @@ class FakeCategoryRepository implements CategoryRepository {
       placesKeyword: 'pizzaria',
       examples: 'Calabresa, marguerita, portuguesa',
       foodTheme: 'plum',
+      photo: 'pizza',
     ),
     FoodCategory(
       id: 'burger',
@@ -55,6 +61,8 @@ class FakeCategoryRepository implements CategoryRepository {
       placesKeyword: 'hamburgueria',
       examples: 'Artesanal, smash, cheeseburger',
       foodTheme: 'cocoa',
+      // The Figma file has no burger photo; its "Lanche" photo is one.
+      photo: 'lanche',
     ),
     FoodCategory(
       id: 'xis',
@@ -63,6 +71,7 @@ class FakeCategoryRepository implements CategoryRepository {
       placesKeyword: 'lanchonete xis',
       examples: 'Xis salada, xis coração, xis bacon',
       foodTheme: 'pistachio',
+      photo: 'xis',
     ),
     FoodCategory(
       id: 'ice_cream',
@@ -79,6 +88,7 @@ class FakeCategoryRepository implements CategoryRepository {
       placesKeyword: 'confeitaria',
       examples: 'Chocolate, cenoura, torta',
       foodTheme: 'lilac',
+      photo: 'bolo',
     ),
   ];
 

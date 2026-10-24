@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rango_app/data/fake_category_repository.dart';
 import 'package:rango_app/models/food_category.dart';
@@ -43,6 +45,17 @@ void main() {
 
       expect(decoded.examples, isNull);
       expect(decoded.foodTheme, isNull);
+      expect(decoded.photo, isNull);
+    });
+
+    test('round-trips photo through JSON', () {
+      const category = FoodCategory(
+        id: 'pizza',
+        label: 'Pizza',
+        photo: 'pizza',
+      );
+
+      expect(FoodCategory.fromJson(category.toJson()).photo, 'pizza');
     });
   });
 
@@ -55,6 +68,18 @@ void main() {
       for (final category in nonRoot) {
         expect(category.examples, isNotEmpty, reason: category.id);
         expect(_validThemes, contains(category.foodTheme), reason: category.id);
+      }
+    });
+
+    test('names only photos that exist in assets/images/food', () {
+      for (final category in FakeCategoryRepository.seed) {
+        final photo = category.photo;
+        if (photo == null) continue;
+        expect(
+          File('assets/images/food/$photo.jpg').existsSync(),
+          isTrue,
+          reason: '${category.id} -> $photo',
+        );
       }
     });
 

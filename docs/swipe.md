@@ -39,10 +39,30 @@ documento explica o porquê das escolhas de implementação; não repete o conte
 | Limite do arrasto: mais de 35% da largura do card ou velocidade horizontal acima de 800 px/s | `DraggableFoodCard` (View) | É interpretação de gesto, não regra de negócio; o resultado só chama `choose` |
 | Menos movimento (`MediaQuery.disableAnimationsOf`) | `SwipeChoiceCards` e `DraggableFoodCard` (View) | A preferência vem do sistema e só a View tem acesso ao contexto |
 | Food Theme do card | `resolveFoodTheme` (swipe) e o helper privado de `match_card.dart` (result) | O model guarda o nome como `String` para continuar Dart puro; a View converte com fallback para `tomato` |
+| Foto do card | `FoodCategory.photo` (nome do arquivo) + `foodPhoto` em `lib/core/widgets/food_photo.dart` | Mesmo motivo do Food Theme: o model guarda só o nome; a View monta o `AssetImage`. Sem nome, ou com um nome sem arquivo, o Food Card desenha o placeholder |
 | Alternativa ao gesto | Toque no card, com `Semantics` de botão ("Escolher Salgado") | Arrastar não é acessível nem funciona bem no simulador |
 
 O arrasto é só horizontal, para que a página continue rolando na vertical em
 telas pequenas (375x667), onde o par de cards não cabe inteiro.
+
+## Fotos
+
+As fotos vêm da página "Assets" do Figma e ficam em `assets/images/food/`
+(800 px de largura, JPEG). O teste do seed garante que todo `photo` do
+`FakeCategoryRepository` tem arquivo.
+
+| Categoria | Arquivo | Frame no Figma |
+|---|---|---|
+| Salgado | `salgado.jpg` | `photo-salgado` |
+| Doce | `brigadeiro.jpg` | `photo-brigadeiro` (o mesmo do card Doce na tela 01) |
+| Massa | `massa.jpg` | `photo-massa` |
+| Lanche | `lanche.jpg` | `photo-lanche` |
+| Macarrão | `macarrao.jpg` | `photo-macarrao` (o garfo da tela 04) |
+| Pizza | `pizza.jpg` | `photo-pizza` |
+| Hambúrguer | `lanche.jpg` | Não tem foto própria; a de Lanche é um hambúrguer |
+| Xis | `xis.jpg` | `photo-xis` |
+| Bolo | `bolo.jpg` | `photo-doce` (uma fatia de bolo) |
+| Sorvete | — | Não tem; placeholder |
 
 ## Erros
 
@@ -70,7 +90,7 @@ Figma.
 
 | Fora desta entrega | Onde vai |
 |---|---|
-| Fotos das comidas nos cards (hoje o placeholder do Food Card) | #57 |
+| Foto do Sorvete (o Figma não tem uma; o card mostra o placeholder) e licença das fotos (`docs/contexto.md` §12) | #57 |
 | Mapa de restaurantes (hoje um placeholder) | #17 |
 | Salvar a sessão e o match no histórico | #13 e #60 |
 | Repositório real no Firestore | Sprint 2 |

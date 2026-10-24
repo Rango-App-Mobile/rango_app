@@ -75,6 +75,10 @@ flutter:
       fonts:
         - asset: assets/fonts/lobster/Lobster-Regular.ttf
 
+  # Dish photos from the Figma "Assets" page (see docs/swipe.md).
+  assets:
+    - assets/images/food/
+
   # To add assets to your application, add an assets section, like this:
   # assets:
   #   - images/a_dot_burr.jpeg

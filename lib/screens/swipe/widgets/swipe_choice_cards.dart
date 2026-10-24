@@ -3,6 +3,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:rango_app/core/widgets/food_card.dart';
+import 'package:rango_app/core/widgets/food_photo.dart';
 import 'package:rango_app/core/widgets/rango_sticker.dart';
 import 'package:rango_app/models/food_category.dart';
 import 'package:rango_app/screens/swipe/widgets/draggable_food_card.dart';
@@ -96,6 +97,7 @@ class _SwipeChoiceCardsState extends State<SwipeChoiceCards>
           subtitle: option.examples,
           size: FoodCardSize.medium,
           foodTheme: resolveFoodTheme(option.foodTheme),
+          photo: foodPhoto(option.photo),
         ),
       ),
     );
