@@ -202,7 +202,7 @@ epics:
         acceptance:
           - "Tocar ou arrastar um card escolhe aquela opção (o toque é a alternativa acessível ao gesto)"
           - "Cada escolha avança um nível da árvore, com título e subtítulo do nível"
-          - "O voltar da Top Bar desfaz a última escolha; na Home não há voltar"
+          - "O voltar da Top Bar (e o gesto/botão voltar do sistema) sai do fluxo e volta à Home com a sessão zerada; na Home não há voltar"
           - "Cada card usa a cor (Food Theme) e a foto da categoria"
           - "Com 'reduzir movimento' ligado, os cards não animam a entrada"
       - id: E2-S3
@@ -218,7 +218,7 @@ epics:
           "Ver restaurantes perto" e Ghost "Recomeçar".
         acceptance:
           - "Mostra o tipo final e o caminho (ex.: salgado → massa → macarrão)"
-          - "'Ver restaurantes perto' leva ao mapa de restaurantes (E3-S3)"
+          - "'Ver restaurantes perto' leva à tela de restaurantes (placeholder até o mapa da E3-S3)"
           - "'Recomeçar' volta à Home com a sessão zerada"
       - id: E2-S4
         title: "Salvar sessão e escolhas no Firestore"
