@@ -1,6 +1,6 @@
 # Rango — app
 
-Flutter app (iOS + Android) for the Senac *Projeto de Desenvolvimento I* course.
+Flutter app (iOS + Android) for the Senac _Projeto de Desenvolvimento I_ course.
 The user makes a short run of binary choices by swipe (savory vs. sweet → pasta →
 spaghetti) until the session converges on one type of food, and the app then
 recommends real, nearby restaurants for it (Google Places), ready to open in a
@@ -10,16 +10,16 @@ delivery app.
 > business rules, data model, schedule and decisions. This file does not
 > summarize it; it tells you where to look:
 >
-> | I need... | Section |
-> |---|---|
-> | The pain the app solves, for whom, differentiators | §1, §3 |
-> | Stack and layers | §4, §5 |
-> | MVP flow, step by step | §6 |
-> | Business rules (convergence, radius, ordering) | §7 |
-> | Firestore collections and fields | §8 |
-> | What is MVP and what is future | §9 |
-> | Sprints and deadlines | §10 |
-> | Decisions already taken / still open | §11, §12 |
+> | I need...                                          | Section  |
+> | -------------------------------------------------- | -------- |
+> | The pain the app solves, for whom, differentiators | §1, §3   |
+> | Stack and layers                                   | §4, §5   |
+> | MVP flow, step by step                             | §6       |
+> | Business rules (convergence, radius, ordering)     | §7       |
+> | Firestore collections and fields                   | §8       |
+> | What is MVP and what is future                     | §9       |
+> | Sprints and deadlines                              | §10      |
+> | Decisions already taken / still open               | §11, §12 |
 >
 > If a task contradicts it, stop and ask. Do not "fix" the document on your own:
 > a changed decision goes into §11 in the same PR, reviewed by the team.
@@ -82,20 +82,20 @@ behind `screens/startup/` (`docs/auth.md`).
 
 > **Current state:** the skeleton from `docs/guia-setup.md` steps 1–4 is in
 > place (issues #3 and #4): `swipe` is a reference slice with provisional
-> buttons over `FakeCategoryRepository`. New screens follow its shape.
+> buttons over `LocalCategoryRepository`. New screens follow its shape.
 
 Docs in `docs/`, all in Portuguese:
 
-| File | What it is |
-|---|---|
-| `contexto.md` | Canonical context (numbered sections, cite by §) |
-| `acordo-projeto.md` (+ PDF) | Signed project agreement: scope, benchmark, schedule, team fronts |
-| `guia-setup.md` | Step-by-step setup: Flutter, dependencies, MVVM, env |
-| `sdd.md` | How shipped features are documented (no specs before code) |
-| `git-e-prs.md` | Branches, commits, PRs, GitHub automation |
-| `time-e-rituais.md` | Team fronts (Dev, Marketing, Produto/UX), rituals, DoR/DoD |
-| `marketing/` | Positioning, identity, content calendar, briefs |
-| `<feature>.md` | One file per shipped product feature (e.g. `auth.md`): what exists and how it works |
+| File                        | What it is                                                                          |
+| --------------------------- | ----------------------------------------------------------------------------------- |
+| `contexto.md`               | Canonical context (numbered sections, cite by §)                                    |
+| `acordo-projeto.md` (+ PDF) | Signed project agreement: scope, benchmark, schedule, team fronts                   |
+| `guia-setup.md`             | Step-by-step setup: Flutter, dependencies, MVVM, env                                |
+| `sdd.md`                    | How shipped features are documented (no specs before code)                          |
+| `git-e-prs.md`              | Branches, commits, PRs, GitHub automation                                           |
+| `time-e-rituais.md`         | Team fronts (Dev, Marketing, Produto/UX), rituals, DoR/DoD                          |
+| `marketing/`                | Positioning, identity, content calendar, briefs                                     |
+| `<feature>.md`              | One file per shipped product feature (e.g. `auth.md`): what exists and how it works |
 
 ## Stack
 

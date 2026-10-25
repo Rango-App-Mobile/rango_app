@@ -59,8 +59,8 @@ void main() {
     });
   });
 
-  group('FakeCategoryRepository.seed', () {
-    final nonRoot = FakeCategoryRepository.seed.where(
+  group('LocalCategoryRepository.seed', () {
+    final nonRoot = LocalCategoryRepository.seed.where(
       (c) => c.parentId != null,
     );
 
@@ -72,7 +72,7 @@ void main() {
     });
 
     test('names only photos that exist in assets/images/food', () {
-      for (final category in FakeCategoryRepository.seed) {
+      for (final category in LocalCategoryRepository.seed) {
         final photo = category.photo;
         if (photo == null) continue;
         expect(

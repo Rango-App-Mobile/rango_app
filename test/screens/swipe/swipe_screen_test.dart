@@ -297,7 +297,7 @@ void main() {
   });
 }
 
-class _FlakyRepository extends FakeCategoryRepository {
+class _FlakyRepository extends LocalCategoryRepository {
   var _calls = 0;
 
   @override

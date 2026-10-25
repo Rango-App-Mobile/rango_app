@@ -9,5 +9,5 @@ abstract interface class CategoryRepository {
 /// Swapped for the Firestore implementation in the Sprint 2 story.
 /// Tests override this provider; nobody instantiates a repository directly.
 final categoryRepositoryProvider = Provider<CategoryRepository>(
-  (ref) => FakeCategoryRepository(),
+  (ref) => LocalCategoryRepository(),
 );
