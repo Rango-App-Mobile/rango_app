@@ -1363,6 +1363,8 @@ que é para agente está **em inglês**; os docs do projeto seguem em português
 | `.claude/skills/implement-task/` | implementar task | `SKILL.md` + molde `references/feature-doc.md` |
 | `.claude/skills/sprint-status/` | status da sprint por frente | `SKILL.md` |
 | `.claude/skills/marketing-brief/` | brief de marketing | `SKILL.md` (molde em `docs/marketing/briefs/_template.md`) |
+| `.claude/skills/grill-me/` | `/grill-me`: entrevista em rodadas para afiar uma ideia ou plano | `SKILL.md` (chama `grilling`; de [mattpocock/skills](https://github.com/mattpocock/skills), MIT) |
+| `.claude/skills/grilling/` | a lógica do `/grill-me` | `SKILL.md` |
 | `docs/sdd.md` | o time | Ciclo spec → plan → tasks e quando a spec é obrigatória |
 | `docs/specs/NNN-slug/` | quem especifica | Nasce com a primeira spec |
 | `docs/<feature>.md` | quem entrega a feature | Um arquivo por feature, como os domínios do backend |
