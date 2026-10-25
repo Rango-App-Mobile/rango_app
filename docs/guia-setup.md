@@ -1552,6 +1552,13 @@ dart pub global activate flutterfire_cli
 flutterfire configure --project=<id-do-projeto-firebase> --platforms=android,ios
 ```
 
+> **Atualização (2026-10-24):** o projeto Firebase já existe e o
+> `flutterfire configure` **não deve mais ser rodado**: ele grava as chaves de
+> API literais no código. As chaves agora vêm do `env.json`
+> (`FIREBASE_ANDROID_API_KEY`, `FIREBASE_IOS_API_KEY`) e o
+> `firebase_options.dart` é escrito à mão. Veja `docs/auth.md`, seção
+> "Configuração do Firebase", e `docs/contexto.md` §11.
+
 ```bash
 flutter pub add firebase_core firebase_auth cloud_firestore
 ```

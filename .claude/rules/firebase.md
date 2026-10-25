@@ -31,9 +31,15 @@ Firestore data model in `docs/contexto.md` §8.
 - Security Rules are versioned in the repo (`firestore.rules`) and change in the
   same PR as the code that needs them. The client is not trusted: ownership
   (`request.auth.uid`) is enforced by the rules, not by client-side filters.
-- `firebase_options.dart`, `google-services.json` and
-  `GoogleService-Info.plist` identify the project; they are not secrets and are
-  committed. The rules protect the data.
+- The Firebase API keys come only from `Env` (`FIREBASE_ANDROID_API_KEY`,
+  `FIREBASE_IOS_API_KEY` in `env.json`). `lib/firebase_options.dart` is
+  hand-written: project ids committed, keys from `Env`. There is no
+  `google-services.json` / `GoogleService-Info.plist` (gitignored) and no
+  `google-services` Gradle plugin. Never run `flutterfire configure`: it writes
+  literal keys back (`docs/auth.md`).
+- Without the keys `main.dart` skips Firebase and runs on fakes, so a feature
+  that adds a Firestore repository also adds its fake override there. The
+  rules protect the data.
 
 ## Google Places
 
