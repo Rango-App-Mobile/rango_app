@@ -9,7 +9,7 @@ import 'package:rango_app/app/app.dart';
 import 'package:rango_app/data/auth_repository.dart';
 import 'package:rango_app/data/category_repository.dart';
 import 'package:rango_app/data/fake_auth_repository.dart';
-import 'package:rango_app/data/fake_category_repository.dart';
+import 'package:rango_app/data/local_category_repository.dart';
 import 'package:rango_app/models/app_user.dart';
 import 'package:rango_app/screens/startup/startup_screen.dart';
 import 'package:rango_app/screens/swipe/swipe_screen.dart';
@@ -29,7 +29,7 @@ Future<void> pumpApp(WidgetTester tester) async {
     ProviderScope(
       overrides: [
         authRepositoryProvider.overrideWithValue(FakeAuthRepository()),
-        categoryRepositoryProvider.overrideWithValue(FakeCategoryRepository()),
+        categoryRepositoryProvider.overrideWithValue(LocalCategoryRepository()),
       ],
       child: const RangoApp(),
     ),
@@ -48,7 +48,7 @@ void main() {
         overrides: [
           authRepositoryProvider.overrideWithValue(repository),
           categoryRepositoryProvider.overrideWithValue(
-            FakeCategoryRepository(),
+            LocalCategoryRepository(),
           ),
         ],
         child: const RangoApp(),

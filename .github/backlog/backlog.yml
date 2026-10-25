@@ -176,21 +176,25 @@ epics:
     description: "Sessão de escolhas binárias que afunila até um tipo de comida específico (contexto.md §6)."
     stories:
       - id: E2-S1
-        title: "Definir a árvore de categorias de comida (spec 001)"
+        title: "Cardápio de 32 comidas e duelo quem ganha fica"
         sprint: 2
         frente: produto
         area: swipe
         priority: alta
-        estimate: 3
+        estimate: 5
         description: >
-          Definir níveis, pares de escolha e folhas (tipos de comida que viram busca no Places).
-          Pelo Figma (01–03), cada nó também tem a linha de exemplos do Food Card
-          ("Coxinha, pastel, pizza"), a cor (modo Food Theme) e a foto.
+          A primeira escolha continua Salgado vs. Doce; depois disso a sessão vira um duelo
+          "quem ganha fica" dentro da lista escolhida (16 salgados ou 16 doces). A comida
+          escolhida fica no trono e soma 1 ponto; a que derruba o campeão começa com 1 e o
+          antigo campeão perde tudo. Três vitórias seguidas dão o "Deu match!". O cardápio
+          fica no app (LocalCategoryRepository) e na página Assets do Figma.
         acceptance:
-          - "Árvore com pelo menos 3 níveis e 12 tipos de comida finais"
-          - "Cada folha tem o termo de busca usado no Google Places"
-          - "Cada nó tem rótulo, exemplos, cor do Food Theme e foto (ver E8-S7)"
-          - "Spec aprovada em PR"
+          - "16 comidas salgadas e 16 doces, cada uma com rótulo, exemplos, cor do Food Theme, foto e termo de busca do Google Places"
+          - "Depois de Salgado/Doce, cada tela é um duelo entre o campeão e um desafiante da lista"
+          - "Escolher o campeão soma 1 ponto; escolher o desafiante o torna campeão com 1 ponto"
+          - "3 vitórias seguidas encerram o duelo no Deu match"
+          - "Quando a lista acaba ela é embaralhada de novo, sem o campeão atual; o duelo não tem limite de rodadas"
+          - "Cardápio das 32 comidas na página Assets do Figma, com instâncias do Food Card"
       - id: E2-S2
         title: "Como usuário, quero escolher entre duas opções por swipe até chegar num tipo de comida"
         sprint: 2
@@ -205,7 +209,7 @@ epics:
           Fluxo. O ViewModel da tela de swipe de exemplo (E0-S3) já expõe choose/reset.
         acceptance:
           - "Tocar ou arrastar um card escolhe aquela opção (o toque é a alternativa acessível ao gesto)"
-          - "Cada escolha avança um nível da árvore, com título e subtítulo do nível"
+          - "A primeira escolha é Salgado vs. Doce; as seguintes são duelos da E2-S1, com título e subtítulo da rodada"
           - "O voltar da Top Bar (e o gesto/botão voltar do sistema) sai do fluxo e volta à Home com a sessão zerada; na Home não há voltar"
           - "Cada card usa a cor (Food Theme) e a foto da categoria"
           - "Com 'reduzir movimento' ligado, os cards não animam a entrada"
@@ -221,7 +225,7 @@ epics:
           "N escolhas", Sticker Lime "Deu match!", Page Header Medium, Button Primary
           "Ver restaurantes perto" e Ghost "Recomeçar".
         acceptance:
-          - "Mostra o tipo final e o caminho (ex.: salgado → massa → macarrão)"
+          - "Mostra a comida campeã, o caminho (ex.: Salgado → Pizza) e o total de escolhas da sessão"
           - "'Ver restaurantes perto' leva à tela de restaurantes (placeholder até o mapa da E3-S3)"
           - "'Recomeçar' volta à Home com a sessão zerada"
       - id: E2-S4
@@ -664,10 +668,11 @@ epics:
         priority: alta
         estimate: 2
         description: >
-          Uma foto por nó da árvore de categorias (E2-S1), no recorte do Food Card. As fotos
-          do Figma são de referência: confirmar licença de uso ou trocar.
+          Uma foto por comida do cardápio (E2-S1), no recorte do Food Card. As fotos novas vêm
+          do Unsplash ou do Pexels (licenças de uso livre, sem atribuição obrigatória); as
+          fotos antigas do Figma são de referência: confirmar licença de uso ou trocar.
         acceptance:
-          - "Uma foto por categoria, com fonte e licença registradas em docs/"
+          - "Uma foto por comida, só de Unsplash ou Pexels"
           - "Exportadas em tamanho e compressão para app (sem pesar no APK)"
       - id: E8-S8
         title: "Componentes de estado: Empty State, Empty Card, List End e Scrim"

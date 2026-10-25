@@ -484,7 +484,7 @@ lib/
     category_tree.dart            regra de convergência
   data/                           repositórios e services (Firebase, HTTP, GPS)
     category_repository.dart      interface + provider
-    fake_category_repository.dart
+    local_category_repository.dart
   screens/                        uma pasta por tela: View + ViewModel
     swipe/
       swipe_screen.dart           View
@@ -648,7 +648,7 @@ recolhidos no diff do PR, crie `.gitattributes` na raiz:
 
 ```dart
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:rango_app/data/fake_category_repository.dart';
+import 'package:rango_app/data/local_category_repository.dart';
 import 'package:rango_app/models/food_category.dart';
 
 abstract interface class CategoryRepository {
@@ -662,7 +662,7 @@ final categoryRepositoryProvider = Provider<CategoryRepository>(
 );
 ```
 
-`lib/data/fake_category_repository.dart`
+`lib/data/local_category_repository.dart`
 
 ```dart
 import 'package:rango_app/data/category_repository.dart';
@@ -987,7 +987,7 @@ rm test/smoke_test.dart
 
 ```dart
 import 'package:flutter_test/flutter_test.dart';
-import 'package:rango_app/data/fake_category_repository.dart';
+import 'package:rango_app/data/local_category_repository.dart';
 import 'package:rango_app/models/category_tree.dart';
 import 'package:rango_app/models/food_category.dart';
 
@@ -1039,7 +1039,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:rango_app/data/category_repository.dart';
-import 'package:rango_app/data/fake_category_repository.dart';
+import 'package:rango_app/data/local_category_repository.dart';
 import 'package:rango_app/models/food_category.dart';
 import 'package:rango_app/screens/swipe/swipe_view_model.dart';
 
@@ -1128,7 +1128,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rango_app/data/category_repository.dart';
-import 'package:rango_app/data/fake_category_repository.dart';
+import 'package:rango_app/data/local_category_repository.dart';
 import 'package:rango_app/screens/swipe/swipe_screen.dart';
 
 void main() {

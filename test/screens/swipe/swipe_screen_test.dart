@@ -5,7 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:rango_app/app/theme/app_theme.dart';
 import 'package:rango_app/core/widgets/food_card.dart';
 import 'package:rango_app/data/category_repository.dart';
-import 'package:rango_app/data/fake_category_repository.dart';
+import 'package:rango_app/data/local_category_repository.dart';
 import 'package:rango_app/models/food_category.dart';
 import 'package:rango_app/screens/swipe/swipe_screen.dart';
 
@@ -23,7 +23,7 @@ Future<void> pumpScreen(
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
-        categoryRepositoryProvider.overrideWithValue(FakeCategoryRepository()),
+        categoryRepositoryProvider.overrideWithValue(LocalCategoryRepository()),
       ],
       child: MaterialApp.router(
         theme: AppTheme.light,

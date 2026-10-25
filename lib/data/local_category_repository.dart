@@ -1,7 +1,7 @@
 import 'package:rango_app/data/category_repository.dart';
 import 'package:rango_app/models/food_category.dart';
 
-class FakeCategoryRepository implements CategoryRepository {
+class LocalCategoryRepository implements CategoryRepository {
   static const seed = [
     FoodCategory(id: 'root', label: 'O que bate hoje?'),
     FoodCategory(

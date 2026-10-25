@@ -1,13 +1,13 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rango_app/data/category_repository.dart';
-import 'package:rango_app/data/fake_category_repository.dart';
+import 'package:rango_app/data/local_category_repository.dart';
 import 'package:rango_app/screens/result/result_view_model.dart';
 
 ProviderContainer makeContainer() {
   final container = ProviderContainer(
     overrides: [
-      categoryRepositoryProvider.overrideWithValue(FakeCategoryRepository()),
+      categoryRepositoryProvider.overrideWithValue(LocalCategoryRepository()),
     ],
   );
   addTearDown(container.dispose);

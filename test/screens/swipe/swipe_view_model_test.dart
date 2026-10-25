@@ -2,14 +2,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:rango_app/data/category_repository.dart';
-import 'package:rango_app/data/fake_category_repository.dart';
+import 'package:rango_app/data/local_category_repository.dart';
 import 'package:rango_app/models/food_category.dart';
 import 'package:rango_app/screens/swipe/swipe_view_model.dart';
 
 class _MockCategoryRepository extends Mock implements CategoryRepository {}
 
 FoodCategory _byId(String id) =>
-    FakeCategoryRepository.seed.firstWhere((c) => c.id == id);
+    LocalCategoryRepository.seed.firstWhere((c) => c.id == id);
 
 void main() {
   late ProviderContainer container;
@@ -17,7 +17,7 @@ void main() {
   setUp(() {
     container = ProviderContainer.test(
       overrides: [
-        categoryRepositoryProvider.overrideWithValue(FakeCategoryRepository()),
+        categoryRepositoryProvider.overrideWithValue(LocalCategoryRepository()),
       ],
     );
   });

@@ -12,6 +12,9 @@ Firestore data model in `docs/contexto.md` §8.
   implementations: `Fake...` (in memory, the provider default until the story
   that brings the real backend, and used by tests) and `Firestore...` /
   `Places...`. ViewModels and tests depend on the interface.
+- Data that lives in the app by decision (the food list, `docs/contexto.md`
+  §8) has a real `Local...` implementation instead of a `Fake...`: it is the
+  provider default and tests use it too (`LocalCategoryRepository`).
 - The repository provider lives in the same file as the interface and returns
   the default implementation. Swapping Fake for Firestore changes only its body.
 - Convert everything to models at the edge: `FoodCategory.fromJson(doc.data())`.

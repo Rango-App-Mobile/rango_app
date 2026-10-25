@@ -1,11 +1,11 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:rango_app/data/fake_category_repository.dart';
+import 'package:rango_app/data/local_category_repository.dart';
 import 'package:rango_app/models/category_tree.dart';
 import 'package:rango_app/models/food_category.dart';
 
 void main() {
   group('CategoryTree', () {
-    final tree = CategoryTree(FakeCategoryRepository.seed);
+    final tree = CategoryTree(LocalCategoryRepository.seed);
 
     test('exposes the single root and its two children', () {
       expect(tree.root.id, 'root');
