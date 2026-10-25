@@ -88,7 +88,7 @@ class _DraggableFoodCardState extends State<DraggableFoodCard>
     }
     _releasedFrom = _dx;
     // Fire and forget: the listener updates the offset frame by frame.
-    unawaited(_snapBack.forward(from: 0));
+    _snapBack.forward(from: 0).ignore();
   }
 
   @override

@@ -75,7 +75,7 @@ class _SwipeChoiceCardsState extends State<SwipeChoiceCards>
       _entrance.value = 1;
     } else {
       // Fire and forget: nothing waits for the entrance to end.
-      unawaited(_entrance.forward());
+      _entrance.forward().ignore();
     }
   }
 
