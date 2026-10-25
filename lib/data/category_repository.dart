@@ -6,8 +6,9 @@ abstract interface class CategoryRepository {
   Future<List<FoodCategory>> fetchAll();
 }
 
-/// Swapped for the Firestore implementation in the Sprint 2 story.
-/// Tests override this provider; nobody instantiates a repository directly.
+/// The food list ships with the app (docs/contexto.md §8), so the local
+/// repository is the real implementation. Tests override this provider;
+/// nobody instantiates a repository directly.
 final categoryRepositoryProvider = Provider<CategoryRepository>(
   (ref) => LocalCategoryRepository(),
 );
