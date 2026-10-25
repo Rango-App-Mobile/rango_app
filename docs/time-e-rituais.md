@@ -20,9 +20,9 @@ Todas as frentes usam o **mesmo board** (GitHub Projects, campo *Frente*) e as m
 
 | Frente | Cuida de | Produz | Onde documenta |
 |---|---|---|---|
-| **Dev (app)** | Features do app, testes, CI, arquitetura | Código + PRs | `docs/specs/`, `docs/<feature>.md` |
+| **Dev (app)** | Features do app, testes, CI, arquitetura | Código + PRs | `docs/<feature>.md` |
 | **Marketing e divulgação** | Posicionamento, identidade visual, redes sociais, landing page, pesquisa com usuários, seminário e pitch | Briefs, peças, posts, material de apresentação | `docs/marketing/` |
-| **Produto/UX** (pode ser acumulada) | Priorizar o backlog, protótipos, conteúdo da árvore de categorias, critérios de aceitação | Protótipos, specs de produto, `backlog.yml` | `docs/contexto.md`, `docs/specs/` |
+| **Produto/UX** (pode ser acumulada) | Priorizar o backlog, protótipos, conteúdo da árvore de categorias, critérios de aceitação | Protótipos, `backlog.yml` | `docs/contexto.md` |
 
 As frentes se cruzam em pontos fixos:
 - **Identidade visual → tema do app:** a paleta e a tipografia de marketing viram o `ThemeData` (Sprint 2).
@@ -55,7 +55,6 @@ O workflow **Sprint report** comenta toda terça às 20h, na issue "Sprint N —
 Uma história só entra na sprint se:
 - tiver critérios de aceitação verificáveis;
 - tiver frente, estimativa e responsável;
-- para histórias de dev com lógica nova: a spec (`docs/specs/NNN-…/spec.md`) tiver sido aprovada, ou o time tiver decidido explicitamente que não precisa (ver o processo SDD);
 - para campanhas e pesquisas de marketing: tiver brief em `docs/marketing/briefs/`.
 
 ## Definition of Done (DoD)

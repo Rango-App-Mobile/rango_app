@@ -64,7 +64,7 @@ lib/screens/<screen>/         one folder per screen, View + ViewModel side by si
   <screen>_state.dart         screen state (freezed), when more than a value
   widgets/                    widgets used only by this screen
 test/                         mirrors lib/
-docs/                         canonical context, process, specs, marketing
+docs/                         canonical context, process, feature docs, marketing
 .github/backlog/backlog.yml   source of the backlog (epics, stories, sprints)
 .github/workflows/            CI, backlog sync, board automation, sprint report
 ```
@@ -77,7 +77,8 @@ Screens planned (Figma numbering in `docs/contexto.md` §5): `swipe`, `result`,
 plus the Profile Sheet. The Figma file (link in §6) is the visual source: tokens
 go to `lib/core/theme/` (only `app_theme.dart`, which composes the `ThemeData`,
 lives in `lib/app/theme/`), shared components to `lib/core/widgets/`. A screen folder is born with its story. The
-anonymous session has no screen: it is a repository in `lib/data/`.
+anonymous session is `AuthRepository` in `lib/data/`; the app waits for it
+behind `screens/startup/` (`docs/auth.md`).
 
 > **Current state:** the skeleton from `docs/guia-setup.md` steps 1–4 is in
 > place (issues #3 and #4): `swipe` is a reference slice with provisional
@@ -90,12 +91,11 @@ Docs in `docs/`, all in Portuguese:
 | `contexto.md` | Canonical context (numbered sections, cite by §) |
 | `acordo-projeto.md` (+ PDF) | Signed project agreement: scope, benchmark, schedule, team fronts |
 | `guia-setup.md` | Step-by-step setup: Flutter, dependencies, MVVM, env |
-| `sdd.md` | Spec-driven development cycle and templates |
+| `sdd.md` | How shipped features are documented (no specs before code) |
 | `git-e-prs.md` | Branches, commits, PRs, GitHub automation |
 | `time-e-rituais.md` | Team fronts (Dev, Marketing, Produto/UX), rituals, DoR/DoD |
 | `marketing/` | Positioning, identity, content calendar, briefs |
-| `specs/NNN-slug/` | One folder per spec (`spec.md`, `plan.md`, `tasks.md`) |
-| `<feature>.md` | One file per shipped product feature (e.g. `swipe.md`): what exists and why |
+| `<feature>.md` | One file per shipped product feature (e.g. `auth.md`): what exists and how it works |
 
 ## Stack
 
@@ -141,7 +141,7 @@ is the provider default until the story that brings the real backend. The app
 must always compile and run without Firebase or Places configured.
 
 **Language.** Code, identifiers, test names, comments and commit messages in
-English. Docs (`docs/`), specs and UI strings in Portuguese. Agent-facing files
+English. Docs (`docs/`) and UI strings in Portuguese. Agent-facing files
 (`CLAUDE.md`, `AGENTS.md`, `.claude/`) in English.
 
 ## Workflow
@@ -156,11 +156,11 @@ English. Docs (`docs/`), specs and UI strings in Portuguese. Agent-facing files
 - Before opening a PR run `dart format .`, `flutter analyze` and `flutter test`:
   they are the three CI jobs. PR to `dev`, template filled in, `Closes #<issue>`,
   1 approval.
-- **Spec before code.** Product stories go through spec → plan → tasks in
-  `docs/specs/NNN-slug/` before implementation (`docs/sdd.md` says when it can be
-  skipped). When implementing a task: read `spec.md` and `plan.md`, write the
-  test first, do not widen the scope — anything out of scope goes to the spec's
-  "Fora de escopo" or a new issue.
+- **No specs.** Do not write spec/plan/tasks files before implementing. Start
+  from the story's acceptance criteria, write the test first and do not widen
+  the scope — anything out of scope becomes a new issue. The PR that finishes a
+  story creates or updates `docs/<feature>.md` (Portuguese): what was shipped
+  and how it works (`docs/sdd.md`).
 - **The backlog is code.** Change stories by editing
   `.github/backlog/backlog.yml`; never edit the body of a generated issue (the
   sync overwrites it). Discussion goes in issue comments.

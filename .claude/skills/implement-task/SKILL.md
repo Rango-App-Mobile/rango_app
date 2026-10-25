@@ -1,39 +1,41 @@
 ---
 name: implement-task
-description: Use when the user asks to implement, code or start a task from a Rango spec or a sub-issue ("implementa a task 3 da spec 001", "pega a sub-issue #45", "implement-task"). Works test-first against docs/specs/NNN-slug/{spec,plan,tasks}.md.
+description: Use when the user asks to implement, code or start a Rango story or issue ("implementa a issue #8", "implementa a sessão anônima", "implement-task"). Works test-first from the issue's acceptance criteria; no spec files.
 ---
 
-# Implement a task — Rango
+# Implement a story — Rango
+
+No spec, plan or tasks files are written before coding (`docs/sdd.md`). The
+issue's acceptance criteria are the contract.
 
 ## Before writing code
 
-1. Find the spec folder (by number, or from the sub-issue: its body points to
-   `docs/specs/NNN-slug/tasks.md`).
-2. Read `spec.md`, `plan.md` and `tasks.md` in full, `CLAUDE.md`, and every
-   `.claude/rules/` file whose `paths:` match the files the plan names.
-3. Check the branch: `feat/<issue>-<slug>` off `dev`. If you are on `dev` or
+1. Read the issue (`gh issue view <N>` or its entry in
+   `.github/backlog/backlog.yml`), `CLAUDE.md`, the `docs/contexto.md` sections
+   it touches, and every `.claude/rules/` file whose `paths:` match the files
+   you will change.
+2. Check the branch: `feat/<issue>-<slug>` off `dev`. If you are on `dev` or
    `main`, stop and say so.
-4. If the plan is wrong or impossible against the current code, stop and
-   explain. Do not improvise a different architecture.
+3. If a criterion is ambiguous or contradicts `docs/contexto.md`, ask instead
+   of inventing. Keep any planning in the chat, not in files.
 
-## Cycle (one task at a time)
+## Cycle (one criterion at a time)
 
-1. Write the test for the task's criterion and run it: it must fail for the
-   right reason.
-2. Implement the minimum to pass, in the layer the plan says.
+1. Write the test for the criterion and run it: it must fail for the right
+   reason.
+2. Implement the minimum to pass, in the right layer (`CLAUDE.md`, rules).
 3. `dart run build_runner build --delete-conflicting-outputs` if a model changed.
 4. `dart format .`, `flutter analyze`, `flutter test` — all green.
-5. Tick the item in `tasks.md` and propose the commit message
-   (`feat(<screen>): ... (#<issue>)`). Commit only if asked.
+5. Propose the commit message (`feat(<screen>): ... (#<issue>)`). Commit only
+   if asked.
 
-## When the task closes the story
+## When the story is done
 
-The last task writes or updates `docs/<feature>.md` (Portuguese) from
-`references/feature-doc.md`: what exists and why, not what was planned.
+Write or update `docs/<feature>.md` (Portuguese) from
+`references/feature-doc.md`: what was shipped and how it works.
 
 ## Limits
 
-- Do not widen the scope. Anything outside the task goes to the spec's
-  "Fora de escopo" or becomes a suggested issue.
+- Do not widen the scope. Anything outside the story becomes a suggested issue.
 - New dependency: ask first.
 - Never push, open a PR or close an issue without being asked.
