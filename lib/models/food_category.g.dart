@@ -12,6 +12,9 @@ _FoodCategory _$FoodCategoryFromJson(Map<String, dynamic> json) =>
       label: json['label'] as String,
       parentId: json['parentId'] as String?,
       placesKeyword: json['placesKeyword'] as String?,
+      examples: json['examples'] as String?,
+      foodTheme: json['foodTheme'] as String?,
+      photo: json['photo'] as String?,
     );
 
 Map<String, dynamic> _$FoodCategoryToJson(_FoodCategory instance) =>
@@ -20,4 +23,7 @@ Map<String, dynamic> _$FoodCategoryToJson(_FoodCategory instance) =>
       'label': instance.label,
       'parentId': instance.parentId,
       'placesKeyword': instance.placesKeyword,
+      'examples': instance.examples,
+      'foodTheme': instance.foodTheme,
+      'photo': instance.photo,
     };

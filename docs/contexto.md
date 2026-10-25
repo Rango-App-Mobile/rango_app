@@ -202,6 +202,7 @@ Rituais e frentes: [time-e-rituais.md](time-e-rituais.md).
 | 2026-09-30 | Restaurantes aparecem primeiro no mapa; a lista vem depois só como outra visualização | Segue o Figma (tela 05); o mapa mostra na hora o que está perto |
 | 2026-09-30 | A tela de detalhe do restaurante vira "Opções de contato" (delivery, mapa, ligar) | Segue o Figma (tela 06): a pessoa já escolheu, falta só decidir como pedir |
 | 2026-10-15 | Tokens do design system em `lib/core/theme/` (ThemeExtensions `AppColors`, `AppTextStyles`, `FoodColors` e constantes `AppSpace`/`AppRadius`/`AppShadows`); `lib/app/theme/app_theme.dart` só monta o `ThemeData` | Os widgets compartilhados de `lib/core/widgets/` precisam dos tokens, e `core/` não importa `app/` |
+| 2026-10-24 | O voltar das telas de escolha sai do fluxo e volta à Home com a sessão zerada (não desfaz a última escolha); a Tab Bar só aparece na Home (nível 1) e no Histórico | Segue a doc da Top Bar do Figma: o fluxo é curto (três escolhas) e recomeçar é mais simples que desfazer passo a passo. A Tab Bar some nas escolhas como no mock da tela 02 e na E8-S5 |
 
 ## 12. Em aberto
 

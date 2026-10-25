@@ -62,6 +62,24 @@ void main() {
     expect(state.history, isEmpty);
   });
 
+  group('derived state', () {
+    test('title and subtitle at the root', () async {
+      final state = await container.read(swipeViewModelProvider.future);
+
+      expect(state.title, 'Bora decidir\no Rango?');
+      expect(state.subtitle, 'Toque ou arraste o card que deu mais vontade.');
+    });
+
+    test('title and subtitle after choosing Salgado', () async {
+      await container.read(swipeViewModelProvider.future);
+      container.read(swipeViewModelProvider.notifier).choose(_byId('savory'));
+
+      final state = container.read(swipeViewModelProvider).requireValue;
+      expect(state.title, 'Massa ou\nlanche?');
+      expect(state.subtitle, 'Salgado, anotado. Agora afunila.');
+    });
+  });
+
   test('exposes the error when the repository fails', () async {
     final repository = _MockCategoryRepository();
     when(repository.fetchAll).thenThrow(Exception('offline'));
