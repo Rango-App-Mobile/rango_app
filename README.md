@@ -33,26 +33,25 @@ Projeto da disciplina Projeto de Desenvolvimento I (Senac), 2º semestre de 2026
 
 ## Firebase
 
-O app usa o projeto Firebase `rango-f0485` (Android e iOS). Os arquivos de configuração já estão
-no repositório (`android/app/google-services.json`, `ios/Runner/GoogleService-Info.plist`,
-`lib/firebase_options.dart` e `firebase.json`), então um clone novo roda sem passos extras:
+O app usa o projeto Firebase `rango-f0485` (Android e iOS). Os ids do projeto ficam em
+`lib/firebase_options.dart`; as **chaves de API** ficam só no seu `env.json` local:
 
 ```bash
+cp env.example.json env.json   # preencha FIREBASE_ANDROID_API_KEY e FIREBASE_IOS_API_KEY
 flutter pub get
 flutter run --dart-define-from-file=env.json
 ```
 
+As chaves estão no Google Cloud Console do projeto (APIs e serviços → Credenciais); peça a quem
+administra o projeto. Sem elas o app abre normalmente, mas com um usuário falso
+(`FakeAuthRepository`), sem falar com o Firebase. É assim que o CI roda.
+
+**Não rode `flutterfire configure`**: ele reescreve o `firebase_options.dart` com as chaves
+literais e recria `google-services.json` / `GoogleService-Info.plist` (ignorados pelo git). Detalhes
+em [docs/auth.md](docs/auth.md#configuração-do-firebase).
+
 `Firebase.initializeApp` é chamado em `lib/main.dart`; fora dele, o Firebase só é acessado em
-`lib/data/`. Para regenerar a configuração (novo app ou plataforma), use o FlutterFire CLI e
-confira o diff antes de commitar:
-
-```bash
-dart pub global activate flutterfire_cli
-flutterfire configure --project=rango-f0485
-```
-
-As chaves do Firebase identificam o app e não são segredo; o acesso aos dados é protegido pelas
-regras de segurança do Firestore. Chaves sensíveis (Google Places) continuam só no `env.json` local.
+`lib/data/`. O acesso aos dados é protegido pelas regras de segurança do Firestore.
 
 ## Como contribuir (resumo)
 

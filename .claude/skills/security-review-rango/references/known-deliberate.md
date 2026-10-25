@@ -7,9 +7,11 @@ it under "Skill desatualizada".
 - **Google Places key on the client**, restricted by app (bundle id / package +
   certificate). A Cloud Functions proxy is the future path and is still an open
   question. (`docs/contexto.md` §12, `docs/guia-setup.md` step 4)
-- **Firebase config files are committed** (`firebase_options.dart`,
-  `google-services.json`, `GoogleService-Info.plist`). They identify the project;
-  Security Rules protect the data. (`.claude/rules/firebase.md`)
+- **Firebase project ids are committed** in `lib/firebase_options.dart`; the
+  Firebase API keys are not (they come from `env.json` via `Env`). A literal
+  `AIza…` key, or a committed `google-services.json` / `GoogleService-Info.plist`,
+  **is** a finding. (`.claude/rules/firebase.md`, `docs/contexto.md` §11
+  2026-10-24)
 - **`Fake...` repositories are the provider default** until the story that
   brings the real backend. (`CLAUDE.md`, "Fakes first")
 - **Generated files are committed**; CI does not run `build_runner`.

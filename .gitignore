@@ -42,6 +42,9 @@ app.*.map.json
 # Secrets: local keys passed with --dart-define-from-file
 .env.*
 env.json
+# Written by `flutterfire configure` with literal keys; the app reads them from env.json
+google-services.json
+GoogleService-Info.plist
 
 # Python (backlog scripts)
 __pycache__/

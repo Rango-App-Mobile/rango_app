@@ -1207,6 +1207,12 @@ ainda).
 **Objetivo:** a chave do Google Places entra no app em tempo de compilação, sem
 nunca ir para o git, e o app compila sem ela.
 
+> **Atualização (2026-10-24):** a `PLACES_API_KEY` saiu do `env.example.json` e
+> do `Env`: o app ainda não consulta o Places e não deve existir credencial sem
+> uso. Hoje o `env.json` tem só as chaves do Firebase (`docs/auth.md`). O
+> mecanismo abaixo continua valendo: a chave volta, documentada, na história
+> que trouxer a busca de restaurantes.
+
 `env.example.json` (versionado, na raiz; documenta o que existe)
 
 ```json
@@ -1553,6 +1559,13 @@ dart pub global activate flutterfire_cli
 ```bash
 flutterfire configure --project=<id-do-projeto-firebase> --platforms=android,ios
 ```
+
+> **Atualização (2026-10-24):** o projeto Firebase já existe e o
+> `flutterfire configure` **não deve mais ser rodado**: ele grava as chaves de
+> API literais no código. As chaves agora vêm do `env.json`
+> (`FIREBASE_ANDROID_API_KEY`, `FIREBASE_IOS_API_KEY`) e o
+> `firebase_options.dart` é escrito à mão. Veja `docs/auth.md`, seção
+> "Configuração do Firebase", e `docs/contexto.md` §11.
 
 ```bash
 flutter pub add firebase_core firebase_auth cloud_firestore
