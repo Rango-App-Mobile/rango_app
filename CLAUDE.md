@@ -75,15 +75,10 @@ and repositories are shared because several screens use the same data.
 Screens planned (Figma numbering in `docs/contexto.md` §5): `swipe`, `result`,
 `restaurants` (map), `restaurant_contact`, `login`, `history`, `history_detail`,
 plus the Profile Sheet. The Figma file (link in §6) is the visual source: tokens
-<<<<<<< HEAD
 go to `lib/core/theme/` (only `app_theme.dart`, which composes the `ThemeData`,
 lives in `lib/app/theme/`), shared components to `lib/core/widgets/`. A screen folder is born with its story. The
-anonymous session has no screen: it is a repository in `lib/data/`.
-=======
-go to `lib/app/theme/`, shared components to `lib/core/widgets/`. A screen folder is born with its story. The
 anonymous session is `AuthRepository` in `lib/data/`; the app waits for it
 behind `screens/startup/` (`docs/auth.md`).
->>>>>>> 18c9caa (feat(auth): create anonymous session on startup (#8))
 
 > **Current state:** the skeleton from `docs/guia-setup.md` steps 1–4 is in
 > place (issues #3 and #4): `swipe` is a reference slice with provisional
