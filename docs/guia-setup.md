@@ -1207,6 +1207,12 @@ ainda).
 **Objetivo:** a chave do Google Places entra no app em tempo de compilação, sem
 nunca ir para o git, e o app compila sem ela.
 
+> **Atualização (2026-10-24):** a `PLACES_API_KEY` saiu do `env.example.json` e
+> do `Env`: o app ainda não consulta o Places e não deve existir credencial sem
+> uso. Hoje o `env.json` tem só as chaves do Firebase (`docs/auth.md`). O
+> mecanismo abaixo continua valendo: a chave volta, documentada, na história
+> que trouxer a busca de restaurantes.
+
 `env.example.json` (versionado, na raiz; documenta o que existe)
 
 ```json

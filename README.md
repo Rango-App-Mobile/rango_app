@@ -34,8 +34,7 @@ Projeto da disciplina Projeto de Desenvolvimento I (Senac), 2º semestre de 2026
 ## Firebase
 
 O app usa o projeto Firebase `rango-f0485` (Android e iOS). Os ids do projeto ficam em
-`lib/firebase_options.dart`; as **chaves de API** ficam só no seu `env.json` local, como a do
-Places:
+`lib/firebase_options.dart`; as **chaves de API** ficam só no seu `env.json` local:
 
 ```bash
 cp env.example.json env.json   # preencha FIREBASE_ANDROID_API_KEY e FIREBASE_IOS_API_KEY
