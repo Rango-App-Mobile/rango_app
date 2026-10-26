@@ -83,16 +83,35 @@ void main() {
       }
     });
 
-    test('uses different themes for the two options of a pair', () {
-      final byParent = <String?, Set<String?>>{};
-      for (final category in nonRoot) {
-        byParent
-            .putIfAbsent(category.parentId, () => {})
-            .add(category.foodTheme);
+    test('lists 16 savory and 16 sweet foods', () {
+      int countOf(String parentId) => LocalCategoryRepository.seed
+          .where((c) => c.parentId == parentId)
+          .length;
+
+      expect(countOf('savory'), 16);
+      expect(countOf('sweet'), 16);
+    });
+
+    test('gives every food a Places keyword and a photo', () {
+      final foods = LocalCategoryRepository.seed.where(
+        (c) => c.parentId == 'savory' || c.parentId == 'sweet',
+      );
+      for (final food in foods) {
+        expect(food.placesKeyword, isNotEmpty, reason: food.id);
+        expect(food.photo, isNotNull, reason: food.id);
       }
-      for (final entry in byParent.entries) {
-        expect(entry.value, hasLength(2), reason: entry.key);
-      }
+    });
+
+    test('uses unique ids', () {
+      final ids = LocalCategoryRepository.seed.map((c) => c.id);
+      expect(ids.toSet(), hasLength(ids.length));
+    });
+
+    test('uses different themes for Salgado and Doce', () {
+      final groups = LocalCategoryRepository.seed.where(
+        (c) => c.parentId == 'root',
+      );
+      expect(groups.map((c) => c.foodTheme).toSet(), hasLength(2));
     });
   });
 }

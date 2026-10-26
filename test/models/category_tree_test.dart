@@ -12,22 +12,43 @@ void main() {
       expect(tree.childrenOf(tree.root).map((c) => c.id), ['savory', 'sweet']);
     });
 
+    test('gives each group its whole food list', () {
+      final [savory, sweet] = tree.childrenOf(tree.root);
+
+      expect(tree.childrenOf(savory), hasLength(16));
+      expect(tree.childrenOf(sweet), hasLength(16));
+    });
+
     test('treats a node without children as a leaf', () {
       const pizza = FoodCategory(
         id: 'pizza',
         label: 'Pizza',
-        parentId: 'pasta',
+        parentId: 'savory',
       );
       expect(tree.isLeaf(pizza), isTrue);
     });
 
-    test('rejects a node with a number of children other than two', () {
+    test('rejects a root with a number of children other than two', () {
       expect(
         () => CategoryTree(const [
           FoodCategory(id: 'root', label: 'Root'),
           FoodCategory(id: 'only', label: 'Only child', parentId: 'root'),
         ]),
         throwsArgumentError,
+      );
+    });
+
+    test('accepts a group with more than two foods', () {
+      expect(
+        () => CategoryTree(const [
+          FoodCategory(id: 'root', label: 'Root'),
+          FoodCategory(id: 'savory', label: 'Salgado', parentId: 'root'),
+          FoodCategory(id: 'sweet', label: 'Doce', parentId: 'root'),
+          FoodCategory(id: 'pizza', label: 'Pizza', parentId: 'savory'),
+          FoodCategory(id: 'sushi', label: 'Sushi', parentId: 'savory'),
+          FoodCategory(id: 'pastel', label: 'Pastel', parentId: 'savory'),
+        ]),
+        returnsNormally,
       );
     });
 
