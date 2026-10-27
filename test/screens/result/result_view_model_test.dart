@@ -15,24 +15,29 @@ ProviderContainer makeContainer() {
 }
 
 void main() {
-  test('resolves the path in order and exposes the last as result', () async {
+  const duelPath = 'savory,spaghetti,pizza,pizza,pizza';
+
+  test(
+    'resolves every choice in order and exposes the last as result',
+    () async {
+      final container = makeContainer();
+      final state = await container.read(
+        resultViewModelProvider(duelPath).future,
+      );
+
+      expect(state.path.map((c) => c.id), duelPath.split(','));
+      expect(state.result.id, 'pizza');
+    },
+  );
+
+  test('labels the group and the winner and counts every choice', () async {
     final container = makeContainer();
     final state = await container.read(
-      resultViewModelProvider('savory,pasta,spaghetti').future,
+      resultViewModelProvider(duelPath).future,
     );
 
-    expect(state.path.map((c) => c.id), ['savory', 'pasta', 'spaghetti']);
-    expect(state.result.id, 'spaghetti');
-  });
-
-  test('formats the path label and counts the choices', () async {
-    final container = makeContainer();
-    final state = await container.read(
-      resultViewModelProvider('savory,pasta,spaghetti').future,
-    );
-
-    expect(state.pathLabel, 'Salgado, massa, macarrão');
-    expect(state.choiceCount, 3);
+    expect(state.pathLabel, 'Salgado, pizza');
+    expect(state.choiceCount, 5);
   });
 
   test('an unknown id is an error', () async {

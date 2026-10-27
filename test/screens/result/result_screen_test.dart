@@ -9,7 +9,12 @@ import 'package:rango_app/screens/result/result_screen.dart';
 
 Future<void> pumpScreen(
   WidgetTester tester, {
-  List<String> pathIds = const ['savory', 'pasta', 'spaghetti'],
+  List<String> pathIds = const [
+    'savory',
+    'spaghetti',
+    'spaghetti',
+    'spaghetti',
+  ],
   Size size = const Size(402, 874),
 }) async {
   tester.view
@@ -49,8 +54,8 @@ void main() {
     await pumpScreen(tester);
 
     expect(find.text('Macarrão'), findsOneWidget);
-    expect(find.text('Salgado, massa, macarrão'), findsOneWidget);
-    expect(find.text('3 escolhas'), findsOneWidget);
+    expect(find.text('Salgado, macarrão'), findsOneWidget);
+    expect(find.text('4 escolhas'), findsOneWidget);
     expect(find.text('Deu match!'), findsOneWidget);
     expect(find.text('Agora é só escolher onde.'), findsOneWidget);
     expect(
