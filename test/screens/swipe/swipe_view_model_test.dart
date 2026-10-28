@@ -142,13 +142,13 @@ void main() {
         ..choose(_byId('spaghetti'));
       expect(
         container.read(swipeViewModelProvider).requireValue.subtitle,
-        'Macarrão está no trono com 1 vitória.',
+        'Macarrão está ganhando com 1 vitória.',
       );
 
       viewModel().choose(_byId('spaghetti'));
       expect(
         container.read(swipeViewModelProvider).requireValue.subtitle,
-        'Macarrão está no trono com 2 vitórias.',
+        'Macarrão está ganhando, mais uma e ele será o escolhido.',
       );
     });
   });

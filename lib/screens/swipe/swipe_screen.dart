@@ -129,7 +129,7 @@ class _SwipeContent extends StatelessWidget {
             child: switch (state.options) {
               [final first, final second] => Center(
                 child: SwipeChoiceCards(
-                  key: ValueKey(state.current.id),
+                  key: ValueKey(state.history.length),
                   first: first,
                   second: second,
                   onChosen: onChoose,

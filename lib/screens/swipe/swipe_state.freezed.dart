@@ -14,7 +14,8 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$SwipeState {
 
- FoodCategory get current; List<FoodCategory> get options; List<FoodCategory> get history; FoodCategory? get result;
+ FoodCategory get current; List<FoodCategory> get options; List<FoodCategory> get history;/// Null at the root; set once the user picks Salgado or Doce.
+ DuelState? get duel; FoodCategory? get result;
 /// Create a copy of SwipeState
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -25,16 +26,16 @@ $SwipeStateCopyWith<SwipeState> get copyWith => _$SwipeStateCopyWithImpl<SwipeSt
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is SwipeState&&(identical(other.current, current) || other.current == current)&&const DeepCollectionEquality().equals(other.options, options)&&const DeepCollectionEquality().equals(other.history, history)&&(identical(other.result, result) || other.result == result));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is SwipeState&&(identical(other.current, current) || other.current == current)&&const DeepCollectionEquality().equals(other.options, options)&&const DeepCollectionEquality().equals(other.history, history)&&(identical(other.duel, duel) || other.duel == duel)&&(identical(other.result, result) || other.result == result));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,current,const DeepCollectionEquality().hash(options),const DeepCollectionEquality().hash(history),result);
+int get hashCode => Object.hash(runtimeType,current,const DeepCollectionEquality().hash(options),const DeepCollectionEquality().hash(history),duel,result);
 
 @override
 String toString() {
-  return 'SwipeState(current: $current, options: $options, history: $history, result: $result)';
+  return 'SwipeState(current: $current, options: $options, history: $history, duel: $duel, result: $result)';
 }
 
 
@@ -45,11 +46,11 @@ abstract mixin class $SwipeStateCopyWith<$Res>  {
   factory $SwipeStateCopyWith(SwipeState value, $Res Function(SwipeState) _then) = _$SwipeStateCopyWithImpl;
 @useResult
 $Res call({
- FoodCategory current, List<FoodCategory> options, List<FoodCategory> history, FoodCategory? result
+ FoodCategory current, List<FoodCategory> options, List<FoodCategory> history, DuelState? duel, FoodCategory? result
 });
 
 
-$FoodCategoryCopyWith<$Res> get current;$FoodCategoryCopyWith<$Res>? get result;
+$FoodCategoryCopyWith<$Res> get current;$DuelStateCopyWith<$Res>? get duel;$FoodCategoryCopyWith<$Res>? get result;
 
 }
 /// @nodoc
@@ -62,12 +63,13 @@ class _$SwipeStateCopyWithImpl<$Res>
 
 /// Create a copy of SwipeState
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? current = null,Object? options = null,Object? history = null,Object? result = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? current = null,Object? options = null,Object? history = null,Object? duel = freezed,Object? result = freezed,}) {
   return _then(_self.copyWith(
 current: null == current ? _self.current : current // ignore: cast_nullable_to_non_nullable
 as FoodCategory,options: null == options ? _self.options : options // ignore: cast_nullable_to_non_nullable
 as List<FoodCategory>,history: null == history ? _self.history : history // ignore: cast_nullable_to_non_nullable
-as List<FoodCategory>,result: freezed == result ? _self.result : result // ignore: cast_nullable_to_non_nullable
+as List<FoodCategory>,duel: freezed == duel ? _self.duel : duel // ignore: cast_nullable_to_non_nullable
+as DuelState?,result: freezed == result ? _self.result : result // ignore: cast_nullable_to_non_nullable
 as FoodCategory?,
   ));
 }
@@ -79,6 +81,18 @@ $FoodCategoryCopyWith<$Res> get current {
   
   return $FoodCategoryCopyWith<$Res>(_self.current, (value) {
     return _then(_self.copyWith(current: value));
+  });
+}/// Create a copy of SwipeState
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$DuelStateCopyWith<$Res>? get duel {
+    if (_self.duel == null) {
+    return null;
+  }
+
+  return $DuelStateCopyWith<$Res>(_self.duel!, (value) {
+    return _then(_self.copyWith(duel: value));
   });
 }/// Create a copy of SwipeState
 /// with the given fields replaced by the non-null parameter values.
@@ -174,10 +188,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( FoodCategory current,  List<FoodCategory> options,  List<FoodCategory> history,  FoodCategory? result)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( FoodCategory current,  List<FoodCategory> options,  List<FoodCategory> history,  DuelState? duel,  FoodCategory? result)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _SwipeState() when $default != null:
-return $default(_that.current,_that.options,_that.history,_that.result);case _:
+return $default(_that.current,_that.options,_that.history,_that.duel,_that.result);case _:
   return orElse();
 
 }
@@ -195,10 +209,10 @@ return $default(_that.current,_that.options,_that.history,_that.result);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( FoodCategory current,  List<FoodCategory> options,  List<FoodCategory> history,  FoodCategory? result)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( FoodCategory current,  List<FoodCategory> options,  List<FoodCategory> history,  DuelState? duel,  FoodCategory? result)  $default,) {final _that = this;
 switch (_that) {
 case _SwipeState():
-return $default(_that.current,_that.options,_that.history,_that.result);case _:
+return $default(_that.current,_that.options,_that.history,_that.duel,_that.result);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -215,10 +229,10 @@ return $default(_that.current,_that.options,_that.history,_that.result);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( FoodCategory current,  List<FoodCategory> options,  List<FoodCategory> history,  FoodCategory? result)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( FoodCategory current,  List<FoodCategory> options,  List<FoodCategory> history,  DuelState? duel,  FoodCategory? result)?  $default,) {final _that = this;
 switch (_that) {
 case _SwipeState() when $default != null:
-return $default(_that.current,_that.options,_that.history,_that.result);case _:
+return $default(_that.current,_that.options,_that.history,_that.duel,_that.result);case _:
   return null;
 
 }
@@ -230,7 +244,7 @@ return $default(_that.current,_that.options,_that.history,_that.result);case _:
 
 
 class _SwipeState extends SwipeState {
-  const _SwipeState({required this.current, required final  List<FoodCategory> options, final  List<FoodCategory> history = const <FoodCategory>[], this.result}): _options = options,_history = history,super._();
+  const _SwipeState({required this.current, required final  List<FoodCategory> options, final  List<FoodCategory> history = const <FoodCategory>[], this.duel, this.result}): _options = options,_history = history,super._();
   
 
 @override final  FoodCategory current;
@@ -248,6 +262,8 @@ class _SwipeState extends SwipeState {
   return EqualUnmodifiableListView(_history);
 }
 
+/// Null at the root; set once the user picks Salgado or Doce.
+@override final  DuelState? duel;
 @override final  FoodCategory? result;
 
 /// Create a copy of SwipeState
@@ -260,16 +276,16 @@ _$SwipeStateCopyWith<_SwipeState> get copyWith => __$SwipeStateCopyWithImpl<_Swi
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _SwipeState&&(identical(other.current, current) || other.current == current)&&const DeepCollectionEquality().equals(other._options, _options)&&const DeepCollectionEquality().equals(other._history, _history)&&(identical(other.result, result) || other.result == result));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _SwipeState&&(identical(other.current, current) || other.current == current)&&const DeepCollectionEquality().equals(other._options, _options)&&const DeepCollectionEquality().equals(other._history, _history)&&(identical(other.duel, duel) || other.duel == duel)&&(identical(other.result, result) || other.result == result));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,current,const DeepCollectionEquality().hash(_options),const DeepCollectionEquality().hash(_history),result);
+int get hashCode => Object.hash(runtimeType,current,const DeepCollectionEquality().hash(_options),const DeepCollectionEquality().hash(_history),duel,result);
 
 @override
 String toString() {
-  return 'SwipeState(current: $current, options: $options, history: $history, result: $result)';
+  return 'SwipeState(current: $current, options: $options, history: $history, duel: $duel, result: $result)';
 }
 
 
@@ -280,11 +296,11 @@ abstract mixin class _$SwipeStateCopyWith<$Res> implements $SwipeStateCopyWith<$
   factory _$SwipeStateCopyWith(_SwipeState value, $Res Function(_SwipeState) _then) = __$SwipeStateCopyWithImpl;
 @override @useResult
 $Res call({
- FoodCategory current, List<FoodCategory> options, List<FoodCategory> history, FoodCategory? result
+ FoodCategory current, List<FoodCategory> options, List<FoodCategory> history, DuelState? duel, FoodCategory? result
 });
 
 
-@override $FoodCategoryCopyWith<$Res> get current;@override $FoodCategoryCopyWith<$Res>? get result;
+@override $FoodCategoryCopyWith<$Res> get current;@override $DuelStateCopyWith<$Res>? get duel;@override $FoodCategoryCopyWith<$Res>? get result;
 
 }
 /// @nodoc
@@ -297,12 +313,13 @@ class __$SwipeStateCopyWithImpl<$Res>
 
 /// Create a copy of SwipeState
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? current = null,Object? options = null,Object? history = null,Object? result = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? current = null,Object? options = null,Object? history = null,Object? duel = freezed,Object? result = freezed,}) {
   return _then(_SwipeState(
 current: null == current ? _self.current : current // ignore: cast_nullable_to_non_nullable
 as FoodCategory,options: null == options ? _self._options : options // ignore: cast_nullable_to_non_nullable
 as List<FoodCategory>,history: null == history ? _self._history : history // ignore: cast_nullable_to_non_nullable
-as List<FoodCategory>,result: freezed == result ? _self.result : result // ignore: cast_nullable_to_non_nullable
+as List<FoodCategory>,duel: freezed == duel ? _self.duel : duel // ignore: cast_nullable_to_non_nullable
+as DuelState?,result: freezed == result ? _self.result : result // ignore: cast_nullable_to_non_nullable
 as FoodCategory?,
   ));
 }
@@ -315,6 +332,18 @@ $FoodCategoryCopyWith<$Res> get current {
   
   return $FoodCategoryCopyWith<$Res>(_self.current, (value) {
     return _then(_self.copyWith(current: value));
+  });
+}/// Create a copy of SwipeState
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$DuelStateCopyWith<$Res>? get duel {
+    if (_self.duel == null) {
+    return null;
+  }
+
+  return $DuelStateCopyWith<$Res>(_self.duel!, (value) {
+    return _then(_self.copyWith(duel: value));
   });
 }/// Create a copy of SwipeState
 /// with the given fields replaced by the non-null parameter values.

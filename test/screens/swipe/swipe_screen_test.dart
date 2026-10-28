@@ -197,7 +197,7 @@ void main() {
 
     expect(find.text('Macarrão ou\nhambúrguer?'), findsOneWidget);
     expect(find.text('Pizza'), findsNothing);
-    expect(find.text('Macarrão está no trono com 1 vitória.'), findsOneWidget);
+    expect(find.text('Macarrão está ganhando com 1 vitória.'), findsOneWidget);
   });
 
   testWidgets('a dragged champion comes back for the next round', (
