@@ -105,7 +105,7 @@ Telas em alta fidelidade e protótipo: [Figma do Rango](https://www.figma.com/de
 (página 📱 Telas; design system e componentes nas páginas de Design System e Components).
 
 1. O usuário abre o app como **visitante**: a sessão anônima é criada automaticamente, sem cadastro.
-2. A primeira escolha é ampla (salgado vs. doce). Cada escolha seguinte, por toque ou arrastando o card, afunila (salgado → massa → macarrão).
+2. A primeira escolha é ampla (salgado vs. doce). Depois vêm duelos "quem ganha fica" dentro da lista escolhida, por toque ou arrastando o card: a comida escolhida fica e enfrenta a próxima, até vencer três duelos seguidos (ex.: Salgado → Pizza).
 3. Ao convergir num tipo específico ("Deu match!"), o app consulta o Google Places por restaurantes próximos que servem esse tipo.
 4. O usuário vê os restaurantes **no mapa** (nome, nota, distância), escolhe um e decide como pedir: delivery, mapa ou ligação.
 5. Quem **entra com conta** (pelo perfil) tem as decisões salvas no **Histórico**, estatísticas e preferências. O visitante usa o fluxo inteiro, mas nada dele é salvo.
@@ -115,8 +115,8 @@ Telas em alta fidelidade e protótipo: [Figma do Rango](https://www.figma.com/de
 > Preencher conforme as specs forem aprovadas. Cada regra cita a spec de origem.
 
 - **R1:** toda sessão pertence a um usuário do Firebase Auth: anônimo (visitante) ou com conta. Só sessões de usuário com conta são salvas no Firestore; do visitante não se grava histórico, estatística nem preferência. *(E1, decisão de 2026-09-30)*
-- **R2:** cada escolha avança exatamente um nível da árvore de categorias; a sessão termina numa folha. *(spec 001, a definir)*
-- **R3:** cada folha da árvore tem um termo de busca para o Google Places. *(spec 001)*
+- **R2:** a primeira escolha é Salgado vs. Doce; depois, duelos "quem ganha fica" dentro da lista escolhida (16 comidas em cada). O primeiro duelo já vale 1 ponto; o desafiante que vence vira campeão com 1 ponto e o derrubado perde os seus. Três vitórias seguidas encerram a sessão nessa comida; não há limite de duelos. A fila é aleatória; quando acaba, a lista é embaralhada de novo sem o campeão atual, e só então um derrubado pode voltar. *(E2-S1, decisão de 2026-10-24)*
+- **R3:** cada comida das listas tem um termo de busca para o Google Places. *(E2-S1)*
 - **R4:** a recomendação considera só restaurantes próximos à localização atual; o raio está em §12.
 
 ## 8. Modelo de dados
@@ -135,7 +135,7 @@ users/{uid}/sessions/{sessionId}
   channel: delivery | map | call                   # alimenta o "Pedir de novo"
 ```
 
-Árvore de categorias: começa como dado local versionado no app (`lib/data/`). Mover para o Firestore é decisão futura (§12).
+Cardápio (raiz, Salgado e Doce, e 16 comidas em cada): dado local versionado no app, no `LocalCategoryRepository` (`lib/data/`). Mover para o Firestore é decisão futura (§12).
 
 ## 9. Escopo: MVP vs. futuro
 
@@ -204,6 +204,7 @@ Rituais e frentes: [time-e-rituais.md](time-e-rituais.md).
 | 2026-10-15 | Tokens do design system em `lib/core/theme/` (ThemeExtensions `AppColors`, `AppTextStyles`, `FoodColors` e constantes `AppSpace`/`AppRadius`/`AppShadows`); `lib/app/theme/app_theme.dart` só monta o `ThemeData` | Os widgets compartilhados de `lib/core/widgets/` precisam dos tokens, e `core/` não importa `app/` |
 | 2026-10-24 | O voltar das telas de escolha sai do fluxo e volta à Home com a sessão zerada (não desfaz a última escolha); a Tab Bar só aparece na Home (nível 1) e no Histórico | Segue a doc da Top Bar do Figma: o fluxo é curto (três escolhas) e recomeçar é mais simples que desfazer passo a passo. A Tab Bar some nas escolhas como no mock da tela 02 e na E8-S5 |
 | 2026-10-24 | As chaves de API do Firebase saem do git e vêm do `env.json` (`FIREBASE_ANDROID_API_KEY`, `FIREBASE_IOS_API_KEY`); `google-services.json`, `GoogleService-Info.plist` e `firebase.json` não são mais versionados e o `firebase_options.dart` passa a ser escrito à mão. Sem as chaves o app roda com `FakeAuthRepository` | O secret scanning do GitHub abriu alertas para as chaves commitadas. Elas foram trocadas e restringidas por app no Google Cloud; mantê-las fora do git evita novos alertas e segue o padrão de `env.json` + `--dart-define-from-file` já previsto para chaves |
+| 2026-10-24 | A árvore binária (Salgado → Massa → Macarrão) dá lugar a Salgado vs. Doce seguido de duelos "quem ganha fica" em listas planas de 16 comidas cada (R2); o repositório local passa a se chamar `LocalCategoryRepository`, porque o cardápio no app é a implementação real, não um fake | Com a árvore, cada comida nova exigia um nível intermediário e a sessão era sempre o mesmo caminho de três escolhas. O duelo aceita 32 comidas sem novos níveis e só termina quando a pessoa confirma o gosto três vezes seguidas |
 | 2026-10-24 | A `PLACES_API_KEY` sai do `env.example.json` e do `Env` até a história que trouxer a busca de restaurantes | O app ainda não usa o Places; nenhuma credencial fica configurada sem uso. A fonte dos restaurantes (Places ou base própria) volta a ser discutida nessa história |
 
 ## 12. Em aberto
