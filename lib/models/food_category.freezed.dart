@@ -16,11 +16,7 @@ T _$identity<T>(T value) => value;
 mixin _$FoodCategory {
 
  String get id; String get label; String? get parentId; String? get placesKeyword;/// Line under the title on the card, e.g. "Coxinha, pastel, pizza".
- String? get examples;/// Name of the Figma Food Theme mode: tomato, mustard, lilac, lime,
-/// pistachio, sky, plum, copper, cocoa or bubblegum. A String so the
-/// model stays pure Dart; the View resolves it with
-/// `FoodTheme.values.byName`.
- String? get foodTheme;/// Name of the dish photo bundled in `assets/images/food/` (without the
+ String? get examples; String? get foodTheme;/// Name of the dish photo bundled in `assets/images/food/` (without the
 /// `.jpg`), e.g. "pizza". Null draws the Food Card placeholder. A String
 /// for the same reason as [foodTheme]: the View builds the image.
  String? get photo;
@@ -232,10 +228,6 @@ class _FoodCategory implements FoodCategory {
 @override final  String? placesKeyword;
 /// Line under the title on the card, e.g. "Coxinha, pastel, pizza".
 @override final  String? examples;
-/// Name of the Figma Food Theme mode: tomato, mustard, lilac, lime,
-/// pistachio, sky, plum, copper, cocoa or bubblegum. A String so the
-/// model stays pure Dart; the View resolves it with
-/// `FoodTheme.values.byName`.
 @override final  String? foodTheme;
 /// Name of the dish photo bundled in `assets/images/food/` (without the
 /// `.jpg`), e.g. "pizza". Null draws the Food Card placeholder. A String

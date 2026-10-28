@@ -5,9 +5,12 @@ import 'package:go_router/go_router.dart';
 import 'package:rango_app/app/theme/app_theme.dart';
 import 'package:rango_app/core/widgets/food_card.dart';
 import 'package:rango_app/data/category_repository.dart';
-import 'package:rango_app/data/fake_category_repository.dart';
+import 'package:rango_app/data/local_category_repository.dart';
 import 'package:rango_app/models/food_category.dart';
 import 'package:rango_app/screens/swipe/swipe_screen.dart';
+import 'package:rango_app/screens/swipe/swipe_view_model.dart';
+
+import '../../helpers/in_order_random.dart';
 
 Future<void> pumpScreen(
   WidgetTester tester, {
@@ -23,7 +26,8 @@ Future<void> pumpScreen(
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
-        categoryRepositoryProvider.overrideWithValue(FakeCategoryRepository()),
+        categoryRepositoryProvider.overrideWithValue(LocalCategoryRepository()),
+        duelRandomProvider.overrideWithValue(InOrderRandom()),
       ],
       child: MaterialApp.router(
         theme: AppTheme.light,
@@ -88,9 +92,9 @@ void main() {
     await tester.tap(find.text('Salgado'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Massa ou\nlanche?'), findsOneWidget);
-    expect(find.text('Massa'), findsOneWidget);
-    expect(find.text('Lanche'), findsOneWidget);
+    expect(find.text('Macarrão ou\npizza?'), findsOneWidget);
+    expect(find.text('Macarrão'), findsOneWidget);
+    expect(find.text('Pizza'), findsOneWidget);
     expect(voltar, findsOneWidget);
     expect(find.bySemanticsLabel('Abrir perfil'), findsNothing);
   });
@@ -114,7 +118,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Salgado'), findsOneWidget);
-    expect(find.text('Massa'), findsNothing);
+    expect(find.text('Macarrão'), findsNothing);
     expect(tester.getCenter(cardTitled('Salgado')), before);
   });
 
@@ -144,7 +148,7 @@ void main() {
     await gesture.cancel();
     await tester.pumpAndSettle();
 
-    expect(find.text('Massa'), findsNothing);
+    expect(find.text('Macarrão'), findsNothing);
     expect(tester.getCenter(cardTitled('Salgado')), before);
   });
 
@@ -152,7 +156,7 @@ void main() {
     await pumpScreen(tester);
     await tester.tap(find.text('Salgado'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Massa'));
+    await tester.tap(find.text('Macarrão'));
     await tester.pumpAndSettle();
 
     await tester.tap(voltar);
@@ -181,19 +185,53 @@ void main() {
     expect(voltar, findsNothing);
   });
 
-  testWidgets('choosing a leaf opens the result with the path', (
+  testWidgets('a duel round swaps the loser for the next challenger', (
+    tester,
+  ) async {
+    await pumpScreen(tester);
+    await tester.tap(find.text('Salgado'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Macarrão'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Macarrão ou\nhambúrguer?'), findsOneWidget);
+    expect(find.text('Pizza'), findsNothing);
+    expect(find.text('Macarrão está ganhando com 1 vitória.'), findsOneWidget);
+  });
+
+  testWidgets('a dragged champion comes back for the next round', (
+    tester,
+  ) async {
+    await pumpScreen(tester);
+    await tester.tap(find.text('Salgado'));
+    await tester.pumpAndSettle();
+    final before = tester.getCenter(cardTitled('Macarrão')).dx;
+
+    await tester.drag(find.text('Macarrão'), const Offset(150, 0));
+    await tester.pumpAndSettle();
+
+    // Only the horizontal offset: the header above may change height.
+    expect(find.text('Hambúrguer'), findsOneWidget);
+    expect(tester.getCenter(cardTitled('Macarrão')).dx, before);
+  });
+
+  testWidgets('three wins in a row open the result with every choice', (
     tester,
   ) async {
     await pumpScreen(tester);
 
     await tester.tap(find.text('Salgado'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Massa'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Macarrão'));
-    await tester.pumpAndSettle();
+    for (var i = 0; i < 3; i++) {
+      await tester.tap(find.text('Macarrão'));
+      await tester.pumpAndSettle();
+    }
 
-    expect(find.text('RESULT savory,pasta,spaghetti'), findsOneWidget);
+    expect(
+      find.text('RESULT savory,spaghetti,spaghetti,spaghetti'),
+      findsOneWidget,
+    );
   });
 
   testWidgets('with reduced motion the cards are visible after one pump', (
@@ -257,10 +295,10 @@ void main() {
     await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);
 
-    await tester.tap(find.text('Massa'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Pizza'));
-    await tester.pumpAndSettle();
+    for (var i = 0; i < 3; i++) {
+      await tester.tap(find.text('Macarrão'));
+      await tester.pumpAndSettle();
+    }
     expect(tester.takeException(), isNull);
     expect(find.textContaining('RESULT'), findsOneWidget);
   });
@@ -297,7 +335,7 @@ void main() {
   });
 }
 
-class _FlakyRepository extends FakeCategoryRepository {
+class _FlakyRepository extends LocalCategoryRepository {
   var _calls = 0;
 
   @override

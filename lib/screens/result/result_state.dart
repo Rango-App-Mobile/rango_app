@@ -12,11 +12,8 @@ abstract class ResultState with _$ResultState {
 
   const ResultState._();
 
-  /// "Salgado, massa, macarrão": the first label as is, the rest lowercase.
-  String get pathLabel => [
-    for (final (index, choice) in path.indexed)
-      if (index == 0) choice.label else _lowerFirst(choice.label),
-  ].join(', ');
+  /// "Salgado, pizza": the group the user picked and the duel winner.
+  String get pathLabel => '${path.first.label}, ${_lowerFirst(result.label)}';
 
   int get choiceCount => path.length;
 

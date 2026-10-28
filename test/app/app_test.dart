@@ -9,10 +9,13 @@ import 'package:rango_app/app/app.dart';
 import 'package:rango_app/data/auth_repository.dart';
 import 'package:rango_app/data/category_repository.dart';
 import 'package:rango_app/data/fake_auth_repository.dart';
-import 'package:rango_app/data/fake_category_repository.dart';
+import 'package:rango_app/data/local_category_repository.dart';
 import 'package:rango_app/models/app_user.dart';
 import 'package:rango_app/screens/startup/startup_screen.dart';
 import 'package:rango_app/screens/swipe/swipe_screen.dart';
+import 'package:rango_app/screens/swipe/swipe_view_model.dart';
+
+import '../helpers/in_order_random.dart';
 
 class _MockAuthRepository extends Mock implements AuthRepository {}
 
@@ -29,7 +32,8 @@ Future<void> pumpApp(WidgetTester tester) async {
     ProviderScope(
       overrides: [
         authRepositoryProvider.overrideWithValue(FakeAuthRepository()),
-        categoryRepositoryProvider.overrideWithValue(FakeCategoryRepository()),
+        categoryRepositoryProvider.overrideWithValue(LocalCategoryRepository()),
+        duelRandomProvider.overrideWithValue(InOrderRandom()),
       ],
       child: const RangoApp(),
     ),
@@ -48,7 +52,7 @@ void main() {
         overrides: [
           authRepositoryProvider.overrideWithValue(repository),
           categoryRepositoryProvider.overrideWithValue(
-            FakeCategoryRepository(),
+            LocalCategoryRepository(),
           ),
         ],
         child: const RangoApp(),
@@ -104,10 +108,10 @@ void main() {
       await tester.pumpAndSettle();
       expect(homeTab, findsNothing);
 
-      await tester.tap(find.text('Massa'));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('Macarrão'));
-      await tester.pumpAndSettle();
+      for (var i = 0; i < 3; i++) {
+        await tester.tap(find.text('Macarrão'));
+        await tester.pumpAndSettle();
+      }
     }
 
     testWidgets('converges on a result and opens restaurants', (tester) async {

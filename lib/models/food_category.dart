@@ -15,11 +15,6 @@ abstract class FoodCategory with _$FoodCategory {
 
     /// Line under the title on the card, e.g. "Coxinha, pastel, pizza".
     String? examples,
-
-    /// Name of the Figma Food Theme mode: tomato, mustard, lilac, lime,
-    /// pistachio, sky, plum, copper, cocoa or bubblegum. A String so the
-    /// model stays pure Dart; the View resolves it with
-    /// `FoodTheme.values.byName`.
     String? foodTheme,
 
     /// Name of the dish photo bundled in `assets/images/food/` (without the

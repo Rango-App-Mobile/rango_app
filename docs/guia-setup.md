@@ -22,26 +22,26 @@ localização. Cada um tem a sua história (ver [Próximos passos](#próximos-pa
 
 ## Como ler cada passo
 
-| Bloco | O que é |
-|---|---|
-| **Objetivo** | O que existe no fim do passo |
-| **Comandos** | Um comando por bloco, sempre a partir da raiz do repositório |
-| **Arquivos** | O que criar ou substituir, com o conteúdo |
-| **Por quê** | A decisão por trás, em poucas linhas |
-| **✅ Checkpoint** | Como provar que deu certo antes de seguir |
-| **Commit** | Mensagem sugerida (Conventional Commits, em inglês) |
+| Bloco             | O que é                                                      |
+| ----------------- | ------------------------------------------------------------ |
+| **Objetivo**      | O que existe no fim do passo                                 |
+| **Comandos**      | Um comando por bloco, sempre a partir da raiz do repositório |
+| **Arquivos**      | O que criar ou substituir, com o conteúdo                    |
+| **Por quê**       | A decisão por trás, em poucas linhas                         |
+| **✅ Checkpoint** | Como provar que deu certo antes de seguir                    |
+| **Commit**        | Mensagem sugerida (Conventional Commits, em inglês)          |
 
 ## Visão geral
 
-| Passo | Resultado | Commits |
-|---|---|---|
-| 0 | Ferramentas ok, branch criada a partir de `dev` | — |
-| 1 | Projeto Flutter inicializado, lints estritos, contador removido | 2 |
-| 2 | Dependências do MVP instaladas (sem Firebase) | 1 |
-| 3 | Estrutura MVVM por telas + exemplo da tela de swipe com testes | 3 |
-| 4 | Configuração por ambiente e segredos fora do git | 1 |
-| 5 | `AGENTS.md`, `CLAUDE.md`, `.claude/`, templates e processo SDD | 4 |
-| 6 | PR aberto para `dev`, CI verde, revisão | — |
+| Passo | Resultado                                                       | Commits |
+| ----- | --------------------------------------------------------------- | ------- |
+| 0     | Ferramentas ok, branch criada a partir de `dev`                 | —       |
+| 1     | Projeto Flutter inicializado, lints estritos, contador removido | 2       |
+| 2     | Dependências do MVP instaladas (sem Firebase)                   | 1       |
+| 3     | Estrutura MVVM por telas + exemplo da tela de swipe com testes  | 3       |
+| 4     | Configuração por ambiente e segredos fora do git                | 1       |
+| 5     | `AGENTS.md`, `CLAUDE.md`, `.claude/`, templates e processo SDD  | 4       |
+| 6     | PR aberto para `dev`, CI verde, revisão                         | —       |
 
 ---
 
@@ -52,13 +52,13 @@ um `dev` atualizado.
 
 Instale, se ainda não tiver:
 
-| Ferramenta | Para quê |
-|---|---|
-| Flutter SDK (canal stable) | Compilar e testar o app |
-| Xcode + CocoaPods (só macOS) | Rodar no simulador iOS |
-| Android Studio (SDK + emulador) | Rodar no Android |
+| Ferramenta                         | Para quê                                   |
+| ---------------------------------- | ------------------------------------------ |
+| Flutter SDK (canal stable)         | Compilar e testar o app                    |
+| Xcode + CocoaPods (só macOS)       | Rodar no simulador iOS                     |
+| Android Studio (SDK + emulador)    | Rodar no Android                           |
 | VS Code + extensões Dart e Flutter | Editor sugerido (`launch.json` no passo 4) |
-| `gh` (GitHub CLI), autenticado | Abrir PR e usar a skill `sprint-status` |
+| `gh` (GitHub CLI), autenticado     | Abrir PR e usar a skill `sprint-status`    |
 
 **Comandos**
 
@@ -94,7 +94,7 @@ git switch -c chore/setup-flutter
 
 - Todo trabalho sai de `dev` e volta para `dev` por PR. `main` só recebe as
   entregas de cada sprint review.
-- Anote a versão do Flutter: todos do time devem estar na mesma versão *minor*
+- Anote a versão do Flutter: todos do time devem estar na mesma versão _minor_
   (ex.: 3.44.x). O `flutter create` grava no `pubspec.yaml` um `sdk: ^3.12.x`
   que colegas (e o CI) com Flutter mais antigo não conseguem resolver.
 
@@ -122,12 +122,12 @@ que já existe, com lints estritos e sem o app de contador.
 flutter create --org br.senac --project-name rango_app --platforms android,ios .
 ```
 
-| Flag | Efeito | Por quê |
-|---|---|---|
-| `.` | Cria na pasta atual | O repositório já existe e tem `docs/` e `.github/`; não queremos uma subpasta |
-| `--project-name rango_app` | Nome do pacote Dart | Sem ela o Flutter usaria o nome da pasta, `Rango`. Nome de pacote Dart precisa ser minúsculo com `_`, então `Rango` é inválido e o comando falha |
-| `--org br.senac` | Prefixo dos identificadores | Gera `br.senac.rango_app` no Android e `br.senac.rangoApp` no iOS (o iOS não aceita `_`; o Flutter converte para camelCase) |
-| `--platforms android,ios` | Só mobile | Sem pastas `web/`, `macos/`, `windows/`, `linux/` para manter, e a chave do Places é restrita por app (passo 4) |
+| Flag                       | Efeito                      | Por quê                                                                                                                                          |
+| -------------------------- | --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `.`                        | Cria na pasta atual         | O repositório já existe e tem `docs/` e `.github/`; não queremos uma subpasta                                                                    |
+| `--project-name rango_app` | Nome do pacote Dart         | Sem ela o Flutter usaria o nome da pasta, `Rango`. Nome de pacote Dart precisa ser minúsculo com `_`, então `Rango` é inválido e o comando falha |
+| `--org br.senac`           | Prefixo dos identificadores | Gera `br.senac.rango_app` no Android e `br.senac.rangoApp` no iOS (o iOS não aceita `_`; o Flutter converte para camelCase)                      |
+| `--platforms android,ios`  | Só mobile                   | Sem pastas `web/`, `macos/`, `windows/`, `linux/` para manter, e a chave do Places é restrita por app (passo 4)                                  |
 
 **O que o comando não toca:** o `flutter create` não sobrescreve arquivos que já
 existem (a sobrescrita exige `--overwrite`). `README.md`, `docs/`, `.github/`
@@ -227,7 +227,7 @@ linter:
   deixar a ferramenta pegar estilo libera a revisão para lógica.
 - Os arquivos gerados (`*.g.dart`, `*.freezed.dart`) são excluídos: não foram
   escritos por ninguém do time e não devem gerar aviso.
-- Cada versão *major* do `very_good_analysis` liga regras novas. Atualizar é um
+- Cada versão _major_ do `very_good_analysis` liga regras novas. Atualizar é um
   PR próprio, não algo que acontece de carona.
 
 ### 1.3 Remover o app de contador
@@ -301,19 +301,19 @@ git commit -m "chore: adopt very_good_analysis and remove counter template"
 
 **Objetivo:** pacotes do MVP instalados, **sem Firebase**.
 
-| Pacote | Tipo | Para quê | Camada que usa |
-|---|---|---|---|
-| `flutter_riverpod` | app | Estado e injeção de dependência: os Notifiers **são** os ViewModels | view_model, view, providers de data |
-| `go_router` | app | Rotas declarativas; `redirect` vai proteger telas quando existir auth | app |
-| `freezed_annotation` | app | Anotações dos models imutáveis (`copyWith`, `==`, `toString`) | model |
-| `json_annotation` | app | Anotações de (de)serialização JSON (Firestore e Places devolvem mapas) | model |
-| `dio` | app | Cliente HTTP do Places: interceptors, timeout, cancelamento | data |
-| `geolocator` | app | Posição do usuário para buscar restaurantes próximos | data |
-| `url_launcher` | app | Abrir rota no Maps / telefone do restaurante | view |
-| `build_runner` | dev | Executa os geradores de código | — |
-| `freezed` | dev | Gera `*.freezed.dart` | — |
-| `json_serializable` | dev | Gera `*.g.dart` (`fromJson`/`toJson`) | — |
-| `mocktail` | dev | Mocks sem codegen para testes | test |
+| Pacote               | Tipo | Para quê                                                               | Camada que usa                      |
+| -------------------- | ---- | ---------------------------------------------------------------------- | ----------------------------------- |
+| `flutter_riverpod`   | app  | Estado e injeção de dependência: os Notifiers **são** os ViewModels    | view_model, view, providers de data |
+| `go_router`          | app  | Rotas declarativas; `redirect` vai proteger telas quando existir auth  | app                                 |
+| `freezed_annotation` | app  | Anotações dos models imutáveis (`copyWith`, `==`, `toString`)          | model                               |
+| `json_annotation`    | app  | Anotações de (de)serialização JSON (Firestore e Places devolvem mapas) | model                               |
+| `dio`                | app  | Cliente HTTP do Places: interceptors, timeout, cancelamento            | data                                |
+| `geolocator`         | app  | Posição do usuário para buscar restaurantes próximos                   | data                                |
+| `url_launcher`       | app  | Abrir rota no Maps / telefone do restaurante                           | view                                |
+| `build_runner`       | dev  | Executa os geradores de código                                         | —                                   |
+| `freezed`            | dev  | Gera `*.freezed.dart`                                                  | —                                   |
+| `json_serializable`  | dev  | Gera `*.g.dart` (`fromJson`/`toJson`)                                  | —                                   |
+| `mocktail`           | dev  | Mocks sem codegen para testes                                          | test                                |
 
 **Comandos**
 
@@ -484,7 +484,7 @@ lib/
     category_tree.dart            regra de convergência
   data/                           repositórios e services (Firebase, HTTP, GPS)
     category_repository.dart      interface + provider
-    fake_category_repository.dart
+    local_category_repository.dart
   screens/                        uma pasta por tela: View + ViewModel
     swipe/
       swipe_screen.dart           View
@@ -509,12 +509,12 @@ O login anônimo não tem tela: é um repositório em `data/`.
 
 **Nomes dentro da pasta de uma tela** (`lib/screens/<tela>/`):
 
-| Arquivo | Papel |
-|---|---|
-| `<tela>_screen.dart` | View: o widget da tela |
-| `<tela>_view_model.dart` | ViewModel (`Notifier`/`AsyncNotifier`) e o provider dele |
-| `<tela>_state.dart` | Estado da tela, `freezed`, quando for mais que um valor simples |
-| `widgets/` | Widgets usados só por essa tela |
+| Arquivo                  | Papel                                                           |
+| ------------------------ | --------------------------------------------------------------- |
+| `<tela>_screen.dart`     | View: o widget da tela                                          |
+| `<tela>_view_model.dart` | ViewModel (`Notifier`/`AsyncNotifier`) e o provider dele        |
+| `<tela>_state.dart`      | Estado da tela, `freezed`, quando for mais que um valor simples |
+| `widgets/`               | Widgets usados só por essa tela                                 |
 
 ```bash
 mkdir -p lib/app/theme lib/core/config lib/core/error lib/core/widgets lib/models lib/data lib/screens/swipe
@@ -529,15 +529,15 @@ arquivos (3.3 em diante).
 
 ### 3.2 Quem pode importar quem
 
-| Onde | Pode importar | Não pode importar | Por quê |
-|---|---|---|---|
-| `models/` | Dart puro, `freezed_annotation`, `json_annotation`, outros `models/` | `package:flutter/*`, Riverpod, Firebase, `dio`, `data/`, `screens/` | É a regra de negócio. Dart puro roda em teste unitário instantâneo e não muda quando a UI muda |
-| `data/` | `models/`, Riverpod (para declarar o provider do repositório), Firebase, `dio`, `geolocator`, `core/` | `screens/`, `package:flutter/material.dart` | Traduz o mundo externo (Firestore, HTTP, GPS) em models e `Failure`. Nenhuma tela sabe que Firestore existe |
-| `screens/<tela>/<tela>_view_model.dart` | `models/`, a **interface** e o provider de `data/`, Riverpod, `core/`, o `<tela>_state.dart` | Firebase, `dio`, `geolocator`, widgets, `BuildContext` | O ViewModel guarda o estado da tela e decide o que acontece. Sem Firebase/HTTP direto, o teste troca o repositório por um fake com um `override` |
-| `screens/<tela>/<tela>_screen.dart` e `widgets/` | o ViewModel **da própria tela**, `models/` (para ler), `core/widgets/`, Flutter, `url_launcher` | `data/`, Firebase, `dio` | Widget só desenha o estado e repassa gestos ao ViewModel. Regra de negócio em widget só é testável com teste de widget, que é lento |
-| `screens/A/` | `models/`, `data/` (interfaces), `core/` | o ViewModel de `screens/B/` | Uma tela não controla outra. O que passa de uma tela para a seguinte vai pela rota (parâmetro) ou por um provider em `data/`, decidido no plano da história |
-| `app/` | tudo acima | — | É a composição: rotas, tema, `ProviderScope` |
-| `core/` | Dart, Flutter (só em `core/widgets/`) | `models/`, `data/`, `screens/` | Infraestrutura não pode depender do domínio nem de uma tela |
+| Onde                                             | Pode importar                                                                                         | Não pode importar                                                   | Por quê                                                                                                                                                     |
+| ------------------------------------------------ | ----------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `models/`                                        | Dart puro, `freezed_annotation`, `json_annotation`, outros `models/`                                  | `package:flutter/*`, Riverpod, Firebase, `dio`, `data/`, `screens/` | É a regra de negócio. Dart puro roda em teste unitário instantâneo e não muda quando a UI muda                                                              |
+| `data/`                                          | `models/`, Riverpod (para declarar o provider do repositório), Firebase, `dio`, `geolocator`, `core/` | `screens/`, `package:flutter/material.dart`                         | Traduz o mundo externo (Firestore, HTTP, GPS) em models e `Failure`. Nenhuma tela sabe que Firestore existe                                                 |
+| `screens/<tela>/<tela>_view_model.dart`          | `models/`, a **interface** e o provider de `data/`, Riverpod, `core/`, o `<tela>_state.dart`          | Firebase, `dio`, `geolocator`, widgets, `BuildContext`              | O ViewModel guarda o estado da tela e decide o que acontece. Sem Firebase/HTTP direto, o teste troca o repositório por um fake com um `override`            |
+| `screens/<tela>/<tela>_screen.dart` e `widgets/` | o ViewModel **da própria tela**, `models/` (para ler), `core/widgets/`, Flutter, `url_launcher`       | `data/`, Firebase, `dio`                                            | Widget só desenha o estado e repassa gestos ao ViewModel. Regra de negócio em widget só é testável com teste de widget, que é lento                         |
+| `screens/A/`                                     | `models/`, `data/` (interfaces), `core/`                                                              | o ViewModel de `screens/B/`                                         | Uma tela não controla outra. O que passa de uma tela para a seguinte vai pela rota (parâmetro) ou por um provider em `data/`, decidido no plano da história |
+| `app/`                                           | tudo acima                                                                                            | —                                                                   | É a composição: rotas, tema, `ProviderScope`                                                                                                                |
+| `core/`                                          | Dart, Flutter (só em `core/widgets/`)                                                                 | `models/`, `data/`, `screens/`                                      | Infraestrutura não pode depender do domínio nem de uma tela                                                                                                 |
 
 ### 3.3 Models: `FoodCategory` e `CategoryTree`
 
@@ -648,7 +648,7 @@ recolhidos no diff do PR, crie `.gitattributes` na raiz:
 
 ```dart
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:rango_app/data/fake_category_repository.dart';
+import 'package:rango_app/data/local_category_repository.dart';
 import 'package:rango_app/models/food_category.dart';
 
 abstract interface class CategoryRepository {
@@ -658,17 +658,17 @@ abstract interface class CategoryRepository {
 /// Swapped for the Firestore implementation in the Sprint 2 story.
 /// Tests override this provider; nobody instantiates a repository directly.
 final categoryRepositoryProvider = Provider<CategoryRepository>(
-  (ref) => FakeCategoryRepository(),
+  (ref) => LocalCategoryRepository(),
 );
 ```
 
-`lib/data/fake_category_repository.dart`
+`lib/data/local_category_repository.dart`
 
 ```dart
 import 'package:rango_app/data/category_repository.dart';
 import 'package:rango_app/models/food_category.dart';
 
-class FakeCategoryRepository implements CategoryRepository {
+class LocalCategoryRepository implements CategoryRepository {
   static const seed = [
     FoodCategory(id: 'root', label: 'O que bate hoje?'),
     FoodCategory(id: 'savory', label: 'Salgado', parentId: 'root'),
@@ -987,13 +987,13 @@ rm test/smoke_test.dart
 
 ```dart
 import 'package:flutter_test/flutter_test.dart';
-import 'package:rango_app/data/fake_category_repository.dart';
+import 'package:rango_app/data/local_category_repository.dart';
 import 'package:rango_app/models/category_tree.dart';
 import 'package:rango_app/models/food_category.dart';
 
 void main() {
   group('CategoryTree', () {
-    final tree = CategoryTree(FakeCategoryRepository.seed);
+    final tree = CategoryTree(LocalCategoryRepository.seed);
 
     test('exposes the single root and its two children', () {
       expect(tree.root.id, 'root');
@@ -1039,14 +1039,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:rango_app/data/category_repository.dart';
-import 'package:rango_app/data/fake_category_repository.dart';
+import 'package:rango_app/data/local_category_repository.dart';
 import 'package:rango_app/models/food_category.dart';
 import 'package:rango_app/screens/swipe/swipe_view_model.dart';
 
 class _MockCategoryRepository extends Mock implements CategoryRepository {}
 
 FoodCategory _byId(String id) =>
-    FakeCategoryRepository.seed.firstWhere((c) => c.id == id);
+    LocalCategoryRepository.seed.firstWhere((c) => c.id == id);
 
 void main() {
   late ProviderContainer container;
@@ -1054,7 +1054,7 @@ void main() {
   setUp(() {
     container = ProviderContainer.test(
       overrides: [
-        categoryRepositoryProvider.overrideWithValue(FakeCategoryRepository()),
+        categoryRepositoryProvider.overrideWithValue(LocalCategoryRepository()),
       ],
     );
   });
@@ -1128,7 +1128,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rango_app/data/category_repository.dart';
-import 'package:rango_app/data/fake_category_repository.dart';
+import 'package:rango_app/data/local_category_repository.dart';
 import 'package:rango_app/screens/swipe/swipe_screen.dart';
 
 void main() {
@@ -1137,7 +1137,7 @@ void main() {
       ProviderScope(
         overrides: [
           categoryRepositoryProvider.overrideWithValue(
-            FakeCategoryRepository(),
+            LocalCategoryRepository(),
           ),
         ],
         child: const MaterialApp(home: SwipeScreen()),
@@ -1274,7 +1274,7 @@ fora do ignore de propósito)
 }
 ```
 
-No Android Studio: *Run → Edit Configurations → Additional run args* com
+No Android Studio: _Run → Edit Configurations → Additional run args_ com
 `--dart-define-from-file=env.json`.
 
 **Por quê**
@@ -1290,8 +1290,8 @@ No Android Studio: *Run → Edit Configurations → Additional run args* com
 > **A chave do Places no app não é segredo de verdade.** Tudo que é compilado
 > no app pode ser extraído do APK/IPA. Por isso:
 >
-> 1. No Google Cloud Console, restrinja a chave por **API** (só *Places API
->    (New)*) e por **aplicativo**: Android com o pacote `br.senac.rango_app` +
+> 1. No Google Cloud Console, restrinja a chave por **API** (só _Places API
+>    (New)_) e por **aplicativo**: Android com o pacote `br.senac.rango_app` +
 >    SHA-1 do certificado; iOS com o bundle `br.senac.rangoApp`. Como cada chave
 >    aceita um tipo de restrição de app, use **uma chave por plataforma**.
 > 2. Configure cota diária e alerta de orçamento no projeto do Google Cloud.
@@ -1354,26 +1354,26 @@ Estrutura igual à do the-final-backend: um `CLAUDE.md` completo na raiz, regras
 por tecnologia em `.claude/rules/` e skills com `SKILL.md` + `references/`. Tudo
 que é para agente está **em inglês**; os docs do projeto seguem em português.
 
-| Arquivo | Quem lê | Função |
-|---|---|---|
-| `CLAUDE.md` | Claude Code e o time | Instruções do repositório: contexto (aponta para `docs/contexto.md` por seção), comandos, estrutura, stack, regras que valem em qualquer arquivo, workflow |
-| `AGENTS.md` | outros agentes (Codex, Cursor, Copilot) | Aponta para o `CLAUDE.md` e resume o inegociável |
-| `.claude/settings.json` | Claude Code | O que roda sem pedir, o que pergunta, o que não pode ser lido (`env.json`, `.env*`) |
-| `.claude/rules/dart.md` | `lib/**/*.dart`, `test/**/*.dart` | Nomes, estilo, async, erros, testes |
-| `.claude/rules/flutter.md` | `lib/**` | Camadas MVVM, limites de import, widgets |
-| `.claude/rules/riverpod.md` | `lib/screens/**/*_view_model.dart` | Notifiers, estado imutável, overrides |
-| `.claude/rules/firebase.md` | `lib/data/**` | Repositórios, Firestore, Places, localização |
-| `.claude/skills/pr-review-rango/` | revisão de PR | `SKILL.md` + `references/checklist.md` |
-| `.claude/skills/security-review-rango/` | revisão de segurança | `SKILL.md` + `references/{vulnerability-checklist,known-deliberate}.md` |
-| `.claude/skills/spec-feature/` | escrever spec | `SKILL.md` + moldes `references/{spec,plan,tasks}.md` |
-| `.claude/skills/implement-task/` | implementar task | `SKILL.md` + molde `references/feature-doc.md` |
-| `.claude/skills/sprint-status/` | status da sprint por frente | `SKILL.md` |
-| `.claude/skills/marketing-brief/` | brief de marketing | `SKILL.md` (molde em `docs/marketing/briefs/_template.md`) |
-| `.claude/skills/grill-me/` | `/grill-me`: entrevista em rodadas para afiar uma ideia ou plano | `SKILL.md` (chama `grilling`; de [mattpocock/skills](https://github.com/mattpocock/skills), MIT) |
-| `.claude/skills/grilling/` | a lógica do `/grill-me` | `SKILL.md` |
-| `docs/sdd.md` | o time | Ciclo spec → plan → tasks e quando a spec é obrigatória |
-| `docs/specs/NNN-slug/` | quem especifica | Nasce com a primeira spec |
-| `docs/<feature>.md` | quem entrega a feature | Um arquivo por feature, como os domínios do backend |
+| Arquivo                                 | Quem lê                                                          | Função                                                                                                                                                     |
+| --------------------------------------- | ---------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `CLAUDE.md`                             | Claude Code e o time                                             | Instruções do repositório: contexto (aponta para `docs/contexto.md` por seção), comandos, estrutura, stack, regras que valem em qualquer arquivo, workflow |
+| `AGENTS.md`                             | outros agentes (Codex, Cursor, Copilot)                          | Aponta para o `CLAUDE.md` e resume o inegociável                                                                                                           |
+| `.claude/settings.json`                 | Claude Code                                                      | O que roda sem pedir, o que pergunta, o que não pode ser lido (`env.json`, `.env*`)                                                                        |
+| `.claude/rules/dart.md`                 | `lib/**/*.dart`, `test/**/*.dart`                                | Nomes, estilo, async, erros, testes                                                                                                                        |
+| `.claude/rules/flutter.md`              | `lib/**`                                                         | Camadas MVVM, limites de import, widgets                                                                                                                   |
+| `.claude/rules/riverpod.md`             | `lib/screens/**/*_view_model.dart`                               | Notifiers, estado imutável, overrides                                                                                                                      |
+| `.claude/rules/firebase.md`             | `lib/data/**`                                                    | Repositórios, Firestore, Places, localização                                                                                                               |
+| `.claude/skills/pr-review-rango/`       | revisão de PR                                                    | `SKILL.md` + `references/checklist.md`                                                                                                                     |
+| `.claude/skills/security-review-rango/` | revisão de segurança                                             | `SKILL.md` + `references/{vulnerability-checklist,known-deliberate}.md`                                                                                    |
+| `.claude/skills/spec-feature/`          | escrever spec                                                    | `SKILL.md` + moldes `references/{spec,plan,tasks}.md`                                                                                                      |
+| `.claude/skills/implement-task/`        | implementar task                                                 | `SKILL.md` + molde `references/feature-doc.md`                                                                                                             |
+| `.claude/skills/sprint-status/`         | status da sprint por frente                                      | `SKILL.md`                                                                                                                                                 |
+| `.claude/skills/marketing-brief/`       | brief de marketing                                               | `SKILL.md` (molde em `docs/marketing/briefs/_template.md`)                                                                                                 |
+| `.claude/skills/grill-me/`              | `/grill-me`: entrevista em rodadas para afiar uma ideia ou plano | `SKILL.md` (chama `grilling`; de [mattpocock/skills](https://github.com/mattpocock/skills), MIT)                                                           |
+| `.claude/skills/grilling/`              | a lógica do `/grill-me`                                          | `SKILL.md`                                                                                                                                                 |
+| `docs/sdd.md`                           | o time                                                           | Ciclo spec → plan → tasks e quando a spec é obrigatória                                                                                                    |
+| `docs/specs/NNN-slug/`                  | quem especifica                                                  | Nasce com a primeira spec                                                                                                                                  |
+| `docs/<feature>.md`                     | quem entrega a feature                                           | Um arquivo por feature, como os domínios do backend                                                                                                        |
 
 Leia os arquivos direto; eles são a fonte. Mudou uma regra? Mude no arquivo, no
 mesmo PR que motivou a mudança.
@@ -1544,11 +1544,11 @@ Um clone limpo de `dev` passa nos testes sem `env.json` e sem rodar
 Histórias da Sprint 2, nesta ordem (as duas primeiras podem andar em
 paralelo):
 
-| # | História | Spec | O que traz |
-|---|---|---|---|
-| 1 | **Firebase + autenticação anônima** | `002-anonymous-auth` | Projeto Firebase do time; `flutterfire configure`; `firebase_core`, `firebase_auth`, `cloud_firestore`; `Firebase.initializeApp` no `main`; `AuthRepository` + `authStateProvider`; `redirect` no `routerProvider` |
-| 2 | **Árvore de categorias** | `001-category-tree` | Coleção de categorias no Firestore (§8); `FirestoreCategoryRepository` no lugar do fake no provider; script/seed da árvore; Security Rules só de leitura |
-| 3 | **Swipe convergente** | `003-convergent-swipe` | Gesto de swipe (cartas) no lugar dos botões; models `SwipeChoice` e `Session`; persistir a sessão do usuário anônimo |
+| #   | História                            | Spec                   | O que traz                                                                                                                                                                                                         |
+| --- | ----------------------------------- | ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 1   | **Firebase + autenticação anônima** | `002-anonymous-auth`   | Projeto Firebase do time; `flutterfire configure`; `firebase_core`, `firebase_auth`, `cloud_firestore`; `Firebase.initializeApp` no `main`; `AuthRepository` + `authStateProvider`; `redirect` no `routerProvider` |
+| 2   | **Árvore de categorias**            | `001-category-tree`    | Coleção de categorias no Firestore (§8); `FirestoreCategoryRepository` no lugar do fake no provider; script/seed da árvore; Security Rules só de leitura                                                           |
+| 3   | **Swipe convergente**               | `003-convergent-swipe` | Gesto de swipe (cartas) no lugar dos botões; models `SwipeChoice` e `Session`; persistir a sessão do usuário anônimo                                                                                               |
 
 Comandos que a história 1 vai usar (não rode agora):
 
@@ -1581,19 +1581,19 @@ Na Sprint 3: `restaurants` (Places via `dio`, permissões do `geolocator` no
 
 ## Troubleshooting
 
-| Sintoma | Causa provável | Solução |
-|---|---|---|
-| `"Rango" is not a valid Dart package name` | Faltou `--project-name` | Rode o `flutter create` com `--project-name rango_app` |
-| `.gitignore` sem as entradas do Flutter; `build/` e `.dart_tool/` aparecendo no `git status` | O repositório já tinha `.gitignore` e o `flutter create` não sobrescreve | Acrescente o bloco do §1.1 |
-| `flutter test` falha com `Failed to find ".../flutter_tester"` | Cache do SDK incompleto | `flutter precache --force`; se persistir, apague `<flutter>/bin/cache` e rode `flutter doctor` |
-| `pub get` reclama de `The current Dart SDK version is X` | Flutter mais antigo que o `sdk:` do `pubspec.yaml` | Atualize o Flutter (`flutter upgrade`) para a versão do time |
-| `freezed` resolvido como `-dev` | Estável mais novo incompatível com o Flutter atual | `flutter pub add "dev:freezed:^3.2.0"` (§2) |
-| `Missing concrete implementation of ...` / `_$X` não encontrado | Classe freezed sem `abstract`, `part` com nome errado, ou gerador não rodou | Confira `abstract class X with _$X`, `part 'x.freezed.dart';` igual ao nome do arquivo, e rode `build_runner build --delete-conflicting-outputs` |
-| `build_runner` diz que há "conflicting outputs" | Gerados antigos | Sempre use `--delete-conflicting-outputs` |
-| CI falha no `dart format` e local passa | Você não rodou `dart format .` depois de editar, ou regenerou após formatar | `dart format .` como último passo antes do commit |
-| `Bad state: No ProviderScope found` | Widget testado ou app sem `ProviderScope` | `main.dart` e todo `testWidgets` embrulham com `ProviderScope` |
-| Teste de erro do ViewModel não termina | Retry automático do Riverpod 3 | `ProviderContainer.test(retry: (_, _) => null)` |
-| `Env.placesApiKey` vazio | Rodou sem `--dart-define-from-file`, ou fez hot reload depois de mudar `env.json` | Use a configuração do `launch.json` e reinicie o app (não hot reload) |
-| `sort_pub_dependencies` no analyze | `pub add` acrescentou fora de ordem | Ordene `dependencies` e `dev_dependencies` alfabeticamente |
-| iOS: erro de CocoaPods no `flutter run` | CocoaPods ausente ou repositório de specs velho | `brew install cocoapods`, depois `cd ios && pod install --repo-update` |
-| Android: `Android license status unknown` | Licenças não aceitas | `flutter doctor --android-licenses` |
+| Sintoma                                                                                      | Causa provável                                                                    | Solução                                                                                                                                          |
+| -------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `"Rango" is not a valid Dart package name`                                                   | Faltou `--project-name`                                                           | Rode o `flutter create` com `--project-name rango_app`                                                                                           |
+| `.gitignore` sem as entradas do Flutter; `build/` e `.dart_tool/` aparecendo no `git status` | O repositório já tinha `.gitignore` e o `flutter create` não sobrescreve          | Acrescente o bloco do §1.1                                                                                                                       |
+| `flutter test` falha com `Failed to find ".../flutter_tester"`                               | Cache do SDK incompleto                                                           | `flutter precache --force`; se persistir, apague `<flutter>/bin/cache` e rode `flutter doctor`                                                   |
+| `pub get` reclama de `The current Dart SDK version is X`                                     | Flutter mais antigo que o `sdk:` do `pubspec.yaml`                                | Atualize o Flutter (`flutter upgrade`) para a versão do time                                                                                     |
+| `freezed` resolvido como `-dev`                                                              | Estável mais novo incompatível com o Flutter atual                                | `flutter pub add "dev:freezed:^3.2.0"` (§2)                                                                                                      |
+| `Missing concrete implementation of ...` / `_$X` não encontrado                              | Classe freezed sem `abstract`, `part` com nome errado, ou gerador não rodou       | Confira `abstract class X with _$X`, `part 'x.freezed.dart';` igual ao nome do arquivo, e rode `build_runner build --delete-conflicting-outputs` |
+| `build_runner` diz que há "conflicting outputs"                                              | Gerados antigos                                                                   | Sempre use `--delete-conflicting-outputs`                                                                                                        |
+| CI falha no `dart format` e local passa                                                      | Você não rodou `dart format .` depois de editar, ou regenerou após formatar       | `dart format .` como último passo antes do commit                                                                                                |
+| `Bad state: No ProviderScope found`                                                          | Widget testado ou app sem `ProviderScope`                                         | `main.dart` e todo `testWidgets` embrulham com `ProviderScope`                                                                                   |
+| Teste de erro do ViewModel não termina                                                       | Retry automático do Riverpod 3                                                    | `ProviderContainer.test(retry: (_, _) => null)`                                                                                                  |
+| `Env.placesApiKey` vazio                                                                     | Rodou sem `--dart-define-from-file`, ou fez hot reload depois de mudar `env.json` | Use a configuração do `launch.json` e reinicie o app (não hot reload)                                                                            |
+| `sort_pub_dependencies` no analyze                                                           | `pub add` acrescentou fora de ordem                                               | Ordene `dependencies` e `dev_dependencies` alfabeticamente                                                                                       |
+| iOS: erro de CocoaPods no `flutter run`                                                      | CocoaPods ausente ou repositório de specs velho                                   | `brew install cocoapods`, depois `cd ios && pod install --repo-update`                                                                           |
+| Android: `Android license status unknown`                                                    | Licenças não aceitas                                                              | `flutter doctor --android-licenses`                                                                                                              |
