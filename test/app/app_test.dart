@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:rango_app/app/app.dart';
+import 'package:rango_app/core/widgets/restaurant_card.dart';
 import 'package:rango_app/data/auth_repository.dart';
 import 'package:rango_app/data/category_repository.dart';
 import 'package:rango_app/data/delivery_link_repository.dart';
@@ -153,6 +154,40 @@ void main() {
       expect(find.text('Cantina da Nona'), findsOneWidget);
 
       await tester.tap(find.bySemanticsLabel('Voltar'));
+      await tester.pumpAndSettle();
+
+      expect(find.textContaining('Bora decidir'), findsOneWidget);
+      expect(homeTab, findsOneWidget);
+    });
+
+    testWidgets('goes from the map to the contact options and back', (
+      tester,
+    ) async {
+      await pumpApp(tester);
+      await reachResult(tester);
+      final seeRestaurants = find.text('Ver restaurantes perto');
+      await tester.ensureVisible(seeRestaurants);
+      await tester.pumpAndSettle();
+      await tester.tap(seeRestaurants);
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byType(RestaurantCard));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Como você quer pedir?'), findsOneWidget);
+      expect(find.text('Pedir no delivery'), findsOneWidget);
+
+      await tester.tap(find.bySemanticsLabel('Voltar'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('7 lugares em até 3 km'), findsOneWidget);
+      expect(find.text('Cantina da Nona'), findsOneWidget);
+
+      await tester.tap(find.byType(RestaurantCard));
+      await tester.pumpAndSettle();
+      final home = find.text('Voltar ao início');
+      await tester.ensureVisible(home);
+      await tester.tap(home);
       await tester.pumpAndSettle();
 
       expect(find.textContaining('Bora decidir'), findsOneWidget);
