@@ -2,7 +2,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:rango_app/core/theme/app_space.dart';
-import 'package:rango_app/core/theme/food_theme.dart';
+import 'package:rango_app/core/theme/resolve_food_theme.dart';
 import 'package:rango_app/core/widgets/food_card.dart';
 import 'package:rango_app/core/widgets/food_photo.dart';
 import 'package:rango_app/core/widgets/rango_sticker.dart';
@@ -37,7 +37,7 @@ class MatchCard extends StatelessWidget {
             title: result.label,
             subtitle: pathLabel,
             chipLabel: '$choiceCount escolhas',
-            foodTheme: _resolveFoodTheme(result.foodTheme),
+            foodTheme: resolveFoodTheme(result.foodTheme),
             photo: foodPhoto(result.photo),
           ),
         ),
@@ -62,12 +62,4 @@ class MatchCard extends StatelessWidget {
       ],
     );
   }
-}
-
-/// A missing or unknown theme name falls back to tomato.
-FoodTheme _resolveFoodTheme(String? name) {
-  for (final theme in FoodTheme.values) {
-    if (theme.name == name) return theme;
-  }
-  return FoodTheme.tomato;
 }
