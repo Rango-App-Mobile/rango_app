@@ -29,6 +29,7 @@ environment:
 # versions available, run `flutter pub outdated`.
 dependencies:
   # Cupertino Icons font, used with the CupertinoIcons class for iOS style icons.
+  cloud_firestore: ^7.1.0
   cupertino_icons: ^1.0.8
   dio: ^5.11.1
   firebase_auth: ^7.0.0
@@ -39,6 +40,7 @@ dependencies:
   freezed_annotation: ^3.1.0
   geolocator: ^14.0.3
   go_router: ^18.0.1
+  google_maps_flutter: ^2.18.1
   json_annotation: ^4.12.0
   url_launcher: ^6.3.2
 
