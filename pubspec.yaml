@@ -82,6 +82,7 @@ flutter:
   # Dish photos from the Figma "Assets" page (see docs/swipe.md).
   assets:
     - assets/images/food/
+    - assets/map/
 
   # To add assets to your application, add an assets section, like this:
   # assets:
