@@ -105,7 +105,7 @@ class _DrawnRestaurantMapState extends State<DrawnRestaurantMap>
       _pulse.stop();
       _pulsing = false;
     } else if (!reduceMotion && !_pulsing && widget.origin != null) {
-      unawaited(_pulse.repeat(reverse: true));
+      _pulse.repeat(reverse: true).ignore();
       _pulsing = true;
     }
 
