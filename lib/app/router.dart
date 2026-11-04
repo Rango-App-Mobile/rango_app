@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:rango_app/app/app_shell.dart';
+import 'package:rango_app/models/restaurant_contact_args.dart';
 import 'package:rango_app/screens/history/history_screen.dart';
 import 'package:rango_app/screens/history_detail/history_detail_screen.dart';
+import 'package:rango_app/screens/restaurant_contact/restaurant_contact_screen.dart';
 import 'package:rango_app/screens/restaurants/restaurants_screen.dart';
 import 'package:rango_app/screens/result/result_screen.dart';
 import 'package:rango_app/screens/swipe/swipe_screen.dart';
@@ -85,6 +87,21 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => RestaurantsScreen(
           categoryId: state.uri.queryParameters['category'],
         ),
+      ),
+      // Pushed from the map with the chosen restaurant in `extra`, so popping
+      // returns to the same map. `extra` does not survive a cold deep link:
+      // without it there is nothing to show, so go home.
+      GoRoute(
+        path: '/restaurants/contact',
+        parentNavigatorKey: rootKey,
+        redirect: (context, state) =>
+            state.extra is RestaurantContactArgs ? null : '/home',
+        builder: (context, state) => switch (state.extra) {
+          final RestaurantContactArgs args => RestaurantContactScreen(
+            args: args,
+          ),
+          _ => const SizedBox.shrink(),
+        },
       ),
     ],
   );

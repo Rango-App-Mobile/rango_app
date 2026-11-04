@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:rango_app/core/theme/app_space.dart';
+import 'package:rango_app/core/theme/resolve_food_theme.dart';
 import 'package:rango_app/core/theme/theme_context.dart';
 import 'package:rango_app/core/widgets/food_card.dart';
 import 'package:rango_app/core/widgets/food_photo.dart';
@@ -12,7 +13,6 @@ import 'package:rango_app/core/widgets/rango_button.dart';
 import 'package:rango_app/core/widgets/top_bar.dart';
 import 'package:rango_app/screens/history_detail/history_detail_state.dart';
 import 'package:rango_app/screens/history_detail/history_detail_view_model.dart';
-import 'package:rango_app/screens/swipe/widgets/resolve_food_theme.dart';
 
 /// One decision of the Histórico, opened (Figma "12 Detalhe do histórico"):
 /// the food, when, the way there and where the user ordered.

@@ -1,11 +1,11 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:rango_app/core/theme/resolve_food_theme.dart';
 import 'package:rango_app/core/widgets/food_card.dart';
 import 'package:rango_app/core/widgets/food_photo.dart';
 import 'package:rango_app/core/widgets/history_card_hero.dart';
 import 'package:rango_app/screens/history/history_state.dart';
-import 'package:rango_app/screens/swipe/widgets/resolve_food_theme.dart';
 
 /// The Histórico as a stack of cards, like a wallet: each card hides all but
 /// the top strip of the one before it, and the newest one, at the bottom, is

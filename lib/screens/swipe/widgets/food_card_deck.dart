@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:rango_app/core/theme/resolve_food_theme.dart';
 import 'package:rango_app/core/widgets/food_card.dart';
 import 'package:rango_app/core/widgets/food_photo.dart';
 import 'package:rango_app/models/food_category.dart';
-import 'package:rango_app/screens/swipe/widgets/resolve_food_theme.dart';
 import 'package:rango_app/screens/swipe/widgets/swipeable_food_card.dart';
 
 /// The single-card stack: the food on top, swipeable, and the edge of the

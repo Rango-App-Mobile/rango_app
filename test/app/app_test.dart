@@ -6,12 +6,19 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:rango_app/app/app.dart';
+import 'package:rango_app/core/widgets/restaurant_card.dart';
 import 'package:rango_app/data/auth_repository.dart';
 import 'package:rango_app/data/category_repository.dart';
+import 'package:rango_app/data/delivery_link_repository.dart';
 import 'package:rango_app/data/fake_auth_repository.dart';
+import 'package:rango_app/data/fake_delivery_link_repository.dart';
 import 'package:rango_app/data/fake_history_repository.dart';
+import 'package:rango_app/data/fake_location_repository.dart';
+import 'package:rango_app/data/fake_restaurant_repository.dart';
 import 'package:rango_app/data/history_repository.dart';
 import 'package:rango_app/data/local_category_repository.dart';
+import 'package:rango_app/data/location_repository.dart';
+import 'package:rango_app/data/restaurant_repository.dart';
 import 'package:rango_app/models/app_user.dart';
 import 'package:rango_app/screens/startup/startup_screen.dart';
 import 'package:rango_app/screens/swipe/swipe_screen.dart';
@@ -29,6 +36,11 @@ Future<void> pumpApp(WidgetTester tester) async {
     ..physicalSize = const Size(402, 874)
     ..devicePixelRatio = 1;
   addTearDown(tester.view.reset);
+  // The map's user-location halo pulses forever; reduced motion lets
+  // pumpAndSettle finish.
+  tester.platformDispatcher.accessibilityFeaturesTestValue =
+      const FakeAccessibilityFeatures(disableAnimations: true);
+  addTearDown(tester.platformDispatcher.clearAccessibilityFeaturesTestValue);
 
   await tester.pumpWidget(
     ProviderScope(
@@ -37,6 +49,15 @@ Future<void> pumpApp(WidgetTester tester) async {
         categoryRepositoryProvider.overrideWithValue(LocalCategoryRepository()),
         deckRandomProvider.overrideWithValue(InOrderRandom()),
         historyRepositoryProvider.overrideWithValue(FakeHistoryRepository()),
+        locationRepositoryProvider.overrideWithValue(
+          const FakeLocationRepository(),
+        ),
+        restaurantRepositoryProvider.overrideWithValue(
+          FakeRestaurantRepository(),
+        ),
+        deliveryLinkRepositoryProvider.overrideWithValue(
+          FakeDeliveryLinkRepository(),
+        ),
       ],
       child: const RangoApp(),
     ),
@@ -167,9 +188,44 @@ void main() {
       await tester.tap(seeRestaurants);
       await tester.pumpAndSettle();
 
-      expect(find.text('Restaurantes em breve'), findsOneWidget);
+      expect(find.text('7 lugares em até 3 km'), findsOneWidget);
+      expect(find.text('Cantina da Nona'), findsOneWidget);
 
       await tester.tap(find.bySemanticsLabel('Voltar'));
+      await tester.pumpAndSettle();
+
+      expect(find.textContaining('Bora decidir'), findsOneWidget);
+      expect(homeTab, findsOneWidget);
+    });
+
+    testWidgets('goes from the map to the contact options and back', (
+      tester,
+    ) async {
+      await pumpApp(tester);
+      await reachResult(tester);
+      final seeRestaurants = find.text('Ver restaurantes perto');
+      await tester.ensureVisible(seeRestaurants);
+      await tester.pumpAndSettle();
+      await tester.tap(seeRestaurants);
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byType(RestaurantCard));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Como você quer pedir?'), findsOneWidget);
+      expect(find.text('Pedir no delivery'), findsOneWidget);
+
+      await tester.tap(find.bySemanticsLabel('Voltar'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('7 lugares em até 3 km'), findsOneWidget);
+      expect(find.text('Cantina da Nona'), findsOneWidget);
+
+      await tester.tap(find.byType(RestaurantCard));
+      await tester.pumpAndSettle();
+      final home = find.text('Voltar ao início');
+      await tester.ensureVisible(home);
+      await tester.tap(home);
       await tester.pumpAndSettle();
 
       expect(find.textContaining('Bora decidir'), findsOneWidget);
