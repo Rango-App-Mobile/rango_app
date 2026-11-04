@@ -289,8 +289,9 @@ epics:
           Telas 05 Restaurantes no mapa e 08 Restaurantes carregando do Figma. Mapa centrado
           na pessoa (User Location), um Map Pin por restaurante na cor da comida escolhida,
           chips com a comida e "N lugares em até X km". Tocar num pin o seleciona e mostra a
-          prévia (Restaurant Card Layout=Row); tocar na prévia abre o contato (E3-S4). Pacote
-          de mapa é dependência nova: decidir no plano com o time (contexto.md §12).
+          prévia (Restaurant Card Layout=Row); tocar na prévia abre o contato (E3-S4). Mapa com
+          google_maps_flutter; sem chave do Google, mapa desenhado e restaurantes fake
+          (contexto.md §11, 2026-10-29). Raio de 3 km, ordem por distância (R4).
         acceptance:
           - "Mapa e localização aparecem na hora; o chip avisa que a busca está rodando e os pins entram quando o Places responde"
           - "Só um pin selecionado por vez, com balão de nome e nota"
@@ -306,26 +307,29 @@ epics:
         estimate: 3
         description: >
           Tela 06 Opções de contato do Figma (substitui a tela de detalhe): Restaurant Card
-          Layout=Vertical com nota, distância e tempo, chip "Salvo no seu histórico" (só com
-          conta), a pergunta "Como você quer pedir?" com Pedir no delivery, Abrir no mapa e
-          Ligar, e os atalhos Ir para o histórico e Voltar ao início.
+          Layout=Vertical com nota e distância, a pergunta "Como você quer pedir?" com Pedir no
+          delivery e Ligar (sem "Abrir no mapa": a pessoa vem do mapa) e o atalho Voltar ao
+          início. O chip "Salvo no seu histórico" e o atalho Ir para o histórico ficam para
+          quando houver login; salvar a escolha é a E2-S4 (contexto.md §11, 2026-10-29).
         acceptance:
           - "Abre a partir da prévia do mapa e o voltar retorna ao mapa com o mesmo pin selecionado"
-          - "Com conta, a escolha é salva no histórico ao abrir a tela; visitante não vê o chip nem o atalho do histórico"
+          - "Visitante não vê o chip nem o atalho do histórico"
           - "'Voltar ao início' leva à Home com a sessão zerada"
       - id: E3-S5
-        title: "Como usuário, quero abrir o restaurante no app de delivery ou no mapa"
+        title: "Como usuário, quero pedir no app de delivery ou ligar para o restaurante"
         sprint: 4
         frente: dev
         area: restaurants
         priority: media
         estimate: 2
         description: >
-          Botões da tela 06: url_launcher para Maps, busca do restaurante no app de delivery
-          (o preferido nas preferências, E10-S3) e ligação.
+          Botões da tela 06 com url_launcher. "Pedir no delivery" segue R5: link do iFood
+          cadastrado em restaurants/{placeId} no Firestore → primeiro outro link cadastrado →
+          busca "<nome> delivery" no Google. O app preferido nas preferências (E10-S3) entra
+          depois.
         acceptance:
-          - "Abre no Google Maps/Apple Maps"
-          - "Abre busca pelo nome no app de delivery ou no navegador como fallback"
+          - "Com link do iFood cadastrado, abre o iFood; sem ele, o primeiro outro link; sem nenhum, a busca no Google"
+          - "Só links https saem do app; erro ao ler o Firestore cai na busca no Google"
           - "'Ligar' abre o discador com o telefone do restaurante; sem telefone, o botão não aparece"
       - id: E3-S6
         title: "Como usuário, quero ver os restaurantes também em lista"

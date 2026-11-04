@@ -13,3 +13,21 @@ final class NetworkFailure extends Failure {
 final class UnexpectedFailure extends Failure {
   const UnexpectedFailure([super.message = 'Algo deu errado.']);
 }
+
+final class LocationDeniedFailure extends Failure {
+  const LocationDeniedFailure([
+    super.message = 'Sem permissão de localização.',
+  ]);
+}
+
+final class LocationDeniedForeverFailure extends Failure {
+  const LocationDeniedForeverFailure([
+    super.message = 'A localização está bloqueada nos ajustes.',
+  ]);
+}
+
+final class LocationServiceDisabledFailure extends Failure {
+  const LocationServiceDisabledFailure([
+    super.message = 'A localização do celular está desligada.',
+  ]);
+}

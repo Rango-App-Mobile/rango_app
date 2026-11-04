@@ -117,7 +117,8 @@ Telas em alta fidelidade e protótipo: [Figma do Rango](https://www.figma.com/de
 - **R1:** toda sessão pertence a um usuário do Firebase Auth: anônimo (visitante) ou com conta. Só sessões de usuário com conta são salvas no Firestore; do visitante não se grava histórico, estatística nem preferência. *(E1, decisão de 2026-09-30)*
 - **R2:** a primeira escolha é Salgado vs. Doce; depois, duelos "quem ganha fica" dentro da lista escolhida (16 comidas em cada). O primeiro duelo já vale 1 ponto; o desafiante que vence vira campeão com 1 ponto e o derrubado perde os seus. Três vitórias seguidas encerram a sessão nessa comida; não há limite de duelos. A fila é aleatória; quando acaba, a lista é embaralhada de novo sem o campeão atual, e só então um derrubado pode voltar. *(E2-S1, decisão de 2026-10-24)*
 - **R3:** cada comida das listas tem um termo de busca para o Google Places. *(E2-S1)*
-- **R4:** a recomendação considera só restaurantes próximos à localização atual; o raio está em §12.
+- **R4:** a recomendação considera só restaurantes a até **3 km** da localização atual (até 20 resultados do Places), ordenados do mais perto ao mais longe; o mais perto abre selecionado no mapa. A posição é usada só na busca e não é salva. *(E3-S3, decisão de 2026-10-29)*
+- **R5:** "Pedir no delivery" abre o link do iFood cadastrado para o restaurante; sem ele, o primeiro outro link cadastrado; sem nenhum, uma busca "<nome> delivery" no Google. Só links `https` saem do app. *(E3-S5, decisão de 2026-10-29)*
 
 ## 8. Modelo de dados
 
@@ -132,7 +133,9 @@ users/{uid}/sessions/{sessionId}
   choices: [{ level, optionA, optionB, chosen, at }]
   result: { categoryId, label, placesQuery }
   restaurant: { placeId, name, cuisine, rating }   # escolhido na tela de contato
-  channel: delivery | map | call                   # alimenta o "Pedir de novo"
+  channel: delivery | call                         # alimenta o "Pedir de novo"
+restaurants/{placeId}             # cadastrado à mão pelo time; o app só lê
+  deliveryLinks: { ifood?, others: [url] }        # R5: iFood → outros → busca no Google
 ```
 
 Cardápio (raiz, Salgado e Doce, e 16 comidas em cada): dado local versionado no app, no `LocalCategoryRepository` (`lib/data/`). Mover para o Firestore é decisão futura (§12).
@@ -206,15 +209,18 @@ Rituais e frentes: [time-e-rituais.md](time-e-rituais.md).
 | 2026-10-24 | As chaves de API do Firebase saem do git e vêm do `env.json` (`FIREBASE_ANDROID_API_KEY`, `FIREBASE_IOS_API_KEY`); `google-services.json`, `GoogleService-Info.plist` e `firebase.json` não são mais versionados e o `firebase_options.dart` passa a ser escrito à mão. Sem as chaves o app roda com `FakeAuthRepository` | O secret scanning do GitHub abriu alertas para as chaves commitadas. Elas foram trocadas e restringidas por app no Google Cloud; mantê-las fora do git evita novos alertas e segue o padrão de `env.json` + `--dart-define-from-file` já previsto para chaves |
 | 2026-10-24 | A árvore binária (Salgado → Massa → Macarrão) dá lugar a Salgado vs. Doce seguido de duelos "quem ganha fica" em listas planas de 16 comidas cada (R2); o repositório local passa a se chamar `LocalCategoryRepository`, porque o cardápio no app é a implementação real, não um fake | Com a árvore, cada comida nova exigia um nível intermediário e a sessão era sempre o mesmo caminho de três escolhas. O duelo aceita 32 comidas sem novos níveis e só termina quando a pessoa confirma o gosto três vezes seguidas |
 | 2026-10-24 | A `PLACES_API_KEY` sai do `env.example.json` e do `Env` até a história que trouxer a busca de restaurantes | O app ainda não usa o Places; nenhuma credencial fica configurada sem uso. A fonte dos restaurantes (Places ou base própria) volta a ser discutida nessa história |
+| 2026-10-29 | Mapa com `google_maps_flutter`; restaurantes do Google Places (API New, Text Search) chamado direto do app com `dio`. Uma chave por plataforma no `env.json` (`GOOGLE_ANDROID_API_KEY`, `GOOGLE_IOS_API_KEY`, `ANDROID_CERT_SHA1`), restrita por app, serve ao Maps SDK e ao Places | A política do Places proíbe mostrar os resultados num mapa que não seja do Google. Chamar direto evita o plano Blaze e o deploy de Functions; a chave restrita por app é o risco aceito |
+| 2026-10-29 | Sem chave do Google, o app mostra um mapa creme desenhado (estilo do Map base do Figma) com restaurantes fake ao redor da pessoa; o CI e os widget tests rodam assim | O app tem que rodar sem `env.json` (CLAUDE.md), e no iOS o SDK do Google Maps derruba o app sem chave |
+| 2026-10-29 | Raio de 3 km, ordem por distância, o mais perto já selecionado (R4) | Igual ao chip do Figma ("N lugares em até 3 km"); a pessoa quer o que está perto |
+| 2026-10-29 | "Pedir no delivery" segue iFood → outros links → busca no Google (R5), com os links na coleção `restaurants/{placeId}` do Firestore (`cloud_firestore`) | O Places não informa link de delivery; cadastrar à mão dá o link certo para os restaurantes que o time conhece, e a busca no Google cobre o resto |
+| 2026-10-29 | A tela 06 não tem "Abrir no mapa" | A pessoa já está vindo de um mapa; sobram Pedir no delivery e Ligar |
+| 2026-10-29 | Enquanto não houver login, a tela 06 não mostra o chip "Salvo no seu histórico" nem "Ir para o histórico"; salvar a escolha fica com a E2-S4 | Hoje todos são visitantes (R1) |
+| 2026-10-29 | O iOS passa a usar CocoaPods junto com o Swift Package Manager (`ios/Podfile`, alvo mínimo iOS 15) | O `google_maps_flutter_ios` só é distribuído por CocoaPods; quem roda no iOS precisa do `pod` instalado |
 
 ## 12. Em aberto
 
 - Integrantes e frente de cada um (reunião de 24/09 à noite).
-- Raio de busca padrão e ordenação (distância vs. avaliação).
-- Chamar o Places direto do app (chave restrita) ou via Cloud Function (proxy).
 - Árvore de categorias local ou no Firestore (editável sem publicar o app).
-- Como "abrir no delivery": deep link por app ou busca pelo nome no navegador.
-- Pacote de mapa: `google_maps_flutter` (mesma conta do Places, chave por plataforma) ou `flutter_map` (OSM, sem chave).
 - Método de login: e-mail, Google e/ou Apple (E6-S3 e E1-S3).
 - O que as notificações avisam (a preferência existe no perfil; o envio é futuro).
 - Fotos das comidas: licença das fotos do Figma ou banco próprio (E8-S7).

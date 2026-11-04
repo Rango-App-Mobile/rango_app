@@ -12,7 +12,8 @@ flutuante (issue #55), montados com `go_router` em `lib/app/router.dart` e
 | `/history` | `HistoryScreen`: histórico vazio (Figma 10) | Aba Histórico | Principal | Sim |
 | `/choose` | `SwipeScreen(mode: flow)`: níveis 2 em diante | Navigator raiz, por cima das abas | Fluxo (só "Voltar") | Não |
 | `/result?path=<ids>` | `ResultScreen`: Deu match (Figma 04) | Navigator raiz | Fluxo | Não |
-| `/restaurants?category=<id>` | `RestaurantsScreen`: placeholder até o mapa (#17) | Navigator raiz | Fluxo | Não |
+| `/restaurants?category=<id>` | `RestaurantsScreen`: restaurantes no mapa (Figma 05, 08 e 09; `docs/restaurantes.md`) | Navigator raiz | Fluxo | Não |
+| `/restaurants/contact` (com `extra: RestaurantContactArgs`) | `RestaurantContactScreen`: opções de contato (Figma 06) | Navigator raiz, por cima do mapa | Fluxo | Não |
 
 O app abre em `/home`. As duas abas são um `StatefulShellRoute.indexedStack`:
 cada aba guarda a própria pilha, e trocar de aba não perde o estado da outra.
@@ -25,7 +26,8 @@ restaurantes (decisão de 24/10 em `docs/contexto.md` §11).
 | Onde | O que faz |
 |---|---|
 | Escolhas (`/choose`) | Zera a sessão e volta à Home (nível 1) |
-| Deu match e restaurantes | `go('/home')`: volta à aba Home |
+| Deu match e mapa de restaurantes | `go('/home')`: volta à aba Home |
+| Opções de contato | `pop()`: volta ao mapa com o mesmo restaurante selecionado; "Voltar ao início" faz `go('/home')` |
 
 O botão da Top Bar, o gesto de borda do iOS e o voltar do Android fazem a mesma
 coisa: cada tela de fluxo usa `PopScope(canPop: false)` e trata o gesto como o
@@ -50,7 +52,7 @@ rolagem para a Tab Bar não cobrir o conteúdo.
 | `test/core/widgets/top_bar_test.dart`, `avatar_button_test.dart` | Variantes, alvo de toque, semântica, callbacks |
 | `test/core/widgets/rango_tab_bar_test.dart` | Itens, toque, tamanho, semântica de aba selecionada, tokens, menos movimento |
 | `test/screens/history/history_screen_test.dart` | Conteúdo do vazio, "Decidir meu rango" vai à Home, 375x667 |
-| `test/screens/restaurants/restaurants_screen_test.dart` | Placeholder, "Voltar" e "Voltar ao início" vão à Home |
+| `test/screens/restaurants/restaurants_screen_test.dart` | Mapa, estados e "Voltar" à Home (detalhes em `docs/restaurantes.md`) |
 | `test/app/app_test.dart` | Abre na Home com a Tab Bar; troca de abas; a Tab Bar some no fluxo e volta ao sair |
 
 ## O que não está aqui

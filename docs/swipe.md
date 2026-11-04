@@ -25,7 +25,7 @@ documento explica o porquê das escolhas de implementação; não repete o conte
 | 8 | Toca em "Voltar" (ou gesto de borda do iOS / voltar do Android) | `reset()` e `pop()`; o `PopScope` faz o mesmo para o gesto | A sessão volta ao Salgado vs. Doce e o duelo some |
 | 9 | Uma comida vence três duelos seguidos (ex.: Macarrão) | A tela visível troca para `/result?path=savory,spaghetti,spaghetti,spaghetti` e chama `reset()` | `result` é o `winner` do duelo; os ids vêm de `history` |
 | 10 | Vê o Deu match: card grande inclinado com a comida, o caminho ("Salgado, macarrão"), o chip "4 escolhas", o adesivo "Deu match!", "Agora é só escolher onde." e dois botões | `ResultScreen` | `ResultViewModel` resolve os ids da rota em `FoodCategory` |
-| 11 | "Ver restaurantes perto" | `push('/restaurants?category=spaghetti')`: placeholder até o mapa (#17) | — |
+| 11 | "Ver restaurantes perto" | `push('/restaurants?category=spaghetti')`: mapa de restaurantes (`docs/restaurantes.md`) | — |
 | 12 | "Recomeçar" ou "Voltar" no Deu match | `go('/home')` | A sessão já foi zerada no passo 9 |
 
 ## O duelo
@@ -130,6 +130,5 @@ Figma.
 
 | Fora desta entrega | Onde vai |
 | --- | --- |
-| Mapa de restaurantes (hoje um placeholder) | #17 |
 | Salvar a sessão e o match no histórico | #13 e #60 |
 | Cardápio no Firestore, editável sem publicar o app | `docs/contexto.md` §12 |

@@ -2,12 +2,12 @@ import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:rango_app/core/theme/resolve_food_theme.dart';
 import 'package:rango_app/core/widgets/food_card.dart';
 import 'package:rango_app/core/widgets/food_photo.dart';
 import 'package:rango_app/core/widgets/rango_sticker.dart';
 import 'package:rango_app/models/food_category.dart';
 import 'package:rango_app/screens/swipe/widgets/draggable_food_card.dart';
-import 'package:rango_app/screens/swipe/widgets/resolve_food_theme.dart';
 
 /// The two overlapping option cards of a swipe level, with the "ou" sticker
 /// where they meet. Enters with a fade and slide each time it is created, so
