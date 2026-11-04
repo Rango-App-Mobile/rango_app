@@ -6,7 +6,9 @@ import 'package:rango_app/app/theme/app_theme.dart';
 import 'package:rango_app/core/widgets/food_card.dart';
 import 'package:rango_app/data/category_repository.dart';
 import 'package:rango_app/data/local_category_repository.dart';
+import 'package:rango_app/models/category_tree.dart';
 import 'package:rango_app/models/food_category.dart';
+import 'package:rango_app/models/like_state.dart';
 import 'package:rango_app/screens/swipe/swipe_screen.dart';
 import 'package:rango_app/screens/swipe/swipe_view_model.dart';
 
@@ -27,7 +29,7 @@ Future<void> pumpScreen(
     ProviderScope(
       overrides: [
         categoryRepositoryProvider.overrideWithValue(LocalCategoryRepository()),
-        duelRandomProvider.overrideWithValue(InOrderRandom()),
+        deckRandomProvider.overrideWithValue(InOrderRandom()),
       ],
       child: MaterialApp.router(
         theme: AppTheme.light,
@@ -65,6 +67,44 @@ GoRouter _router() => GoRouter(
 
 final Finder voltar = find.bySemanticsLabel('Voltar');
 
+FoodCategory food(String id) =>
+    LocalCategoryRepository.seed.firstWhere((c) => c.id == id);
+
+LikeState game(WidgetTester tester) {
+  final container = ProviderScope.containerOf(
+    tester.element(find.byType(SwipeScreen).last),
+  );
+  final game = container.read(swipeViewModelProvider).requireValue.game;
+  if (game == null) throw StateError('No game on screen');
+  return game;
+}
+
+Future<void> openSavory(WidgetTester tester) async {
+  await tester.tap(find.text('Salgado'));
+  await tester.pumpAndSettle();
+}
+
+/// Taps "Passar" until [label] is the card on top.
+Future<void> passUntil(WidgetTester tester, String label) async {
+  for (var i = 0; i < 40; i++) {
+    if (find.bySemanticsLabel('Curtir $label').evaluate().isNotEmpty) return;
+    await tester.tap(find.bySemanticsLabel(RegExp('^Passar ')));
+    await tester.pumpAndSettle();
+  }
+  fail('$label never came back on top');
+}
+
+/// Likes Macarrão whenever it is on top and passes everything else.
+Future<void> likeSpaghettiUntilMatch(WidgetTester tester) async {
+  for (var i = 0; i < 40; i++) {
+    if (find.textContaining('RESULT').evaluate().isNotEmpty) return;
+    await passUntil(tester, 'Macarrão');
+    await tester.tap(find.bySemanticsLabel('Curtir Macarrão'));
+    await tester.pumpAndSettle();
+  }
+  fail('no match');
+}
+
 void main() {
   testWidgets('root shows the options, the Top Bar Principal, no Voltar', (
     tester,
@@ -84,7 +124,7 @@ void main() {
     expect(voltar, findsNothing);
   });
 
-  testWidgets('tapping a card opens the flow screen with Voltar only', (
+  testWidgets('tapping a group opens the single card with Voltar only', (
     tester,
   ) async {
     await pumpScreen(tester);
@@ -92,21 +132,33 @@ void main() {
     await tester.tap(find.text('Salgado'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Macarrão ou\npizza?'), findsOneWidget);
-    expect(find.text('Macarrão'), findsOneWidget);
-    expect(find.text('Pizza'), findsOneWidget);
+    expect(find.text('Curte macarrão?'), findsOneWidget);
+    expect(cardTitled('Macarrão'), findsOneWidget);
+    expect(find.bySemanticsLabel('0 de 3 curtidas'), findsOneWidget);
+    expect(find.bySemanticsLabel('Passar Macarrão'), findsOneWidget);
+    expect(find.bySemanticsLabel('Curtir Macarrão'), findsOneWidget);
     expect(voltar, findsOneWidget);
     expect(find.bySemanticsLabel('Abrir perfil'), findsNothing);
   });
 
-  testWidgets('dragging a card far enough chooses it', (tester) async {
+  testWidgets('the next card peeks out under the one on top', (tester) async {
+    await pumpScreen(tester);
+    await openSavory(tester);
+
+    expect(cardTitled('Pizza'), findsOneWidget);
+    expect(
+      tester.getBottomLeft(cardTitled('Pizza')).dy,
+      greaterThan(tester.getBottomLeft(cardTitled('Macarrão')).dy),
+    );
+  });
+
+  testWidgets('dragging a root card far enough chooses it', (tester) async {
     await pumpScreen(tester);
 
     await tester.drag(find.text('Doce'), const Offset(150, 0));
     await tester.pumpAndSettle();
 
-    expect(find.text('Sorvete'), findsOneWidget);
-    expect(find.text('Bolo'), findsOneWidget);
+    expect(find.text('Curte sorvete?'), findsOneWidget);
   });
 
   testWidgets('a short drag snaps back without choosing', (tester) async {
@@ -154,9 +206,8 @@ void main() {
 
   testWidgets('Voltar leaves the flow and resets the session', (tester) async {
     await pumpScreen(tester);
-    await tester.tap(find.text('Salgado'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Macarrão'));
+    await openSavory(tester);
+    await tester.tap(find.bySemanticsLabel('Curtir Macarrão'));
     await tester.pumpAndSettle();
 
     await tester.tap(voltar);
@@ -167,16 +218,15 @@ void main() {
     expect(find.text('Doce'), findsOneWidget);
     expect(voltar, findsNothing);
 
-    // The session really restarted: Doce leads to its own level 2.
+    // The session really restarted: Doce deals its own cards.
     await tester.tap(find.text('Doce'));
     await tester.pumpAndSettle();
-    expect(find.text('Sorvete'), findsOneWidget);
+    expect(find.text('Curte sorvete?'), findsOneWidget);
   });
 
   testWidgets('system back leaves the flow like Voltar', (tester) async {
     await pumpScreen(tester);
-    await tester.tap(find.text('Salgado'));
-    await tester.pumpAndSettle();
+    await openSavory(tester);
 
     await tester.binding.handlePopRoute();
     await tester.pumpAndSettle();
@@ -185,51 +235,120 @@ void main() {
     expect(voltar, findsNothing);
   });
 
-  testWidgets('a duel round swaps the loser for the next challenger', (
+  testWidgets('the heart button likes the card and shows the next one', (
     tester,
   ) async {
     await pumpScreen(tester);
-    await tester.tap(find.text('Salgado'));
+    await openSavory(tester);
+
+    await tester.tap(find.bySemanticsLabel('Curtir Macarrão'));
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text('Macarrão'));
-    await tester.pumpAndSettle();
-
-    expect(find.text('Macarrão ou\nhambúrguer?'), findsOneWidget);
-    expect(find.text('Pizza'), findsNothing);
-    expect(find.text('Macarrão está ganhando com 1 vitória.'), findsOneWidget);
+    expect(find.text('Curte pizza?'), findsOneWidget);
+    expect(game(tester).likesOf(food('spaghetti')), 1);
+    expect(game(tester).passedIds, isEmpty);
   });
 
-  testWidgets('a dragged champion comes back for the next round', (
+  testWidgets('the X button passes the card and shows the next one', (
     tester,
   ) async {
     await pumpScreen(tester);
-    await tester.tap(find.text('Salgado'));
-    await tester.pumpAndSettle();
-    final before = tester.getCenter(cardTitled('Macarrão')).dx;
+    await openSavory(tester);
 
-    await tester.drag(find.text('Macarrão'), const Offset(150, 0));
+    await tester.tap(find.bySemanticsLabel('Passar Macarrão'));
     await tester.pumpAndSettle();
 
-    // Only the horizontal offset: the header above may change height.
-    expect(find.text('Hambúrguer'), findsOneWidget);
-    expect(tester.getCenter(cardTitled('Macarrão')).dx, before);
+    expect(find.text('Curte pizza?'), findsOneWidget);
+    expect(game(tester).likesOf(food('spaghetti')), 0);
+    expect(game(tester).passedIds, {'spaghetti'});
   });
 
-  testWidgets('three wins in a row open the result with every choice', (
+  testWidgets('dragging the card right likes it, left passes it', (
     tester,
   ) async {
     await pumpScreen(tester);
+    await openSavory(tester);
 
-    await tester.tap(find.text('Salgado'));
+    await tester.drag(find.text('Macarrão'), const Offset(200, 0));
     await tester.pumpAndSettle();
-    for (var i = 0; i < 3; i++) {
-      await tester.tap(find.text('Macarrão'));
-      await tester.pumpAndSettle();
-    }
+    expect(find.text('Curte pizza?'), findsOneWidget);
+    expect(game(tester).likesOf(food('spaghetti')), 1);
 
+    await tester.drag(find.text('Pizza'), const Offset(-200, 0));
+    await tester.pumpAndSettle();
+    expect(find.text('Curte hambúrguer?'), findsOneWidget);
+    expect(game(tester).passedIds, {'pizza'});
+  });
+
+  testWidgets('a short drag on the card snaps back without swiping', (
+    tester,
+  ) async {
+    await pumpScreen(tester);
+    await openSavory(tester);
+    final before = tester.getCenter(cardTitled('Macarrão'));
+
+    await tester.drag(find.text('Macarrão'), const Offset(40, 0));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Curte macarrão?'), findsOneWidget);
+    expect(tester.getCenter(cardTitled('Macarrão')), before);
+  });
+
+  testWidgets('the sticker says what letting go will do', (tester) async {
+    await pumpScreen(tester);
+    await openSavory(tester);
+    expect(find.text('Curti!'), findsNothing);
+
+    final gesture = await tester.startGesture(
+      tester.getCenter(cardTitled('Macarrão')),
+    );
+    await gesture.moveBy(const Offset(40, 0));
+    await gesture.moveBy(const Offset(40, 0));
+    await tester.pump();
+    expect(find.text('Curti!'), findsOneWidget);
+
+    await gesture.moveBy(const Offset(-160, 0));
+    await tester.pump();
+    expect(find.text('Curti!'), findsNothing);
+    expect(find.text('Passo!'), findsOneWidget);
+
+    await gesture.cancel();
+    await tester.pumpAndSettle();
+  });
+
+  testWidgets('the meter shows the likes of the food on top', (tester) async {
+    await pumpScreen(tester);
+    await openSavory(tester);
+    await tester.tap(find.bySemanticsLabel('Curtir Macarrão'));
+    await tester.pumpAndSettle();
+
+    await passUntil(tester, 'Macarrão');
+
+    expect(find.bySemanticsLabel('1 de 3 curtidas'), findsOneWidget);
+  });
+
+  testWidgets('three likes on one food open the result with every swipe', (
+    tester,
+  ) async {
+    await pumpScreen(tester);
+    await openSavory(tester);
+
+    await likeSpaghettiUntilMatch(tester);
+
+    final savory = CategoryTree(
+      LocalCategoryRepository.seed,
+    ).childrenOf(food('savory'));
+    final passed = savory.skip(1).map((c) => c.id);
     expect(
-      find.text('RESULT savory,spaghetti,spaghetti,spaghetti'),
+      find.text(
+        'RESULT ${[
+          'savory',
+          'spaghetti',
+          ...passed,
+          'spaghetti',
+          'spaghetti',
+        ].join(',')}',
+      ),
       findsOneWidget,
     );
   });
@@ -285,20 +404,31 @@ void main() {
     expect(tester.getCenter(cardTitled('Salgado')), before);
   });
 
-  testWidgets('fits a small phone without overflow, scrolling if needed', (
+  testWidgets('with reduced motion a swipe takes effect at once', (
     tester,
   ) async {
+    await pumpScreen(tester, disableAnimations: true);
+    await openSavory(tester);
+
+    await tester.drag(find.text('Macarrão'), const Offset(200, 0));
+    await tester.pump();
+
+    expect(tester.hasRunningAnimations, isFalse);
+    expect(find.text('Curte pizza?'), findsOneWidget);
+  });
+
+  testWidgets('fits a small phone without overflow', (tester) async {
     await pumpScreen(tester, size: const Size(375, 667));
     expect(tester.takeException(), isNull);
 
-    await tester.tap(find.text('Salgado'));
-    await tester.pumpAndSettle();
+    await openSavory(tester);
     expect(tester.takeException(), isNull);
+    expect(
+      tester.getBottomLeft(find.bySemanticsLabel('Curtir Macarrão')).dy,
+      lessThanOrEqualTo(667),
+    );
 
-    for (var i = 0; i < 3; i++) {
-      await tester.tap(find.text('Macarrão'));
-      await tester.pumpAndSettle();
-    }
+    await likeSpaghettiUntilMatch(tester);
     expect(tester.takeException(), isNull);
     expect(find.textContaining('RESULT'), findsOneWidget);
   });

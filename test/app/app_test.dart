@@ -33,7 +33,7 @@ Future<void> pumpApp(WidgetTester tester) async {
       overrides: [
         authRepositoryProvider.overrideWithValue(FakeAuthRepository()),
         categoryRepositoryProvider.overrideWithValue(LocalCategoryRepository()),
-        duelRandomProvider.overrideWithValue(InOrderRandom()),
+        deckRandomProvider.overrideWithValue(InOrderRandom()),
       ],
       child: const RangoApp(),
     ),
@@ -108,8 +108,18 @@ void main() {
       await tester.pumpAndSettle();
       expect(homeTab, findsNothing);
 
-      for (var i = 0; i < 3; i++) {
-        await tester.tap(find.text('Macarrão'));
+      // Likes Macarrão whenever it is on top and passes everything else.
+      final likeSpaghetti = find.bySemanticsLabel('Curtir Macarrão');
+      for (
+        var i = 0;
+        i < 40 && find.text('Deu match!').evaluate().isEmpty;
+        i++
+      ) {
+        await tester.tap(
+          likeSpaghetti.evaluate().isNotEmpty
+              ? likeSpaghetti
+              : find.bySemanticsLabel(RegExp('^Passar ')),
+        );
         await tester.pumpAndSettle();
       }
     }

@@ -1,6 +1,6 @@
 import 'dart:math';
 
-/// A [Random] that makes `List.shuffle` keep the order, so a duel follows the
+/// A [Random] that makes `List.shuffle` keep the order, so the deck follows the
 /// seed order and tests know which foods are on screen.
 class InOrderRandom implements Random {
   @override

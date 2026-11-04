@@ -243,6 +243,27 @@ epics:
           - "Cada sessão concluída por usuário com conta é salva com escolhas, resultado e restaurante escolhido"
           - "Sessão de visitante não é salva"
           - "ViewModel não importa Firestore (acesso via SessionRepository)"
+      - id: E2-S5
+        title: "Como usuário, quero curtir ou passar uma comida por vez, como no Tinder"
+        sprint: 4
+        frente: dev
+        area: swipe
+        priority: alta
+        estimate: 5
+        description: >
+          Substitui o duelo de dois cards da E2-S1/E2-S2 (decisão de 2026-11-04 em
+          contexto.md §11, regra R2). Depois de Salgado/Doce, um card único no centro: arrastar
+          para a direita curte, para a esquerda passa, com os botões X e coração (Swipe Button)
+          como alternativa. A primeira comida a somar 3 curtidas dá o "Deu match!". Figma:
+          seção "02 V2 · Card único (curtir ou passar)" e componentes Like Meter e Swipe Button.
+        acceptance:
+          - "Depois de Salgado/Doce aparece uma comida por vez, com a borda da próxima embaixo"
+          - "Arrastar para a direita (ou tocar no coração) curte; para a esquerda (ou tocar no X) passa"
+          - "Durante o arrasto aparece o carimbo 'Curti!' ou 'Passo!'; soltar antes do limite devolve o card ao centro"
+          - "As curtidas de cada comida somam e não zeram; a primeira a chegar em 3 abre o Deu match"
+          - "Comida passada não volta na sessão; se todas forem passadas, a lista inteira volta"
+          - "O Like Meter mostra as curtidas da comida de cima"
+          - "Os botões têm rótulo para leitor de tela ('Curtir Macarrão', 'Passar Macarrão')"
 
   - id: E3
     title: "Recomendação de restaurantes reais (Google Places)"

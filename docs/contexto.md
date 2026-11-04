@@ -105,7 +105,7 @@ Telas em alta fidelidade e protótipo: [Figma do Rango](https://www.figma.com/de
 (página 📱 Telas; design system e componentes nas páginas de Design System e Components).
 
 1. O usuário abre o app como **visitante**: a sessão anônima é criada automaticamente, sem cadastro.
-2. A primeira escolha é ampla (salgado vs. doce). Depois vêm duelos "quem ganha fica" dentro da lista escolhida, por toque ou arrastando o card: a comida escolhida fica e enfrenta a próxima, até vencer três duelos seguidos (ex.: Salgado → Pizza).
+2. A primeira escolha é ampla (salgado vs. doce). Depois as comidas da lista escolhida aparecem uma por vez, num card único no centro, como no Tinder: arrastar para a direita (ou o botão de coração) curte, para a esquerda (ou o botão X) passa. A primeira comida a somar três curtidas é a escolhida (ex.: Salgado → Pizza).
 3. Ao convergir num tipo específico ("Deu match!"), o app consulta o Google Places por restaurantes próximos que servem esse tipo.
 4. O usuário vê os restaurantes **no mapa** (nome, nota, distância), escolhe um e decide como pedir: delivery, mapa ou ligação.
 5. Quem **entra com conta** (pelo perfil) tem as decisões salvas no **Histórico**, estatísticas e preferências. O visitante usa o fluxo inteiro, mas nada dele é salvo.
@@ -115,7 +115,7 @@ Telas em alta fidelidade e protótipo: [Figma do Rango](https://www.figma.com/de
 > Preencher conforme as specs forem aprovadas. Cada regra cita a spec de origem.
 
 - **R1:** toda sessão pertence a um usuário do Firebase Auth: anônimo (visitante) ou com conta. Só sessões de usuário com conta são salvas no Firestore; do visitante não se grava histórico, estatística nem preferência. *(E1, decisão de 2026-09-30)*
-- **R2:** a primeira escolha é Salgado vs. Doce; depois, duelos "quem ganha fica" dentro da lista escolhida (16 comidas em cada). O primeiro duelo já vale 1 ponto; o desafiante que vence vira campeão com 1 ponto e o derrubado perde os seus. Três vitórias seguidas encerram a sessão nessa comida; não há limite de duelos. A fila é aleatória; quando acaba, a lista é embaralhada de novo sem o campeão atual, e só então um derrubado pode voltar. *(E2-S1, decisão de 2026-10-24)*
+- **R2:** a primeira escolha é Salgado vs. Doce; depois, um card por vez com as comidas da lista escolhida (16 em cada), em ordem aleatória. Curtir soma 1 curtida à comida, e as curtidas não zeram; a primeira a chegar em 3 curtidas encerra a sessão nessa comida, sem limite de cards. Passar tira a comida da sessão. Quando o baralho acaba, as comidas que sobraram são embaralhadas de novo (a última mostrada não abre a nova rodada); se todas foram passadas, as 16 voltam. *(E2-S1, decisão de 2026-11-04; substitui o duelo de 2026-10-24)*
 - **R3:** cada comida das listas tem um termo de busca para o Google Places. *(E2-S1)*
 - **R4:** a recomendação considera só restaurantes próximos à localização atual; o raio está em §12.
 
@@ -206,6 +206,7 @@ Rituais e frentes: [time-e-rituais.md](time-e-rituais.md).
 | 2026-10-24 | As chaves de API do Firebase saem do git e vêm do `env.json` (`FIREBASE_ANDROID_API_KEY`, `FIREBASE_IOS_API_KEY`); `google-services.json`, `GoogleService-Info.plist` e `firebase.json` não são mais versionados e o `firebase_options.dart` passa a ser escrito à mão. Sem as chaves o app roda com `FakeAuthRepository` | O secret scanning do GitHub abriu alertas para as chaves commitadas. Elas foram trocadas e restringidas por app no Google Cloud; mantê-las fora do git evita novos alertas e segue o padrão de `env.json` + `--dart-define-from-file` já previsto para chaves |
 | 2026-10-24 | A árvore binária (Salgado → Massa → Macarrão) dá lugar a Salgado vs. Doce seguido de duelos "quem ganha fica" em listas planas de 16 comidas cada (R2); o repositório local passa a se chamar `LocalCategoryRepository`, porque o cardápio no app é a implementação real, não um fake | Com a árvore, cada comida nova exigia um nível intermediário e a sessão era sempre o mesmo caminho de três escolhas. O duelo aceita 32 comidas sem novos níveis e só termina quando a pessoa confirma o gosto três vezes seguidas |
 | 2026-10-24 | A `PLACES_API_KEY` sai do `env.example.json` e do `Env` até a história que trouxer a busca de restaurantes | O app ainda não usa o Places; nenhuma credencial fica configurada sem uso. A fonte dos restaurantes (Places ou base própria) volta a ser discutida nessa história |
+| 2026-11-04 | O duelo "quem ganha fica" (dois cards) dá lugar a um card único estilo Tinder: direita curte, esquerda passa, botões X e coração como alternativa; 3 curtidas somadas na mesma comida dão match, e comida passada não volta na sessão (R2). `DuelGame` vira `LikeGame` | Dois cards disputando a tela não ficaram bonitos nem claros. Um card por vez é um gesto que todo mundo já conhece, mostra a foto grande e deixa a decisão mais leve |
 
 ## 12. Em aberto
 
