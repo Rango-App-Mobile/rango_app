@@ -9,7 +9,8 @@ flutuante (issue #55), montados com `go_router` em `lib/app/router.dart` e
 | Rota | Tela | Onde abre | Top Bar | Tab Bar |
 |---|---|---|---|---|
 | `/home` | `SwipeScreen(mode: root)`: nível 1 das escolhas | Aba Home | Principal (logo + perfil) | Sim |
-| `/history` | `HistoryScreen`: histórico vazio (Figma 10) | Aba Histórico | Principal | Sim |
+| `/history` | `HistoryScreen`: pilha de decisões (Figma 07d) ou vazio (Figma 10), ver `docs/historico.md` | Aba Histórico | Principal | Sim |
+| `/history/<id>` | `HistoryDetailScreen`: detalhe da decisão (Figma 12), com transição em fade e o card crescendo (Hero) | Navigator raiz | Fluxo | Não |
 | `/choose` | `SwipeScreen(mode: flow)`: níveis 2 em diante | Navigator raiz, por cima das abas | Fluxo (só "Voltar") | Não |
 | `/result?path=<ids>` | `ResultScreen`: Deu match (Figma 04) | Navigator raiz | Fluxo | Não |
 | `/restaurants?category=<id>` | `RestaurantsScreen`: placeholder até o mapa (#17) | Navigator raiz | Fluxo | Não |

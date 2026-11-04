@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:rango_app/app/app_shell.dart';
 import 'package:rango_app/screens/history/history_screen.dart';
+import 'package:rango_app/screens/history_detail/history_detail_screen.dart';
 import 'package:rango_app/screens/restaurants/restaurants_screen.dart';
 import 'package:rango_app/screens/result/result_screen.dart';
 import 'package:rango_app/screens/swipe/swipe_screen.dart';
@@ -54,6 +55,28 @@ final routerProvider = Provider<GoRouter>((ref) {
               .split(',')
               .where((id) => id.isNotEmpty)
               .toList(),
+        ),
+      ),
+      GoRoute(
+        path: '/history/:id',
+        parentNavigatorKey: rootKey,
+        // Only the cream background fades in, quickly: the motion is the card
+        // pulled out of the pile (a Hero), and the rest of the detail fades in
+        // after it lands (`LateFade` in the screen).
+        pageBuilder: (context, state) => CustomTransitionPage(
+          key: state.pageKey,
+          transitionDuration: const Duration(milliseconds: 650),
+          reverseTransitionDuration: const Duration(milliseconds: 500),
+          transitionsBuilder: (context, animation, _, child) => FadeTransition(
+            opacity: CurvedAnimation(
+              parent: animation,
+              curve: const Interval(0, 0.3),
+            ),
+            child: child,
+          ),
+          child: HistoryDetailScreen(
+            entryId: state.pathParameters['id'] ?? '',
+          ),
         ),
       ),
       GoRoute(
