@@ -36,9 +36,9 @@ class FoodCardDeck extends StatelessWidget {
   /// The next card is drawn smaller, as if it were further back.
   static const _backScale = 0.92;
 
+  /// Just the name and the photo, as in the Figma menu (Assets, "Cardápio").
   static Widget _card(FoodCategory food) => FoodCard(
     title: food.label,
-    subtitle: food.examples,
     foodTheme: resolveFoodTheme(food.foodTheme),
     photo: foodPhoto(food.photo),
     photoLabel: 'Foto: ${food.label.toLowerCase()}',

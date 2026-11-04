@@ -91,7 +91,6 @@ class SwipeScreen extends ConsumerWidget {
                     onChoose: onChoose,
                   ),
                   final game => _DeckContent(
-                    title: state.title,
                     game: game,
                     swipeCount: state.history.length,
                     onLike: () => viewModel().like(),
@@ -135,10 +134,11 @@ class _SwipeContent extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         spacing: AppSpace.md,
         children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpace.lg),
-            child: PageHeader(title: state.title, subtitle: state.subtitle),
-          ),
+          if (state.title case final title?)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: AppSpace.lg),
+              child: PageHeader(title: title, subtitle: state.subtitle),
+            ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: AppSpace.lg),
             child: switch (state.options) {
@@ -159,18 +159,16 @@ class _SwipeContent extends StatelessWidget {
   }
 }
 
-/// The single-card game: the question, the likes of the food on top, the
-/// deck and the two buttons that do what the swipe does.
+/// The single-card game, nothing else (Figma "02 Card único"): the likes of
+/// the food on top, the deck and the two buttons that do what the swipe does.
 class _DeckContent extends StatelessWidget {
   const _DeckContent({
-    required this.title,
     required this.game,
     required this.swipeCount,
     required this.onLike,
     required this.onPass,
   });
 
-  final String title;
   final LikeState game;
   final int swipeCount;
   final VoidCallback onLike;
@@ -190,10 +188,7 @@ class _DeckContent extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         spacing: AppSpace.sm,
         children: [
-          // Medium, as in Figma: "Curte macarrão?" fits one line.
-          PageHeader(title: title, size: PageHeaderSize.medium),
-          Align(
-            alignment: Alignment.centerLeft,
+          Center(
             child: LikeMeter(
               likes: game.likesOf(food),
               total: game.likesToMatch,

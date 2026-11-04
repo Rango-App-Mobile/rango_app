@@ -67,6 +67,9 @@ GoRouter _router() => GoRouter(
 
 final Finder voltar = find.bySemanticsLabel('Voltar');
 
+/// The card on top: the like button names its food.
+Finder onTop(String label) => find.bySemanticsLabel('Curtir $label');
+
 FoodCategory food(String id) =>
     LocalCategoryRepository.seed.firstWhere((c) => c.id == id);
 
@@ -132,13 +135,27 @@ void main() {
     await tester.tap(find.text('Salgado'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Curte macarrão?'), findsOneWidget);
+    expect(onTop('Macarrão'), findsOneWidget);
     expect(cardTitled('Macarrão'), findsOneWidget);
+    // Only the meter, the deck and the buttons: no question above the card
+    // and no line of examples under the food name.
+    expect(find.textContaining('Curte'), findsNothing);
+    expect(find.text('Espaguete, penne, fettuccine'), findsNothing);
     expect(find.bySemanticsLabel('0 de 3 curtidas'), findsOneWidget);
     expect(find.bySemanticsLabel('Passar Macarrão'), findsOneWidget);
     expect(find.bySemanticsLabel('Curtir Macarrão'), findsOneWidget);
     expect(voltar, findsOneWidget);
     expect(find.bySemanticsLabel('Abrir perfil'), findsNothing);
+  });
+
+  testWidgets('the like meter sits centered above the deck', (tester) async {
+    await pumpScreen(tester);
+    await openSavory(tester);
+
+    final meter = tester.getCenter(find.bySemanticsLabel('0 de 3 curtidas'));
+    final card = tester.getRect(cardTitled('Macarrão'));
+    expect(meter.dx, closeTo(card.center.dx, 1));
+    expect(meter.dy, lessThan(card.top));
   });
 
   testWidgets('the next card peeks out under the one on top', (tester) async {
@@ -158,7 +175,7 @@ void main() {
     await tester.drag(find.text('Doce'), const Offset(150, 0));
     await tester.pumpAndSettle();
 
-    expect(find.text('Curte sorvete?'), findsOneWidget);
+    expect(onTop('Sorvete'), findsOneWidget);
   });
 
   testWidgets('a short drag snaps back without choosing', (tester) async {
@@ -221,7 +238,7 @@ void main() {
     // The session really restarted: Doce deals its own cards.
     await tester.tap(find.text('Doce'));
     await tester.pumpAndSettle();
-    expect(find.text('Curte sorvete?'), findsOneWidget);
+    expect(onTop('Sorvete'), findsOneWidget);
   });
 
   testWidgets('system back leaves the flow like Voltar', (tester) async {
@@ -244,7 +261,7 @@ void main() {
     await tester.tap(find.bySemanticsLabel('Curtir Macarrão'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Curte pizza?'), findsOneWidget);
+    expect(onTop('Pizza'), findsOneWidget);
     expect(game(tester).likesOf(food('spaghetti')), 1);
     expect(game(tester).passedIds, isEmpty);
   });
@@ -258,7 +275,7 @@ void main() {
     await tester.tap(find.bySemanticsLabel('Passar Macarrão'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Curte pizza?'), findsOneWidget);
+    expect(onTop('Pizza'), findsOneWidget);
     expect(game(tester).likesOf(food('spaghetti')), 0);
     expect(game(tester).passedIds, {'spaghetti'});
   });
@@ -271,12 +288,12 @@ void main() {
 
     await tester.drag(find.text('Macarrão'), const Offset(200, 0));
     await tester.pumpAndSettle();
-    expect(find.text('Curte pizza?'), findsOneWidget);
+    expect(onTop('Pizza'), findsOneWidget);
     expect(game(tester).likesOf(food('spaghetti')), 1);
 
     await tester.drag(find.text('Pizza'), const Offset(-200, 0));
     await tester.pumpAndSettle();
-    expect(find.text('Curte hambúrguer?'), findsOneWidget);
+    expect(onTop('Hambúrguer'), findsOneWidget);
     expect(game(tester).passedIds, {'pizza'});
   });
 
@@ -290,7 +307,7 @@ void main() {
     await tester.drag(find.text('Macarrão'), const Offset(40, 0));
     await tester.pumpAndSettle();
 
-    expect(find.text('Curte macarrão?'), findsOneWidget);
+    expect(onTop('Macarrão'), findsOneWidget);
     expect(tester.getCenter(cardTitled('Macarrão')), before);
   });
 
@@ -414,7 +431,7 @@ void main() {
     await tester.pump();
 
     expect(tester.hasRunningAnimations, isFalse);
-    expect(find.text('Curte pizza?'), findsOneWidget);
+    expect(onTop('Pizza'), findsOneWidget);
   });
 
   testWidgets('fits a small phone without overflow', (tester) async {

@@ -159,14 +159,12 @@ void main() {
       );
     });
 
-    test('the title asks about the card on top, with no subtitle', () async {
+    test('the card screen has no title or subtitle', () async {
       await container.read(swipeViewModelProvider.future);
       viewModel().choose(_byId('savory'));
-      expect(state().title, 'Curte macarrão?');
-      expect(state().subtitle, isNull);
 
-      viewModel().pass();
-      expect(state().title, 'Curte pizza?');
+      expect(state().title, isNull);
+      expect(state().subtitle, isNull);
     });
   });
 

@@ -25,17 +25,15 @@ abstract class SwipeState with _$SwipeState {
 
   bool get hasConverged => result != null;
 
-  String get title => switch (game) {
+  /// Only the root has a header: on the card screen the card speaks for
+  /// itself (Figma "02 Card único": meter, deck and buttons only).
+  String? get title => switch (game) {
     null => 'Bora decidir\no Rango?',
-    LikeState(:final current) => 'Curte ${_lowerFirst(current.label)}?',
+    LikeState() => null,
   };
 
-  /// Only the root explains itself: the card screen speaks through the card.
   String? get subtitle => switch (game) {
     null => 'Toque ou arraste o card que deu mais vontade.',
     LikeState() => null,
   };
-
-  static String _lowerFirst(String text) =>
-      text.isEmpty ? text : '${text[0].toLowerCase()}${text.substring(1)}';
 }
