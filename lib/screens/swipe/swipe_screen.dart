@@ -194,9 +194,9 @@ class _DeckContent extends StatelessWidget {
               total: game.likesToMatch,
             ),
           ),
-          // Loose, so the buttons sit right under the card and the spare
-          // room stays at the bottom; the deck only shrinks when it must.
-          Flexible(
+          // The deck takes all the room between the meter and the buttons
+          // and sizes the card to it (Figma: 354 x 512 on the 402 frame).
+          Expanded(
             child: FoodCardDeck(
               current: food,
               next: game.next,

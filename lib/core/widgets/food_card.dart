@@ -29,6 +29,7 @@ class FoodCard extends StatelessWidget {
     this.cuisine,
     this.path = const [],
     this.titleMaxLines = 2,
+    this.photoHeight,
     super.key,
   });
 
@@ -63,6 +64,10 @@ class FoodCard extends StatelessWidget {
   /// title never wraps nor gets cut: a long name shrinks its font to fit.
   /// Stacks that show only the top strip of a card (the Histórico) use it.
   final int titleMaxLines;
+
+  /// Hero and Medium only: overrides the photo height of the size, for a
+  /// screen that sizes the card to the room it has (the swipe deck).
+  final double? photoHeight;
 
   /// Figma Medium padding, no space token between `sm` and `md`.
   static const _mediumPadding = 12.0;
@@ -106,13 +111,13 @@ class FoodCard extends StatelessWidget {
               FoodCardSize.hero => _vertical(
                 context,
                 padding: AppSpace.md,
-                photoHeight: _heroPhotoHeight,
+                photoHeight: photoHeight ?? _heroPhotoHeight,
                 titleStyle: context.textStyles.cardTitleLarge,
               ),
               FoodCardSize.medium => _vertical(
                 context,
                 padding: _mediumPadding,
-                photoHeight: _mediumPhotoHeight,
+                photoHeight: photoHeight ?? _mediumPhotoHeight,
                 titleStyle: context.textStyles.cardTitleMedium,
               ),
               FoodCardSize.expanded => _expanded(context),

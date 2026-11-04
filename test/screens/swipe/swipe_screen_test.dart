@@ -11,6 +11,7 @@ import 'package:rango_app/models/food_category.dart';
 import 'package:rango_app/models/like_state.dart';
 import 'package:rango_app/screens/swipe/swipe_screen.dart';
 import 'package:rango_app/screens/swipe/swipe_view_model.dart';
+import 'package:rango_app/screens/swipe/widgets/food_card_deck.dart';
 
 import '../../helpers/in_order_random.dart';
 
@@ -156,6 +157,29 @@ void main() {
     final card = tester.getRect(cardTitled('Macarrão'));
     expect(meter.dx, closeTo(card.center.dx, 1));
     expect(meter.dy, lessThan(card.top));
+  });
+
+  testWidgets('the card is as big as the Figma card on a 402 phone', (
+    tester,
+  ) async {
+    await pumpScreen(tester);
+    await openSavory(tester);
+
+    final card = tester.getRect(cardTitled('Macarrão'));
+    expect(card.width, closeTo(FoodCardDeck.cardWidth, 1));
+    expect(card.height, closeTo(FoodCardDeck.cardHeight, 2));
+  });
+
+  testWidgets('on a small phone the card shrinks to fit with the buttons', (
+    tester,
+  ) async {
+    await pumpScreen(tester, size: const Size(375, 667));
+    await openSavory(tester);
+
+    final card = tester.getRect(cardTitled('Macarrão'));
+    final like = tester.getRect(find.bySemanticsLabel('Curtir Macarrão'));
+    expect(card.bottom, lessThan(like.top));
+    expect(like.bottom, lessThanOrEqualTo(667));
   });
 
   testWidgets('the next card peeks out under the one on top', (tester) async {
