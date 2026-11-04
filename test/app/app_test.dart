@@ -12,8 +12,10 @@ import 'package:rango_app/data/category_repository.dart';
 import 'package:rango_app/data/delivery_link_repository.dart';
 import 'package:rango_app/data/fake_auth_repository.dart';
 import 'package:rango_app/data/fake_delivery_link_repository.dart';
+import 'package:rango_app/data/fake_history_repository.dart';
 import 'package:rango_app/data/fake_location_repository.dart';
 import 'package:rango_app/data/fake_restaurant_repository.dart';
+import 'package:rango_app/data/history_repository.dart';
 import 'package:rango_app/data/local_category_repository.dart';
 import 'package:rango_app/data/location_repository.dart';
 import 'package:rango_app/data/restaurant_repository.dart';
@@ -45,7 +47,8 @@ Future<void> pumpApp(WidgetTester tester) async {
       overrides: [
         authRepositoryProvider.overrideWithValue(FakeAuthRepository()),
         categoryRepositoryProvider.overrideWithValue(LocalCategoryRepository()),
-        duelRandomProvider.overrideWithValue(InOrderRandom()),
+        deckRandomProvider.overrideWithValue(InOrderRandom()),
+        historyRepositoryProvider.overrideWithValue(FakeHistoryRepository()),
         locationRepositoryProvider.overrideWithValue(
           const FakeLocationRepository(),
         ),
@@ -123,14 +126,49 @@ void main() {
     expect(find.textContaining('Bora decidir'), findsOneWidget);
   });
 
+  testWidgets('a history card opens its detail and Voltar comes back', (
+    tester,
+  ) async {
+    await pumpApp(tester);
+    await tester.tap(historyTab);
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Cantina da Nona').last);
+    // Mid-flight: the card grows into the detail without layout errors.
+    await tester.pump(const Duration(milliseconds: 150));
+    expect(tester.takeException(), isNull);
+    await tester.pumpAndSettle();
+
+    expect(find.text('1 nov, 12:30'), findsOneWidget);
+    expect(historyTab, findsNothing);
+
+    await tester.tap(find.bySemanticsLabel('Voltar'));
+    await tester.pump(const Duration(milliseconds: 150));
+    expect(tester.takeException(), isNull);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Seu histórico'), findsOneWidget);
+    expect(historyTab, findsOneWidget);
+  });
+
   group('swipe flow', () {
     Future<void> reachResult(WidgetTester tester) async {
       await tester.tap(find.text('Salgado'));
       await tester.pumpAndSettle();
       expect(homeTab, findsNothing);
 
-      for (var i = 0; i < 3; i++) {
-        await tester.tap(find.text('Macarrão'));
+      // Likes Macarrão whenever it is on top and passes everything else.
+      final likeSpaghetti = find.bySemanticsLabel('Curtir Macarrão');
+      for (
+        var i = 0;
+        i < 40 && find.text('Deu match!').evaluate().isEmpty;
+        i++
+      ) {
+        await tester.tap(
+          likeSpaghetti.evaluate().isNotEmpty
+              ? likeSpaghetti
+              : find.bySemanticsLabel(RegExp('^Passar ')),
+        );
         await tester.pumpAndSettle();
       }
     }

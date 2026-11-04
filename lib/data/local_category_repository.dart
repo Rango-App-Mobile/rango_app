@@ -20,7 +20,7 @@ class LocalCategoryRepository implements CategoryRepository {
       foodTheme: 'bubblegum',
       photo: 'brigadeiro',
     ),
-    // Savory foods: they duel after the user picks Salgado.
+    // Savory foods: dealt one card at a time after the user picks Salgado.
     FoodCategory(
       id: 'spaghetti',
       label: 'Macarrão',
@@ -166,7 +166,7 @@ class LocalCategoryRepository implements CategoryRepository {
       foodTheme: 'tomato',
       photo: 'parmigiana',
     ),
-    // Sweet foods: they duel after the user picks Doce.
+    // Sweet foods: dealt one card at a time after the user picks Doce.
     FoodCategory(
       id: 'ice_cream',
       label: 'Sorvete',

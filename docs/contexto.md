@@ -105,7 +105,7 @@ Telas em alta fidelidade e protótipo: [Figma do Rango](https://www.figma.com/de
 (página 📱 Telas; design system e componentes nas páginas de Design System e Components).
 
 1. O usuário abre o app como **visitante**: a sessão anônima é criada automaticamente, sem cadastro.
-2. A primeira escolha é ampla (salgado vs. doce). Depois vêm duelos "quem ganha fica" dentro da lista escolhida, por toque ou arrastando o card: a comida escolhida fica e enfrenta a próxima, até vencer três duelos seguidos (ex.: Salgado → Pizza).
+2. A primeira escolha é ampla (salgado vs. doce). Depois as comidas da lista escolhida aparecem uma por vez, num card único no centro, como no Tinder: arrastar para a direita (ou o botão de coração) curte, para a esquerda (ou o botão X) passa. A primeira comida a somar três curtidas é a escolhida (ex.: Salgado → Pizza).
 3. Ao convergir num tipo específico ("Deu match!"), o app consulta o Google Places por restaurantes próximos que servem esse tipo.
 4. O usuário vê os restaurantes **no mapa** (nome, nota, distância), escolhe um e decide como pedir: delivery, mapa ou ligação.
 5. Quem **entra com conta** (pelo perfil) tem as decisões salvas no **Histórico**, estatísticas e preferências. O visitante usa o fluxo inteiro, mas nada dele é salvo.
@@ -115,7 +115,7 @@ Telas em alta fidelidade e protótipo: [Figma do Rango](https://www.figma.com/de
 > Preencher conforme as specs forem aprovadas. Cada regra cita a spec de origem.
 
 - **R1:** toda sessão pertence a um usuário do Firebase Auth: anônimo (visitante) ou com conta. Só sessões de usuário com conta são salvas no Firestore; do visitante não se grava histórico, estatística nem preferência. *(E1, decisão de 2026-09-30)*
-- **R2:** a primeira escolha é Salgado vs. Doce; depois, duelos "quem ganha fica" dentro da lista escolhida (16 comidas em cada). O primeiro duelo já vale 1 ponto; o desafiante que vence vira campeão com 1 ponto e o derrubado perde os seus. Três vitórias seguidas encerram a sessão nessa comida; não há limite de duelos. A fila é aleatória; quando acaba, a lista é embaralhada de novo sem o campeão atual, e só então um derrubado pode voltar. *(E2-S1, decisão de 2026-10-24)*
+- **R2:** a primeira escolha é Salgado vs. Doce; depois, um card por vez com as comidas da lista escolhida (16 em cada), em ordem aleatória. Curtir soma 1 curtida à comida, e as curtidas não zeram; a primeira a chegar em 3 curtidas encerra a sessão nessa comida, sem limite de cards. Passar tira a comida da sessão. Quando o baralho acaba, as comidas que sobraram são embaralhadas de novo (a última mostrada não abre a nova rodada); se todas foram passadas, as 16 voltam. *(E2-S1, decisão de 2026-11-04; substitui o duelo de 2026-10-24)*
 - **R3:** cada comida das listas tem um termo de busca para o Google Places. *(E2-S1)*
 - **R4:** a recomendação considera só restaurantes a até **3 km** da localização atual (até 20 resultados do Places), ordenados do mais perto ao mais longe; o mais perto abre selecionado no mapa. A posição é usada só na busca e não é salva. *(E3-S3, decisão de 2026-10-29)*
 - **R5:** "Pedir no delivery" abre o link do iFood cadastrado para o restaurante; sem ele, o primeiro outro link cadastrado; sem nenhum, uma busca "<nome> delivery" no Google. Só links `https` saem do app. *(E3-S5, decisão de 2026-10-29)*
@@ -216,6 +216,8 @@ Rituais e frentes: [time-e-rituais.md](time-e-rituais.md).
 | 2026-10-29 | A tela 06 não tem "Abrir no mapa" | A pessoa já está vindo de um mapa; sobram Pedir no delivery e Ligar |
 | 2026-10-29 | Enquanto não houver login, a tela 06 não mostra o chip "Salvo no seu histórico" nem "Ir para o histórico"; salvar a escolha fica com a E2-S4 | Hoje todos são visitantes (R1) |
 | 2026-10-29 | O iOS passa a usar CocoaPods junto com o Swift Package Manager (`ios/Podfile`, alvo mínimo iOS 15) | O `google_maps_flutter_ios` só é distribuído por CocoaPods; quem roda no iOS precisa do `pod` instalado |
+| 2026-11-04 | O duelo "quem ganha fica" (dois cards) dá lugar a um card único estilo Tinder: direita curte, esquerda passa, botões X e coração como alternativa; 3 curtidas somadas na mesma comida dão match, e comida passada não volta na sessão (R2). `DuelGame` vira `LikeGame` | Dois cards disputando a tela não ficaram bonitos nem claros. Um card por vez é um gesto que todo mundo já conhece, mostra a foto grande e deixa a decisão mais leve |
+| 2026-11-04 | O Histórico é uma pilha de cards estilo carteira: o mais recente embaixo e na frente, os antigos acima mostrando só a faixa do título; ao rolar, os cards que chegam ao topo param e se empilham em vez de sair da tela. Até a E2-S4, o `FakeHistoryRepository` com decisões de exemplo é o padrão | Segue o Figma 07d e deixa a última decisão em destaque sem perder o resto de vista |
 
 ## 12. Em aberto
 

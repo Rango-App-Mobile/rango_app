@@ -1,18 +1,23 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:rango_app/models/duel_state.dart';
 import 'package:rango_app/models/food_category.dart';
+import 'package:rango_app/models/like_state.dart';
 
 part 'swipe_state.freezed.dart';
 
 @freezed
 abstract class SwipeState with _$SwipeState {
   const factory SwipeState({
+    /// The root, then the group the user picked (Salgado or Doce).
     required FoodCategory current,
+
+    /// The two root options; empty once the game is on.
     required List<FoodCategory> options,
+
+    /// The group, then every swiped card (liked or passed), in order.
     @Default(<FoodCategory>[]) List<FoodCategory> history,
 
     /// Null at the root; set once the user picks Salgado or Doce.
-    DuelState? duel,
+    LikeState? game,
     FoodCategory? result,
   }) = _SwipeState;
 
@@ -20,25 +25,15 @@ abstract class SwipeState with _$SwipeState {
 
   bool get hasConverged => result != null;
 
-  /// Headline for the current level: "A ou\nb?" built from the two options.
-  String get title {
-    if (history.isEmpty || options.length != 2) {
-      return 'Bora decidir\no Rango?';
-    }
-    final second = options[1].label;
-    final lowered = second.isEmpty
-        ? second
-        : '${second[0].toLowerCase()}${second.substring(1)}';
-    return '${options[0].label} ou\n$lowered?';
-  }
+  /// Only the root has a header: on the card screen the card speaks for
+  /// itself (Figma "02 Card único": meter, deck and buttons only).
+  String? get title => switch (game) {
+    null => 'Bora decidir\no Rango?',
+    LikeState() => null,
+  };
 
-  String get subtitle => switch (duel) {
+  String? get subtitle => switch (game) {
     null => 'Toque ou arraste o card que deu mais vontade.',
-    DuelState(streak: 0) =>
-      '${current.label}, anotado. Agora é duelo: quem ganha fica.',
-    DuelState(:final champion, streak: 1) =>
-      '${champion.label} está ganhando com 1 vitória.',
-    DuelState(:final champion) =>
-      '${champion.label} está ganhando, mais uma e ele será o escolhido.',
+    LikeState() => null,
   };
 }

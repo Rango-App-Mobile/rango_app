@@ -28,6 +28,8 @@ class FoodCard extends StatelessWidget {
     this.photoLabel = 'Foto do prato',
     this.cuisine,
     this.path = const [],
+    this.titleMaxLines = 2,
+    this.photoHeight,
     super.key,
   });
 
@@ -57,6 +59,15 @@ class FoodCard extends StatelessWidget {
 
   /// Expanded only: "O caminho até aqui", one chip per choice.
   final List<String> path;
+
+  /// Lines the title may wrap to before it ends in an ellipsis. With 1, the
+  /// title never wraps nor gets cut: a long name shrinks its font to fit.
+  /// Stacks that show only the top strip of a card (the Histórico) use it.
+  final int titleMaxLines;
+
+  /// Hero and Medium only: overrides the photo height of the size, for a
+  /// screen that sizes the card to the room it has (the swipe deck).
+  final double? photoHeight;
 
   /// Figma Medium padding, no space token between `sm` and `md`.
   static const _mediumPadding = 12.0;
@@ -100,13 +111,13 @@ class FoodCard extends StatelessWidget {
               FoodCardSize.hero => _vertical(
                 context,
                 padding: AppSpace.md,
-                photoHeight: _heroPhotoHeight,
+                photoHeight: photoHeight ?? _heroPhotoHeight,
                 titleStyle: context.textStyles.cardTitleLarge,
               ),
               FoodCardSize.medium => _vertical(
                 context,
                 padding: _mediumPadding,
-                photoHeight: _mediumPhotoHeight,
+                photoHeight: photoHeight ?? _mediumPhotoHeight,
                 titleStyle: context.textStyles.cardTitleMedium,
               ),
               FoodCardSize.expanded => _expanded(context),
@@ -170,11 +181,25 @@ class FoodCard extends StatelessWidget {
   }
 
   Widget _title(BuildContext context, TextStyle style) {
+    final color = context.foodColors.foreground;
+    if (titleMaxLines == 1) {
+      // One line, whole: a long name shrinks to fit instead of being cut.
+      return FittedBox(
+        fit: BoxFit.scaleDown,
+        alignment: AlignmentDirectional.centerStart,
+        child: Text(
+          title,
+          maxLines: 1,
+          softWrap: false,
+          style: style.copyWith(color: color),
+        ),
+      );
+    }
     return Text(
       title,
-      maxLines: 2,
+      maxLines: titleMaxLines,
       overflow: TextOverflow.ellipsis,
-      style: style.copyWith(color: context.foodColors.foreground),
+      style: style.copyWith(color: color),
     );
   }
 

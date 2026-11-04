@@ -12,7 +12,7 @@ abstract class ResultState with _$ResultState {
 
   const ResultState._();
 
-  /// "Salgado, pizza": the group the user picked and the duel winner.
+  /// "Salgado, pizza": the group the user picked and the food that won.
   String get pathLabel => '${path.first.label}, ${_lowerFirst(result.label)}';
 
   int get choiceCount => path.length;

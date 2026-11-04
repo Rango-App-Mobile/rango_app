@@ -10,8 +10,12 @@ import 'package:rango_app/core/widgets/rango_button.dart';
 import 'package:rango_app/core/widgets/rango_tab_bar.dart';
 import 'package:rango_app/core/widgets/top_bar.dart';
 import 'package:rango_app/models/food_category.dart';
+import 'package:rango_app/models/like_state.dart';
 import 'package:rango_app/screens/swipe/swipe_state.dart';
 import 'package:rango_app/screens/swipe/swipe_view_model.dart';
+import 'package:rango_app/screens/swipe/widgets/food_card_deck.dart';
+import 'package:rango_app/screens/swipe/widgets/like_meter.dart';
+import 'package:rango_app/screens/swipe/widgets/swipe_button.dart';
 import 'package:rango_app/screens/swipe/widgets/swipe_choice_cards.dart';
 
 /// Where the swipe screen lives, which decides its chrome.
@@ -23,7 +27,9 @@ enum SwipeMode {
   flow,
 }
 
-/// Binary-choice screen: two tilted cards, tap or drag one to pick it.
+/// The decision screen. At the root: two tilted cards (Salgado or Doce), tap
+/// or drag one to pick it. Then: one card at a time, swipe right to like or
+/// left to pass, until a food gets enough likes.
 class SwipeScreen extends ConsumerWidget {
   const SwipeScreen({this.mode = SwipeMode.root, super.key});
 
@@ -78,11 +84,19 @@ class SwipeScreen extends ConsumerWidget {
                 error: (error, _) => _LoadError(
                   onRetry: () => ref.invalidate(swipeViewModelProvider),
                 ),
-                data: (state) => _SwipeContent(
-                  state: state,
-                  bottomInset: isFlow ? 0 : RangoTabBar.reservedHeight,
-                  onChoose: onChoose,
-                ),
+                data: (state) => switch (state.game) {
+                  null => _SwipeContent(
+                    state: state,
+                    bottomInset: isFlow ? 0 : RangoTabBar.reservedHeight,
+                    onChoose: onChoose,
+                  ),
+                  final game => _DeckContent(
+                    game: game,
+                    swipeCount: state.history.length,
+                    onLike: () => viewModel().like(),
+                    onPass: () => viewModel().pass(),
+                  ),
+                },
               ),
             ),
           ],
@@ -120,10 +134,11 @@ class _SwipeContent extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         spacing: AppSpace.md,
         children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpace.lg),
-            child: PageHeader(title: state.title, subtitle: state.subtitle),
-          ),
+          if (state.title case final title?)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: AppSpace.lg),
+              child: PageHeader(title: title, subtitle: state.subtitle),
+            ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: AppSpace.lg),
             child: switch (state.options) {
@@ -137,6 +152,74 @@ class _SwipeContent extends StatelessWidget {
               ),
               _ => const SizedBox.shrink(),
             },
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// The single-card game, nothing else (Figma "02 Card único"): the likes of
+/// the food on top, the deck and the two buttons that do what the swipe does.
+class _DeckContent extends StatelessWidget {
+  const _DeckContent({
+    required this.game,
+    required this.swipeCount,
+    required this.onLike,
+    required this.onPass,
+  });
+
+  final LikeState game;
+  final int swipeCount;
+  final VoidCallback onLike;
+  final VoidCallback onPass;
+
+  @override
+  Widget build(BuildContext context) {
+    final food = game.current;
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(
+        AppSpace.lg,
+        0,
+        AppSpace.lg,
+        AppSpace.lg,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        spacing: AppSpace.sm,
+        children: [
+          Center(
+            child: LikeMeter(
+              likes: game.likesOf(food),
+              total: game.likesToMatch,
+            ),
+          ),
+          // The deck takes all the room between the meter and the buttons
+          // and sizes the card to it (Figma: 354 x 512 on the 402 frame).
+          Expanded(
+            child: FoodCardDeck(
+              current: food,
+              next: game.next,
+              swipeCount: swipeCount,
+              onLike: onLike,
+              onPass: onPass,
+            ),
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            spacing: AppSpace.lg,
+            children: [
+              SwipeButton(
+                action: SwipeAction.pass,
+                foodLabel: food.label,
+                onPressed: onPass,
+              ),
+              SwipeButton(
+                action: SwipeAction.like,
+                foodLabel: food.label,
+                onPressed: onLike,
+              ),
+            ],
           ),
         ],
       ),

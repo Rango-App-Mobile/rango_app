@@ -12,3 +12,10 @@ abstract interface class CategoryRepository {
 final categoryRepositoryProvider = Provider<CategoryRepository>(
   (ref) => LocalCategoryRepository(),
 );
+
+/// The menu, loaded once and kept: screens that need it at once (the
+/// Histórico detail, drawn on the first frame of its card's flight) read it
+/// already resolved.
+final categoriesProvider = FutureProvider<List<FoodCategory>>(
+  (ref) => ref.watch(categoryRepositoryProvider).fetchAll(),
+);

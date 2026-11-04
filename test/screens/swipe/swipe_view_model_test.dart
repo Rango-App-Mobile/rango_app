@@ -4,6 +4,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:rango_app/data/category_repository.dart';
 import 'package:rango_app/data/local_category_repository.dart';
 import 'package:rango_app/models/food_category.dart';
+import 'package:rango_app/screens/swipe/swipe_state.dart';
 import 'package:rango_app/screens/swipe/swipe_view_model.dart';
 
 import '../../helpers/in_order_random.dart';
@@ -17,139 +18,153 @@ void main() {
   late ProviderContainer container;
 
   SwipeViewModel viewModel() => container.read(swipeViewModelProvider.notifier);
-
-  List<String> optionIds() => container
-      .read(swipeViewModelProvider)
-      .requireValue
-      .options
-      .map((c) => c.id)
-      .toList();
+  SwipeState state() => container.read(swipeViewModelProvider).requireValue;
 
   setUp(() {
     container = ProviderContainer.test(
       overrides: [
         categoryRepositoryProvider.overrideWithValue(LocalCategoryRepository()),
-        duelRandomProvider.overrideWithValue(InOrderRandom()),
+        deckRandomProvider.overrideWithValue(InOrderRandom()),
       ],
     );
   });
 
-  test('starts at the root with its two options', () async {
-    final state = await container.read(swipeViewModelProvider.future);
+  /// Likes [id] whenever it is on top and passes everything else.
+  void favor(String id) {
+    while (!state().hasConverged) {
+      if (state().game?.current.id == id) {
+        viewModel().like();
+      } else {
+        viewModel().pass();
+      }
+    }
+  }
 
-    expect(state.current.id, 'root');
-    expect(state.options.map((c) => c.id), ['savory', 'sweet']);
-    expect(state.duel, isNull);
-    expect(state.hasConverged, isFalse);
+  test('starts at the root with its two options', () async {
+    final initial = await container.read(swipeViewModelProvider.future);
+
+    expect(initial.current.id, 'root');
+    expect(initial.options.map((c) => c.id), ['savory', 'sweet']);
+    expect(initial.game, isNull);
+    expect(initial.hasConverged, isFalse);
   });
 
-  test('choosing a group starts a duel between its foods', () async {
+  test('choosing a group deals its foods one card at a time', () async {
     await container.read(swipeViewModelProvider.future);
     viewModel().choose(_byId('savory'));
 
-    final state = container.read(swipeViewModelProvider).requireValue;
-    expect(state.current.id, 'savory');
-    expect(state.duel?.streak, 0);
-    expect(optionIds(), ['spaghetti', 'pizza']);
+    expect(state().current.id, 'savory');
+    expect(state().options, isEmpty);
+    expect(state().game?.current.id, 'spaghetti');
+    expect(state().game?.next?.id, 'pizza');
+    expect(state().history.map((c) => c.id), ['savory']);
   });
 
-  test('the champion stays and meets the next challenger', () async {
+  test('liking counts a like and shows the next card', () async {
     await container.read(swipeViewModelProvider.future);
     viewModel()
       ..choose(_byId('savory'))
-      ..choose(_byId('spaghetti'));
+      ..like();
 
-    expect(optionIds(), ['spaghetti', 'burger']);
+    expect(state().game?.likesOf(_byId('spaghetti')), 1);
+    expect(state().game?.current.id, 'pizza');
   });
 
-  test('the challenger who wins takes the throne', () async {
+  test('passing takes the food out and shows the next card', () async {
     await container.read(swipeViewModelProvider.future);
     viewModel()
       ..choose(_byId('savory'))
-      ..choose(_byId('pizza'));
+      ..pass();
 
-    final state = container.read(swipeViewModelProvider).requireValue;
-    expect(state.duel?.champion.id, 'pizza');
-    expect(state.duel?.streak, 1);
-    expect(optionIds(), ['pizza', 'burger']);
+    expect(state().game?.passedIds, {'spaghetti'});
+    expect(state().game?.current.id, 'pizza');
   });
 
-  test('three wins in a row converge on the champion', () async {
+  test('every swipe goes into the history', () async {
     await container.read(swipeViewModelProvider.future);
     viewModel()
       ..choose(_byId('savory'))
-      ..choose(_byId('spaghetti'))
-      ..choose(_byId('spaghetti'))
-      ..choose(_byId('spaghetti'));
+      ..like()
+      ..pass();
 
-    final state = container.read(swipeViewModelProvider).requireValue;
-    expect(state.result?.id, 'spaghetti');
-    expect(state.options, isEmpty);
-    expect(state.history.map((c) => c.id), [
-      'savory',
-      'spaghetti',
-      'spaghetti',
-      'spaghetti',
-    ]);
+    expect(state().history.map((c) => c.id), ['savory', 'spaghetti', 'pizza']);
   });
 
-  test('ignores an option that is not currently offered', () async {
+  test('three likes on the same food converge on it', () async {
+    await container.read(swipeViewModelProvider.future);
+    viewModel().choose(_byId('savory'));
+    favor('pizza');
+
+    expect(state().result?.id, 'pizza');
+    expect(state().history.first.id, 'savory');
+    expect(state().history.last.id, 'pizza');
+    expect(state().history.where((c) => c.id == 'pizza'), hasLength(3));
+  });
+
+  test('swipes are ignored at the root and after the match', () async {
+    await container.read(swipeViewModelProvider.future);
+    viewModel()
+      ..like()
+      ..pass();
+    expect(state().history, isEmpty);
+
+    viewModel().choose(_byId('sweet'));
+    favor('ice_cream');
+    final matched = state();
+    viewModel()
+      ..like()
+      ..pass();
+
+    expect(state(), matched);
+  });
+
+  test('choose is ignored once the game is on', () async {
+    await container.read(swipeViewModelProvider.future);
+    viewModel()
+      ..choose(_byId('savory'))
+      ..choose(_byId('sweet'));
+
+    expect(state().current.id, 'savory');
+    expect(state().history, hasLength(1));
+  });
+
+  test('ignores an option that is not offered at the root', () async {
     await container.read(swipeViewModelProvider.future);
     viewModel().choose(_byId('pizza'));
 
-    final state = container.read(swipeViewModelProvider).requireValue;
-    expect(state.current.id, 'root');
-    expect(state.history, isEmpty);
+    expect(state().current.id, 'root');
+    expect(state().history, isEmpty);
   });
 
-  test('reset goes back to the root and clears the duel', () async {
+  test('reset goes back to the root and clears the game', () async {
     await container.read(swipeViewModelProvider.future);
     viewModel()
       ..choose(_byId('sweet'))
-      ..choose(_byId('ice_cream'))
+      ..like()
       ..reset();
 
-    final state = container.read(swipeViewModelProvider).requireValue;
-    expect(state.current.id, 'root');
-    expect(state.history, isEmpty);
-    expect(state.duel, isNull);
+    expect(state().current.id, 'root');
+    expect(state().history, isEmpty);
+    expect(state().game, isNull);
   });
 
   group('derived state', () {
     test('title and subtitle at the root', () async {
-      final state = await container.read(swipeViewModelProvider.future);
+      final initial = await container.read(swipeViewModelProvider.future);
 
-      expect(state.title, 'Bora decidir\no Rango?');
-      expect(state.subtitle, 'Toque ou arraste o card que deu mais vontade.');
+      expect(initial.title, 'Bora decidir\no Rango?');
+      expect(
+        initial.subtitle,
+        'Toque ou arraste o card que deu mais vontade.',
+      );
     });
 
-    test('title and subtitle when the duel starts', () async {
+    test('the card screen has no title or subtitle', () async {
       await container.read(swipeViewModelProvider.future);
       viewModel().choose(_byId('savory'));
 
-      final state = container.read(swipeViewModelProvider).requireValue;
-      expect(state.title, 'Macarrão ou\npizza?');
-      expect(
-        state.subtitle,
-        'Salgado, anotado. Agora é duelo: quem ganha fica.',
-      );
-    });
-
-    test('subtitle counts the champion wins', () async {
-      await container.read(swipeViewModelProvider.future);
-      viewModel()
-        ..choose(_byId('savory'))
-        ..choose(_byId('spaghetti'));
-      expect(
-        container.read(swipeViewModelProvider).requireValue.subtitle,
-        'Macarrão está ganhando com 1 vitória.',
-      );
-
-      viewModel().choose(_byId('spaghetti'));
-      expect(
-        container.read(swipeViewModelProvider).requireValue.subtitle,
-        'Macarrão está ganhando, mais uma e ele será o escolhido.',
-      );
+      expect(state().title, isNull);
+      expect(state().subtitle, isNull);
     });
   });
 

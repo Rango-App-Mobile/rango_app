@@ -15,17 +15,17 @@ ProviderContainer makeContainer() {
 }
 
 void main() {
-  const duelPath = 'savory,spaghetti,pizza,pizza,pizza';
+  const swipePath = 'savory,spaghetti,pizza,pizza,pizza';
 
   test(
     'resolves every choice in order and exposes the last as result',
     () async {
       final container = makeContainer();
       final state = await container.read(
-        resultViewModelProvider(duelPath).future,
+        resultViewModelProvider(swipePath).future,
       );
 
-      expect(state.path.map((c) => c.id), duelPath.split(','));
+      expect(state.path.map((c) => c.id), swipePath.split(','));
       expect(state.result.id, 'pizza');
     },
   );
@@ -33,7 +33,7 @@ void main() {
   test('labels the group and the winner and counts every choice', () async {
     final container = makeContainer();
     final state = await container.read(
-      resultViewModelProvider(duelPath).future,
+      resultViewModelProvider(swipePath).future,
     );
 
     expect(state.pathLabel, 'Salgado, pizza');
