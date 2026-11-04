@@ -5,9 +5,10 @@ import 'package:rango_app/core/theme/theme_context.dart';
 
 /// Floating bottom navigation pill, Figma component `Tab Bar`.
 ///
-/// Two fixed tabs (Home, Histórico). It does not position itself: the shell
-/// places it centered above the bottom edge. Only the cream pill behind the
-/// active item animates when the tab changes.
+/// Two fixed tabs (Home, Histórico), icons only: the label is spoken and
+/// shown as a tooltip. It does not position itself: the shell places it
+/// centered above the bottom edge. Only the cream pill behind the active item
+/// animates when the tab changes.
 class RangoTabBar extends StatelessWidget {
   const RangoTabBar({
     required this.currentIndex,
@@ -25,10 +26,9 @@ class RangoTabBar extends StatelessWidget {
   static const reservedHeight = 96.0;
 
   static const _padding = 6.0;
-  static const _itemWidth = 92.0;
-  static const _itemHeight = 52.0;
-  static const _iconSize = 22.0;
-  static const _dotSize = 5.0;
+  static const _itemWidth = 64.0;
+  static const _itemHeight = 48.0;
+  static const _iconSize = 24.0;
   static const _slide = Duration(milliseconds: 200);
 
   static const List<({IconData icon, String label})> _items = [
@@ -111,7 +111,6 @@ class _TabItem extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = context.colors;
     final iconColor = selected ? colors.iconDefault : colors.iconInverse;
-    final textColor = selected ? colors.textPrimary : colors.textInverse;
 
     return Semantics(
       button: true,
@@ -119,42 +118,18 @@ class _TabItem extends StatelessWidget {
       label: semanticLabel,
       excludeSemantics: true,
       onTap: onTap,
-      child: SizedBox(
-        width: RangoTabBar._itemWidth,
-        height: RangoTabBar._itemHeight,
-        child: Material(
-          type: MaterialType.transparency,
-          child: InkWell(
-            onTap: onTap,
-            customBorder: const StadiumBorder(),
-            child: Stack(
-              alignment: Alignment.center,
-              children: [
-                Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(icon, size: RangoTabBar._iconSize, color: iconColor),
-                    Text(
-                      label,
-                      style: context.textStyles.tab.copyWith(color: textColor),
-                    ),
-                  ],
-                ),
-                if (selected)
-                  Positioned(
-                    top: 8,
-                    right: 28,
-                    child: DecoratedBox(
-                      decoration: BoxDecoration(
-                        color: colors.actionAccent,
-                        shape: BoxShape.circle,
-                      ),
-                      child: const SizedBox.square(
-                        dimension: RangoTabBar._dotSize,
-                      ),
-                    ),
-                  ),
-              ],
+      child: Tooltip(
+        message: label,
+        excludeFromSemantics: true,
+        child: SizedBox(
+          width: RangoTabBar._itemWidth,
+          height: RangoTabBar._itemHeight,
+          child: Material(
+            type: MaterialType.transparency,
+            child: InkWell(
+              onTap: onTap,
+              customBorder: const StadiumBorder(),
+              child: Icon(icon, size: RangoTabBar._iconSize, color: iconColor),
             ),
           ),
         ),

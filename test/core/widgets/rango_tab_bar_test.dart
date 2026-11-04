@@ -38,12 +38,28 @@ Future<void> pump(
 void main() {
   const colors = AppColors.light;
 
-  testWidgets('shows both labels and icons', (tester) async {
+  testWidgets('shows only the icons, no labels and no dot', (tester) async {
     await pump(tester);
-    expect(find.text('Home'), findsOneWidget);
-    expect(find.text('Histórico'), findsOneWidget);
     expect(find.byIcon(Icons.home_outlined), findsOneWidget);
     expect(find.byIcon(Icons.history), findsOneWidget);
+    expect(find.text('Home'), findsNothing);
+    expect(find.text('Histórico'), findsNothing);
+    final circles = find.descendant(
+      of: find.byType(RangoTabBar),
+      matching: find.byWidgetPredicate(
+        (widget) =>
+            widget is DecoratedBox &&
+            widget.decoration is BoxDecoration &&
+            (widget.decoration as BoxDecoration).shape == BoxShape.circle,
+      ),
+    );
+    expect(circles, findsNothing);
+  });
+
+  testWidgets('the label is a tooltip on each icon', (tester) async {
+    await pump(tester);
+    expect(find.byTooltip('Home'), findsOneWidget);
+    expect(find.byTooltip('Histórico'), findsOneWidget);
   });
 
   testWidgets('tapping an item calls onSelected with its index', (
@@ -51,19 +67,21 @@ void main() {
   ) async {
     final taps = <int>[];
     await pump(tester, onSelected: taps.add);
-    await tester.tap(find.text('Histórico'));
-    await tester.tap(find.text('Home'));
+    await tester.tap(find.byIcon(Icons.history));
+    await tester.tap(find.byIcon(Icons.home_outlined));
     expect(taps, [1, 0]);
   });
 
-  testWidgets('each item is at least 92x52', (tester) async {
+  testWidgets('each item is a touch target of at least 48x48', (
+    tester,
+  ) async {
     await pump(tester);
-    for (final label in ['Home', 'Histórico']) {
+    for (final icon in [Icons.home_outlined, Icons.history]) {
       final size = tester.getSize(
-        find.ancestor(of: find.text(label), matching: find.byType(InkWell)),
+        find.ancestor(of: find.byIcon(icon), matching: find.byType(InkWell)),
       );
-      expect(size.width, greaterThanOrEqualTo(92));
-      expect(size.height, greaterThanOrEqualTo(52));
+      expect(size.width, greaterThanOrEqualTo(48));
+      expect(size.height, greaterThanOrEqualTo(48));
     }
   });
 

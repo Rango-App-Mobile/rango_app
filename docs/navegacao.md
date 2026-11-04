@@ -37,7 +37,7 @@ botão.
 |---|---|---|
 | `TopBar.principal` / `TopBar.flow` | `lib/core/widgets/top_bar.dart` | Top Bar v1.1: 64 de altura, padding lateral `space/lg`; logo e voltar nunca juntos. O logo é decorativo para leitores de tela |
 | `AvatarButton` | `lib/core/widgets/avatar_button.dart` | Avatar Button Guest: alvo 48×48, círculo 44 mostarda, rótulo "Abrir perfil" |
-| `RangoTabBar` | `lib/core/widgets/rango_tab_bar.dart` | Tab Bar v1.0: pílula escura, aba ativa creme com o ponto vermelho, itens 92×52, "Home, aba 1 de 2". Só a pílula creme anima (200 ms; nada com menos movimento) |
+| `RangoTabBar` | `lib/core/widgets/rango_tab_bar.dart` | Tab Bar simplificada: pílula escura só com os ícones, aba ativa numa pílula creme, sem rótulo nem ponto vermelho, itens 64×48. O nome da aba vai para o leitor de tela ("Home, aba 1 de 2") e para o tooltip. Só a pílula creme anima (200 ms; nada com menos movimento) |
 | `AppShell` | `lib/app/app_shell.dart` | Tab Bar centralizada a 20 px da base |
 
 As telas das abas deixam `RangoTabBar.reservedHeight` (96) livre no fim da
