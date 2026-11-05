@@ -172,6 +172,37 @@ void main() {
     expect(other.photoRequests, isEmpty);
   });
 
+  test('keeps the phone when delivery links fail', () async {
+    final (:container, launcher: _) = setUp_(
+      repository: _StubRestaurantRepository(phone: '(51) 3333-0000'),
+      linksRepository: _FailingDeliveryLinkRepository(),
+    );
+    await settle(container, args);
+
+    final state = container.read(restaurantContactViewModelProvider(args));
+    expect(state.loadingDetails, isFalse);
+    expect(state.phoneUri, Uri.parse('tel:5133330000'));
+    expect(
+      state.deliveryUri,
+      Uri.https('www.google.com', '/search', {
+        'q': 'Cantina da Nona delivery',
+      }),
+    );
+  });
+
+  test('keeps the iFood link when the phone lookup fails', () async {
+    final (:container, launcher: _) = setUp_(
+      repository: _StubRestaurantRepository(phoneFails: true),
+      links: {'p1': const DeliveryLinks(ifood: 'https://ifood.com.br/x')},
+    );
+    await settle(container, args);
+
+    final state = container.read(restaurantContactViewModelProvider(args));
+    expect(state.loadingDetails, isFalse);
+    expect(state.phoneUri, isNull);
+    expect(state.deliveryUri, Uri.parse('https://ifood.com.br/x'));
+  });
+
   test('finishes loading when restaurant details cannot be fetched', () async {
     final (:container, launcher: _) = setUp_(
       repository: _StubRestaurantRepository(
