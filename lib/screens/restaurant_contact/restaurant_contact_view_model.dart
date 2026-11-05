@@ -35,20 +35,27 @@ class RestaurantContactViewModel extends Notifier<RestaurantContactState> {
     final photoName = restaurant.photoName;
     final repository = ref.read(restaurantRepositoryProvider);
     final links = ref.read(deliveryLinkRepositoryProvider);
-    final (phone, deliveryLinks, photo) = await (
-      _phone(repository),
-      links.linksFor(restaurant.placeId),
-      args.photoUri == null && photoName != null
-          ? repository.fetchPhotoUri(photoName)
-          : Future<String?>.value(),
-    ).wait;
-    if (!ref.mounted) return;
-    state = state.copyWith(
-      loadingDetails: false,
-      phone: phone,
-      links: deliveryLinks,
-      photoUri: state.photoUri ?? photo,
-    );
+
+    try {
+      final (phone, deliveryLinks, photo) = await (
+        _phone(repository),
+        links.linksFor(restaurant.placeId),
+        args.photoUri == null && photoName != null
+            ? repository.fetchPhotoUri(photoName)
+            : Future<String?>.value(),
+      ).wait;
+      if (!ref.mounted) return;
+      state = state.copyWith(
+        loadingDetails: false,
+        phone: phone,
+        links: deliveryLinks,
+        photoUri: state.photoUri ?? photo,
+      );
+    } on Failure {
+      // Contact actions have safe fallbacks: a search link, no phone and no photo.
+      if (!ref.mounted) return;
+      state = state.copyWith(loadingDetails: false);
+    }
   }
 
   Future<String?> _phone(RestaurantRepository repository) async {
