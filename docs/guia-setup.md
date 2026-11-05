@@ -1560,8 +1560,14 @@ CI, abra uma execução verde de **CI** em GitHub Actions e baixe o artefato
 
 No aparelho Android, transfira o APK, permita a instalação de apps pela fonte
 usada para abrir o arquivo e confirme a instalação. Sem `env.json`, o app usa
-o `FakeAuthRepository` e abre sem conectar ao Firebase. Para distribuição na
-Play Store, é necessário configurar uma chave de assinatura própria.
+o `FakeAuthRepository` e abre sem conectar ao Firebase.
+
+Cada execução do CI usa uma máquina nova e pode gerar uma chave de debug
+ diferente. Para instalar um APK de outra execução sobre uma versão já
+instalada, desinstale a versão anterior primeiro.
+
+Para distribuição na Play Store, é necessário configurar uma chave de assinatura
+própria.
 
 ## Próximos passos
 
