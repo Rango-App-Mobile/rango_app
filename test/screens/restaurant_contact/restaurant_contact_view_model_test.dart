@@ -14,10 +14,15 @@ import 'package:rango_app/models/restaurant_contact_args.dart';
 import 'package:rango_app/screens/restaurant_contact/restaurant_contact_view_model.dart';
 
 class _StubRestaurantRepository extends FakeRestaurantRepository {
-  _StubRestaurantRepository({this.phone, this.phoneFails = false});
+  _StubRestaurantRepository({
+    this.phone,
+    this.phoneFails = false,
+    this.photoFails = false,
+  });
 
   final String? phone;
   final bool phoneFails;
+  final bool photoFails;
   final List<String> photoRequests = [];
 
   @override
@@ -29,7 +34,15 @@ class _StubRestaurantRepository extends FakeRestaurantRepository {
   @override
   Future<String?> fetchPhotoUri(String photoName) async {
     photoRequests.add(photoName);
+    if (photoFails) throw const NetworkFailure();
     return 'https://photos.example/$photoName';
+  }
+}
+
+class _FailingDeliveryLinkRepository extends FakeDeliveryLinkRepository {
+  @override
+  Future<DeliveryLinks?> linksFor(String placeId) async {
+    throw const NetworkFailure();
   }
 }
 
@@ -43,6 +56,7 @@ const args = RestaurantContactArgs(restaurant: restaurant);
 
 ({ProviderContainer container, FakeExternalLinkLauncher launcher}) setUp_({
   RestaurantRepository? repository,
+  DeliveryLinkRepository? linksRepository,
   Map<String, DeliveryLinks> links = const {},
 }) {
   final launcher = FakeExternalLinkLauncher();
@@ -52,7 +66,7 @@ const args = RestaurantContactArgs(restaurant: restaurant);
         repository ?? _StubRestaurantRepository(),
       ),
       deliveryLinkRepositoryProvider.overrideWithValue(
-        FakeDeliveryLinkRepository(links),
+        linksRepository ?? FakeDeliveryLinkRepository(links),
       ),
       externalLinkLauncherProvider.overrideWithValue(launcher),
     ],
@@ -156,6 +170,59 @@ void main() {
     );
     await settle(second.container, withPhoto);
     expect(other.photoRequests, isEmpty);
+  });
+
+  test('keeps the phone when delivery links fail', () async {
+    final (:container, launcher: _) = setUp_(
+      repository: _StubRestaurantRepository(phone: '(51) 3333-0000'),
+      linksRepository: _FailingDeliveryLinkRepository(),
+    );
+    await settle(container, args);
+
+    final state = container.read(restaurantContactViewModelProvider(args));
+    expect(state.loadingDetails, isFalse);
+    expect(state.phoneUri, Uri.parse('tel:5133330000'));
+    expect(
+      state.deliveryUri,
+      Uri.https('www.google.com', '/search', {
+        'q': 'Cantina da Nona delivery',
+      }),
+    );
+  });
+
+  test('keeps the iFood link when the phone lookup fails', () async {
+    final (:container, launcher: _) = setUp_(
+      repository: _StubRestaurantRepository(phoneFails: true),
+      links: {'p1': const DeliveryLinks(ifood: 'https://ifood.com.br/x')},
+    );
+    await settle(container, args);
+
+    final state = container.read(restaurantContactViewModelProvider(args));
+    expect(state.loadingDetails, isFalse);
+    expect(state.phoneUri, isNull);
+    expect(state.deliveryUri, Uri.parse('https://ifood.com.br/x'));
+  });
+
+  test('finishes loading when restaurant details cannot be fetched', () async {
+    final (:container, launcher: _) = setUp_(
+      repository: _StubRestaurantRepository(
+        phoneFails: true,
+        photoFails: true,
+      ),
+      linksRepository: _FailingDeliveryLinkRepository(),
+    );
+    await settle(container, args);
+
+    final state = container.read(restaurantContactViewModelProvider(args));
+    expect(state.loadingDetails, isFalse);
+    expect(state.phoneUri, isNull);
+    expect(state.photoUri, isNull);
+    expect(
+      state.deliveryUri,
+      Uri.https('www.google.com', '/search', {
+        'q': 'Cantina da Nona delivery',
+      }),
+    );
   });
 
   test('orderDelivery and callRestaurant open the right uris', () async {

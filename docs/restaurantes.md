@@ -68,7 +68,7 @@ por cima: ele aparece acima da prévia, ao lado do botão de centralizar.
 | Sem rede para baixar o mapa | — | Os pins aparecem sobre o fundo liso; o mapa volta quando a rede voltar |
 | Nenhum lugar a até 3 km | — | "Nenhum lugar perto", com "Tentar de novo" e "Voltar ao início" |
 | Falha ao ler o Firestore | — (o repositório devolve `null`) | Nada: "Pedir no delivery" cai na busca no Google |
-| Falha ao buscar telefone ou foto | — | "Ligar" some; o card usa a cor da comida |
+| Falha ao buscar telefone ou foto | `Failure`, tratada no ViewModel | O carregamento termina; "Ligar" some; o card usa a cor da comida |
 | O celular não abre o link | — | SnackBar "Não deu para abrir. Tente de novo." |
 
 ## Configuração
@@ -112,7 +112,7 @@ E4-S2 (#22).
 | `test/core/widgets/restaurant_card_test.dart`, `test/core/format/restaurant_format_test.dart` | Restaurant Card (Vertical e Row), chips, semântica, 375×667; formato de nota e distância |
 | `test/screens/restaurants/` | ViewModel (estados, seleção, foto, ajustes) e tela (chip de busca, pins, troca de seleção, prévia → contato, recentralizar, crédito do mapa, 09, vazio, erro, 375×667), Map Pin |
 | `test/screens/restaurants/widgets/osm_restaurant_map_test.dart` | Mapa real sem rede: um pin por restaurante, toque, balão só no selecionado, ponta do pin na coordenada, centralizar, mapa desenhado sem posição, identificação do app e URL do servidor |
-| `test/screens/restaurant_contact/` | ViewModel (iFood, outros, Google, telefone) e tela (botões, "Ligar" sem telefone, sem "Abrir no mapa" nem histórico, voltar, 375×667) |
+| `test/screens/restaurant_contact/` | ViewModel (iFood, outros, Google, telefone e falhas de carregamento sem spinner preso) e tela (botões, "Ligar" sem telefone, sem "Abrir no mapa" nem histórico, voltar, 375×667) |
 | `test/app/app_test.dart` | Fluxo swipe → Deu match → mapa → contato com os fakes |
 
 **Sem teste automatizado:** o download real do mapa e a abertura real de links e
