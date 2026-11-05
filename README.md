@@ -26,7 +26,7 @@ Projeto da disciplina Projeto de Desenvolvimento I (Senac), 2º semestre de 2026
 | [docs/contexto.md](docs/contexto.md) | **Fonte canônica**: produto, stack, arquitetura, regras, modelo de dados, cronograma, decisões |
 | [docs/acordo-projeto.md](docs/acordo-projeto.md) · [PDF v1.1](docs/acordo-projeto-v1.1.pdf) | Acordo de projeto (escopo, benchmark, cronograma e frentes) |
 | [docs/guia-setup.md](docs/guia-setup.md) | Passo a passo: Flutter, dependências, MVVM, SDD |
-| Build Android de demonstração | APK de release e instalação no aparelho |
+| [Build Android de demonstração](docs/guia-setup.md#apk-de-demonstração-android) | APK de release e instalação no aparelho |
 | [docs/time-e-rituais.md](docs/time-e-rituais.md) | Frentes, papéis, rituais por aula, DoR/DoD |
 | [docs/git-e-prs.md](docs/git-e-prs.md) | Branches, commits, PRs e automações do GitHub |
 | [docs/sdd.md](docs/sdd.md) | Como documentar as features entregues (sem spec antes do código) |
