@@ -46,6 +46,7 @@ dependencies:
 
 dev_dependencies:
   build_runner: ^2.15.1
+  flutter_launcher_icons: ^0.14.4
   flutter_test:
     sdk: flutter
   freezed: ^3.2.0
@@ -83,6 +84,15 @@ flutter:
   assets:
     - assets/images/food/
     - assets/map/
+
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  remove_alpha_ios: true
+  image_path: "assets/iconRango.png"
+  adaptive_icon_background: "#2F5D3A"
+  adaptive_icon_foreground: "assets/iconRango.png"
 
   # To add assets to your application, add an assets section, like this:
   # assets:
