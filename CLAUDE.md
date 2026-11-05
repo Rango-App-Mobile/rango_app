@@ -153,8 +153,7 @@ English. Docs (`docs/`) and UI strings in Portuguese. Agent-facing files
   `dev` at each sprint review.
 - Conventional Commits in English with the issue at the end:
   `feat(swipe): add session notifier (#14)`.
-- Before opening a PR run `dart format .`, `flutter analyze` and `flutter test`:
-  they are the three CI jobs. PR to `dev`, template filled in, `Closes #<issue>`,
+- Before opening a PR run `dart format .`, `flutter analyze` and `flutter test` locally. CI also builds the Android release APK and uploads the demo artifact. PR to `dev`, template filled in, `Closes #<issue>`,
   1 approval.
 - **No specs.** Do not write spec/plan/tasks files before implementing. Start
   from the story's acceptance criteria, write the test first and do not widen

@@ -1539,6 +1539,36 @@ Um clone limpo de `dev` passa nos testes sem `env.json` e sem rodar
 
 ---
 
+## APK de demonstração Android
+
+O CI gera um APK de release a cada pull request e push para `dev` ou `main`.
+A assinatura usa a chave de debug do Android já configurada em
+`android/app/build.gradle.kts`; serve para instalar e apresentar o app, não
+para publicar na loja.
+
+Para gerar o APK localmente:
+
+```bash
+flutter pub get
+flutter build apk --release
+```
+
+O arquivo fica em
+`build/app/outputs/flutter-apk/app-release.apk`. Para baixar o mesmo build do
+CI, abra uma execução verde de **CI** em GitHub Actions e baixe o artefato
+`rango-demo-apk`.
+
+No aparelho Android, transfira o APK, permita a instalação de apps pela fonte
+usada para abrir o arquivo e confirme a instalação. Sem `env.json`, o app usa
+o `FakeAuthRepository` e abre sem conectar ao Firebase.
+
+Cada execução do CI usa uma máquina nova e pode gerar uma chave de debug
+diferente. Para instalar um APK de outra execução sobre uma versão já
+instalada, desinstale a versão anterior primeiro.
+
+Para distribuição na Play Store, é necessário configurar uma chave de assinatura
+própria.
+
 ## Próximos passos
 
 Histórias da Sprint 2, nesta ordem (as duas primeiras podem andar em
