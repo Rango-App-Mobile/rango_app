@@ -1,8 +1,8 @@
 # Rango
 
 App mobile (Flutter) que resolve o "não sei o que comer": uma sessão curta de escolhas binárias por
-swipe converge até um tipo de comida e, no mesmo fluxo, recomenda restaurantes reais e próximos
-via Google Places.
+swipe converge até um tipo de comida e, no mesmo fluxo, mostra no mapa restaurantes próximos que a
+servem: por enquanto fictícios e, depois, os comércios da região cadastrados pelo time.
 
 Projeto da disciplina Projeto de Desenvolvimento I (Senac), 2º semestre de 2026.
 
@@ -16,7 +16,8 @@ Projeto da disciplina Projeto de Desenvolvimento I (Senac), 2º semestre de 2026
 | Firebase (configuração) | ✅ pronto: [como configurar](#firebase) |
 | Sessão anônima (visitante) | ✅ pronto: [como funciona](docs/auth.md) |
 | Swipe convergente | ⏳ Sprint 2 |
-| Restaurantes (Google Places) | ⏳ Sprint 3 |
+| Mapa com restaurantes fictícios | ✅ pronto: [como funciona](docs/restaurantes.md) |
+| Restaurantes reais no Firestore | ⏳ E3-S7 |
 
 ## Documentação
 

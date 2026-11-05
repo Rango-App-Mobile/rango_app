@@ -22,8 +22,8 @@
 ### Data (`.claude/rules/firebase.md`)
 - [ ] SDK exceptions become `Failure` inside `lib/data/`
 - [ ] API keys only through `Env`; nothing literal, not even in tests
-- [ ] `dio` with timeouts; Places calls with `X-Goog-FieldMask`; no header/URL
-      logging
+- [ ] Network calls with timeouts; no logging of URLs or headers that carry a
+      key; `TileLayer` keeps the identifying User-Agent and `MapCredit` stays visible
 - [ ] Firestore queries on growing collections have `limit`
 - [ ] Changed a collection or field? `docs/contexto.md` §8 updated in the PR
 - [ ] Changed who can read/write? `firestore.rules` changed in the same PR

@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
@@ -7,9 +5,10 @@ import 'package:rango_app/core/theme/app_primitives.dart';
 import 'package:rango_app/models/geo_point.dart';
 import 'package:rango_app/models/restaurant.dart';
 import 'package:rango_app/screens/restaurants/widgets/map_pin.dart';
+import 'package:rango_app/screens/restaurants/widgets/user_location_marker.dart';
 
-/// Map drawn with Flutter only (Figma "Map base" look), used while there is no
-/// Google key and in tests. The streets are decorative and deterministic; the
+/// Map drawn with Flutter only (Figma "Map base" look), used while the position
+/// is unknown and in tests. The streets are decorative and deterministic; the
 /// pins sit at their real relative positions around [origin].
 class DrawnRestaurantMap extends StatefulWidget {
   const DrawnRestaurantMap({
@@ -41,24 +40,10 @@ class DrawnRestaurantMap extends StatefulWidget {
   State<DrawnRestaurantMap> createState() => _DrawnRestaurantMapState();
 }
 
-class _DrawnRestaurantMapState extends State<DrawnRestaurantMap>
-    with SingleTickerProviderStateMixin {
-  // Created in initState (not lazily) so dispose never builds a ticker.
-  late final AnimationController _pulse;
-  bool _pulsing = false;
-
+class _DrawnRestaurantMapState extends State<DrawnRestaurantMap> {
   /// Pixel offset, from the origin, of what sits at the centre of the view.
   Offset _focus = Offset.zero;
   double _scale = 0.05;
-
-  @override
-  void initState() {
-    super.initState();
-    _pulse = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 1),
-    );
-  }
 
   @override
   void didUpdateWidget(DrawnRestaurantMap oldWidget) {
@@ -93,22 +78,7 @@ class _DrawnRestaurantMapState extends State<DrawnRestaurantMap>
   }
 
   @override
-  void dispose() {
-    _pulse.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final reduceMotion = MediaQuery.disableAnimationsOf(context);
-    if (reduceMotion && _pulsing) {
-      _pulse.stop();
-      _pulsing = false;
-    } else if (!reduceMotion && !_pulsing && widget.origin != null) {
-      _pulse.repeat(reverse: true).ignore();
-      _pulsing = true;
-    }
-
     return LayoutBuilder(
       builder: (context, constraints) {
         final size = constraints.biggest;
@@ -151,9 +121,9 @@ class _DrawnRestaurantMapState extends State<DrawnRestaurantMap>
                   ),
                   if (origin != null) ...[
                     Positioned(
-                      left: originOnScreen.dx - _UserLocation.size / 2,
-                      top: originOnScreen.dy - _UserLocation.size / 2,
-                      child: _UserLocation(pulse: _pulse),
+                      left: originOnScreen.dx - UserLocationMarker.size / 2,
+                      top: originOnScreen.dy - UserLocationMarker.size / 2,
+                      child: const UserLocationMarker(),
                     ),
                     for (final r in [...others, ...selected])
                       _positionedPin(
@@ -191,54 +161,6 @@ class _DrawnRestaurantMapState extends State<DrawnRestaurantMap>
         foodTheme: widget.foodTheme,
         selected: isSelected,
         onTap: () => widget.onSelect(restaurant.placeId),
-      ),
-    );
-  }
-}
-
-/// Figma "User Location": ink dot with a cream border inside a sky halo that
-/// breathes from 1 to 1.15 every 2 s.
-class _UserLocation extends StatelessWidget {
-  const _UserLocation({required this.pulse});
-
-  final Animation<double> pulse;
-
-  static const size = 64.0;
-  static const _dot = 16.0;
-
-  @override
-  Widget build(BuildContext context) {
-    return Semantics(
-      label: 'Você está aqui',
-      child: SizedBox.square(
-        dimension: size,
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
-            ScaleTransition(
-              scale: Tween<double>(begin: 1, end: 1.15).animate(pulse),
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: AppPrimitives.sky.withValues(alpha: 0.5),
-                  border: Border.all(
-                    color: AppPrimitives.sky,
-                    width: 1.5,
-                  ),
-                ),
-                child: const SizedBox.square(dimension: size),
-              ),
-            ),
-            DecoratedBox(
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: AppPrimitives.ink900,
-                border: Border.all(color: AppPrimitives.cream, width: 3),
-              ),
-              child: const SizedBox.square(dimension: _dot + 6),
-            ),
-          ],
-        ),
       ),
     );
   }

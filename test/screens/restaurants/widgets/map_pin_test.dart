@@ -71,21 +71,4 @@ void main() {
     expect(taps, 1);
     handle.dispose();
   });
-
-  testWidgets('renderMapPinPng returns PNG bytes', (tester) async {
-    await tester.runAsync(() async {
-      for (final selected in [false, true]) {
-        final bytes = await renderMapPinPng(
-          fill: Colors.red,
-          glyph: Colors.white,
-          selected: selected,
-          balloon: selected ? 'Cantina ★ 4,7' : null,
-          pixelRatio: 2,
-        );
-        expect(bytes, isNotEmpty);
-        // PNG signature.
-        expect(bytes.sublist(0, 4), [0x89, 0x50, 0x4E, 0x47]);
-      }
-    });
-  });
 }

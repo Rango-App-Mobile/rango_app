@@ -4,19 +4,6 @@ plugins {
     id("dev.flutter.flutter-gradle-plugin")
 }
 
-// --dart-define values arrive as comma-separated base64 "KEY=value" entries.
-val dartDefines: Map<String, String> =
-    (project.findProperty("dart-defines") as String?)
-        ?.split(",")
-        ?.filter { it.isNotEmpty() }
-        ?.mapNotNull {
-            String(java.util.Base64.getDecoder().decode(it), Charsets.UTF_8)
-                .split("=", limit = 2)
-                .takeIf { pair -> pair.size == 2 }
-        }
-        ?.associate { it[0] to it[1] }
-        ?: emptyMap()
-
 android {
     namespace = "br.senac.rango_app"
     compileSdk = flutter.compileSdkVersion
@@ -36,7 +23,6 @@ android {
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
-        manifestPlaceholders["mapsApiKey"] = dartDefines["GOOGLE_ANDROID_API_KEY"] ?: ""
     }
 
     buildTypes {

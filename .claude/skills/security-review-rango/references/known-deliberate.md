@@ -4,9 +4,8 @@ A cache of documented decisions. Before using an entry to **not** report
 something, confirm the cited source still says the same. If it changed, report
 it under "Skill desatualizada".
 
-- **Google Places key on the client**, restricted by app (bundle id / package +
-  certificate). A Cloud Functions proxy is the future path and is still an open
-  question. (`docs/contexto.md` §12, `docs/guia-setup.md` step 4)
+- **Public OpenStreetMap tiles with no key**, and fictional restaurants as the
+  default. (`docs/contexto.md` §11, 2026-11-05)
 - **Firebase project ids are committed** in `lib/firebase_options.dart`; the
   Firebase API keys are not (they come from `env.json` via `Env`). A literal
   `AIza…` key, or a committed `google-services.json` / `GoogleService-Info.plist`,

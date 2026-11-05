@@ -1,7 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:rango_app/core/config/env.dart';
 import 'package:rango_app/data/fake_restaurant_repository.dart';
-import 'package:rango_app/data/places_restaurant_repository.dart';
 import 'package:rango_app/models/geo_point.dart';
 import 'package:rango_app/models/restaurant.dart';
 
@@ -23,9 +21,7 @@ abstract interface class RestaurantRepository {
   Future<String?> fetchPhotoUri(String photoName);
 }
 
-/// Real Places when a Google key exists; otherwise the in-memory fake.
+/// Fictional restaurants until the team's own Firestore data arrives.
 final restaurantRepositoryProvider = Provider<RestaurantRepository>(
-  (ref) => Env.hasGoogleKey
-      ? PlacesRestaurantRepository.create()
-      : FakeRestaurantRepository(),
+  (ref) => FakeRestaurantRepository(),
 );

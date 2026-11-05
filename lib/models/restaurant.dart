@@ -3,7 +3,7 @@ import 'package:rango_app/models/geo_point.dart';
 
 part 'restaurant.freezed.dart';
 
-/// A nearby place that serves the chosen food, coming from Google Places.
+/// A nearby place that serves the chosen food.
 /// [distanceMeters] is relative to the person's position at search time.
 @freezed
 abstract class Restaurant with _$Restaurant {
@@ -12,12 +12,12 @@ abstract class Restaurant with _$Restaurant {
     required String name,
     required GeoPoint location,
 
-    /// Places `primaryTypeDisplayName`, e.g. "Restaurante italiano".
+    /// Kind of place, e.g. "Restaurante italiano".
     String? cuisine,
     String? address,
     double? rating,
 
-    /// Places photo resource name, e.g. `places/X/photos/Y`.
+    /// Reference that `RestaurantRepository.fetchPhotoUri` resolves to a URL.
     String? photoName,
 
     /// Filled by `RestaurantRanking.rank`; 0 until then.

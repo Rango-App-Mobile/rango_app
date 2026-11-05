@@ -1,14 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:rango_app/core/config/env.dart';
 import 'package:rango_app/models/geo_point.dart';
 import 'package:rango_app/models/restaurant.dart';
 import 'package:rango_app/screens/restaurants/widgets/drawn_restaurant_map.dart';
-import 'package:rango_app/screens/restaurants/widgets/google_restaurant_map.dart';
+import 'package:rango_app/screens/restaurants/widgets/osm_restaurant_map.dart';
 
-/// Whether the real Google map is used. False without a key (fresh clone, CI,
-/// tests), when the drawn map takes its place. Tests override it.
-final useGoogleMapProvider = Provider<bool>((ref) => Env.hasGoogleKey);
+/// Whether the real tile map is used. The widget tests of the screen turn it
+/// off, so they run on the drawn map.
+final useTileMapProvider = Provider<bool>((ref) => true);
+
+/// How the real map gets its tiles. Tests swap it to stay off the network.
+final tileProviderFactoryProvider = Provider<TileProvider Function()>(
+  (ref) => NetworkTileProvider.new,
+);
 
 /// The seam between the screen and the map implementation. Both take the
 /// same props; [recenterTick] changing sends the camera back to [origin].
@@ -32,14 +37,15 @@ class RestaurantMap extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    if (ref.watch(useGoogleMapProvider)) {
-      return GoogleRestaurantMap(
+    if (ref.watch(useTileMapProvider)) {
+      return OsmRestaurantMap(
         origin: origin,
         restaurants: restaurants,
         selectedId: selectedId,
         foodTheme: foodTheme,
         onSelect: onSelect,
         recenterTick: recenterTick,
+        createTileProvider: ref.watch(tileProviderFactoryProvider),
       );
     }
     return DrawnRestaurantMap(

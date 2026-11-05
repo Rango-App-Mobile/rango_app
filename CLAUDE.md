@@ -3,8 +3,8 @@
 Flutter app (iOS + Android) for the Senac _Projeto de Desenvolvimento I_ course.
 The user makes a short run of binary choices by swipe (savory vs. sweet → pasta →
 spaghetti) until the session converges on one type of food, and the app then
-recommends real, nearby restaurants for it (Google Places), ready to open in a
-delivery app.
+shows nearby restaurants for it on a map (fictional for now, the team's own
+local ones later), ready to open in a delivery app.
 
 > **`docs/contexto.md` is the canonical source** for product, architecture,
 > business rules, data model, schedule and decisions. This file does not
@@ -103,7 +103,7 @@ Docs in `docs/`, all in Portuguese:
 - **Riverpod 3** as the ViewModel layer — hand-written providers, no codegen.
 - **freezed** + **json_serializable** for models; **go_router** for navigation.
 - **Firebase Auth** (anonymous) and **Cloud Firestore** — from Sprint 2.
-- **Google Places API** via **dio** — from Sprint 3.
+- **flutter_map** with OpenStreetMap tiles for the map (no key, no card).
 - **very_good_analysis** lints; **mocktail** for tests.
 - Ask before proposing a new dependency.
 
@@ -138,7 +138,7 @@ not have one.
 
 **Fakes first.** Each repository ships a `Fake...` in-memory implementation that
 is the provider default until the story that brings the real backend. The app
-must always compile and run without Firebase or Places configured.
+must always compile and run without Firebase configured.
 
 **Language.** Code, identifiers, test names, comments and commit messages in
 English. Docs (`docs/`) and UI strings in Portuguese. Agent-facing files

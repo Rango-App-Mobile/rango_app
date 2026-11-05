@@ -1,12 +1,12 @@
 ---
 name: pr-review-rango
-description: Use when the user asks to review, check, look over, or give feedback on a pull request, branch, or diff in the Rango Flutter repository (Flutter + Riverpod + Firebase + Google Places), including bare asks like "review this", "revisa esse PR" or "o que achou desse PR".
+description: Use when the user asks to review, check, look over, or give feedback on a pull request, branch, or diff in the Rango Flutter repository (Flutter + Riverpod + Firebase + flutter_map), including bare asks like "review this", "revisa esse PR" or "o que achou desse PR".
 ---
 
 # PR Review — Rango
 
 Review pull requests for **Rango**, a Flutter app (Riverpod 3 as the ViewModel
-layer, Firebase Auth/Firestore, Google Places). Review against **this project's**
+layer, Firebase Auth/Firestore, flutter_map). Review against **this project's**
 rules — MVVM boundaries, fakes-first repositories, spec-driven stories — not
 generic Flutter advice. A generic reviewer flags deliberate decisions as bugs
 and misses what matters here: a ViewModel that reaches the network, a key in the

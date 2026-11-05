@@ -40,4 +40,4 @@ request/response externo, se houver.>
 
 | Risco | Impacto | Mitigação |
 |---|---|---|
-| <ex.: cota do Places estourar em demo> | | |
+| <ex.: servidor de mapas fora do ar em demo> | | |

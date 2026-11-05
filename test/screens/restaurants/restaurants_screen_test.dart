@@ -1,12 +1,14 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:rango_app/app/theme/app_theme.dart';
 import 'package:rango_app/core/error/failure.dart';
+import 'package:rango_app/core/widgets/restaurant_card.dart';
 import 'package:rango_app/data/category_repository.dart';
 import 'package:rango_app/data/fake_location_repository.dart';
 import 'package:rango_app/data/fake_restaurant_repository.dart';
@@ -17,6 +19,8 @@ import 'package:rango_app/models/geo_point.dart';
 import 'package:rango_app/models/restaurant.dart';
 import 'package:rango_app/models/restaurant_contact_args.dart';
 import 'package:rango_app/screens/restaurants/restaurants_screen.dart';
+import 'package:rango_app/screens/restaurants/widgets/map_credit.dart';
+import 'package:rango_app/screens/restaurants/widgets/osm_restaurant_map.dart';
 import 'package:rango_app/screens/restaurants/widgets/restaurant_map.dart';
 
 class _MockLocation extends Mock implements LocationRepository {}
@@ -27,12 +31,20 @@ const GeoPoint _origin = FakeLocationRepository.point;
 
 LocationRepository _fakeLocation() => const FakeLocationRepository();
 
+/// Keeps the tests off the network: every tile is a transparent pixel.
+class _BlankTiles extends TileProvider {
+  @override
+  ImageProvider getImage(TileCoordinates coordinates, TileLayer options) =>
+      MemoryImage(TileProvider.transparentImage);
+}
+
 Future<void> _pump(
   WidgetTester tester, {
   LocationRepository? location,
   RestaurantRepository? restaurants,
   Size size = const Size(402, 874),
   bool settle = true,
+  bool useTileMap = false,
 }) async {
   tester.view
     ..physicalSize = size
@@ -66,7 +78,8 @@ Future<void> _pump(
         restaurantRepositoryProvider.overrideWithValue(
           restaurants ?? FakeRestaurantRepository(),
         ),
-        useGoogleMapProvider.overrideWithValue(false),
+        useTileMapProvider.overrideWithValue(useTileMap),
+        tileProviderFactoryProvider.overrideWithValue(_BlankTiles.new),
       ],
       child: MaterialApp.router(
         theme: AppTheme.light,
@@ -100,8 +113,60 @@ Finder _pin(String name) => find.bySemanticsLabel(RegExp('^$name, nota'));
 void main() {
   setUpAll(() => registerFallbackValue(_origin));
 
+  group('tile map', () {
+    testWidgets('is the default map', (tester) async {
+      final container = ProviderContainer.test();
+
+      expect(container.read(useTileMapProvider), isTrue);
+    });
+
+    testWidgets('credits OpenStreetMap above the preview card', (tester) async {
+      await _pump(tester, useTileMap: true);
+
+      expect(find.byType(OsmRestaurantMap), findsOneWidget);
+      final credit = tester.getRect(find.byType(MapCredit));
+      final card = tester.getRect(find.byType(RestaurantCard));
+      expect(find.text('© OpenStreetMap contributors'), findsOneWidget);
+      expect(credit.bottom, lessThanOrEqualTo(card.top));
+    });
+
+    testWidgets('credits OpenStreetMap while still searching', (tester) async {
+      final restaurants = _MockRestaurants();
+      when(
+        () => restaurants.search(
+          keyword: any(named: 'keyword'),
+          near: any(named: 'near'),
+        ),
+      ).thenAnswer((_) => Completer<List<Restaurant>>().future);
+
+      await _pump(tester, restaurants: restaurants, useTileMap: true);
+
+      expect(find.byType(MapCredit), findsOneWidget);
+      expect(find.byType(RestaurantCard), findsNothing);
+    });
+
+    testWidgets('fits the credit and the recenter button on a small phone', (
+      tester,
+    ) async {
+      await _pump(tester, size: const Size(375, 667), useTileMap: true);
+
+      expect(tester.takeException(), isNull);
+      final credit = tester.getRect(find.byType(MapCredit));
+      final recenter = tester.getRect(
+        find.bySemanticsLabel('Centralizar em você'),
+      );
+      expect(credit.right, lessThanOrEqualTo(recenter.left));
+    });
+
+    testWidgets('the drawn map needs no credit', (tester) async {
+      await _pump(tester);
+
+      expect(find.byType(MapCredit), findsNothing);
+    });
+  });
+
   group('map', () {
-    testWidgets('shows the searching chip until Places answers', (
+    testWidgets('shows the searching chip until the search answers', (
       tester,
     ) async {
       final pending = Completer<List<Restaurant>>();

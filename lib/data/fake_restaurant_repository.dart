@@ -3,8 +3,8 @@ import 'package:rango_app/models/geo_point.dart';
 import 'package:rango_app/models/restaurant.dart';
 import 'package:rango_app/models/restaurant_ranking.dart';
 
-/// In-memory restaurants around the given position, no network. Used while
-/// there is no Google key.
+/// Fictional restaurants around the given position, no network. Used until the
+/// team's own restaurants are in Firestore.
 class FakeRestaurantRepository implements RestaurantRepository {
   // (name, cuisine, rating, dLat, dLng) in degrees; 0.01 deg is about 1.1 km.
   static const List<(String, String, double?, double, double)> _seed = [

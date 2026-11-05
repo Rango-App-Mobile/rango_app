@@ -266,7 +266,7 @@ epics:
           - "Os botões têm rótulo para leitor de tela ('Curtir Macarrão', 'Passar Macarrão')"
 
   - id: E3
-    title: "Recomendação de restaurantes reais (Google Places)"
+    title: "Recomendação de restaurantes reais"
     frente: dev
     area: restaurants
     description: "Consultar restaurantes próximos que atendem o tipo convergido (contexto.md §4 e §6)."
@@ -366,6 +366,25 @@ epics:
           - "Alternar entre mapa e lista mantém os resultados sem nova busca"
           - "Lista com Restaurant Card Layout=Row, ordenada pela mesma regra do mapa"
           - "Tocar num item abre o contato (E3-S4)"
+      - id: E3-S7
+        title: "Como usuário, quero ver no mapa os restaurantes reais da região"
+        sprint: 5
+        frente: dev
+        area: restaurants
+        priority: alta
+        estimate: 5
+        description: >
+          Trocar os restaurantes fictícios pelos que o time cadastrou numa planilha: cada um com
+          nome, posição, comidas, endereço, telefone e links de delivery. Um script importa a
+          planilha para `restaurants` no Firestore, e o app mostra os que servem a comida do
+          match a até 3 km da pessoa, sem busca por texto (contexto.md §11, 2026-11-05).
+        acceptance:
+          - "O script valida a planilha (coordenadas e comidas do menu) antes de gravar e pode rodar de novo sem duplicar"
+          - "A chave da conta de serviço do script fica fora do git"
+          - "O mapa mostra só os restaurantes que servem a comida do match, a até 3 km, do mais perto ao mais longe"
+          - "Telefone e links de delivery vêm do cadastro do restaurante"
+          - "Fora da região cadastrada aparece 'Nenhum lugar perto'"
+          - "Regras versionadas: usuário autenticado lê `restaurants` e o app não escreve"
 
   - id: E4
     title: "Qualidade, segurança e release"
