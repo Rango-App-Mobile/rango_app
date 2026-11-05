@@ -22,6 +22,7 @@ import 'package:rango_app/data/local_category_repository.dart';
 import 'package:rango_app/data/location_repository.dart';
 import 'package:rango_app/data/restaurant_repository.dart';
 import 'package:rango_app/models/app_user.dart';
+import 'package:rango_app/screens/restaurants/widgets/restaurant_map.dart';
 import 'package:rango_app/screens/startup/startup_screen.dart';
 import 'package:rango_app/screens/swipe/swipe_screen.dart';
 import 'package:rango_app/screens/swipe/swipe_view_model.dart';
@@ -60,6 +61,7 @@ Future<void> pumpApp(WidgetTester tester) async {
         deliveryLinkRepositoryProvider.overrideWithValue(
           FakeDeliveryLinkRepository(),
         ),
+        useTileMapProvider.overrideWithValue(false),
       ],
       child: const RangoApp(),
     ),

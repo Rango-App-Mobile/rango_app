@@ -44,16 +44,16 @@ Firestore data model in `docs/contexto.md` §8.
   that adds a Firestore repository also adds its fake override there. The
   rules protect the data.
 
-## Google Places
+## Map and restaurants
 
-- The API key comes only from `Env` (`lib/core/config/env.dart`). Never a
-  literal, not even in tests.
-- `Dio` with explicit `connectTimeout` and `receiveTimeout`. Without a timeout,
-  a bad network hangs the loading state forever.
-- Request only the fields used (`X-Goog-FieldMask`). The price of a call depends
-  on the fields requested.
-- Never log URLs or headers of Places calls (no `LogInterceptor` with headers):
-  the key would end up in logs.
+- The map is `flutter_map` over the public OpenStreetMap tiles: no key. Keep the
+  identifying `userAgentPackageName` and the visible credit (`MapCredit`); the
+  tile policy requires both. Tests never load real tiles.
+- No Google Maps or Places: they need a payment method (`docs/contexto.md` §11,
+  2026-11-05). `FakeRestaurantRepository` is the default until the team's
+  restaurants are in Firestore (E3-S7).
+- Any future call over the network has an explicit timeout, and URLs or headers
+  that carry a key are never logged.
 
 ## Location
 

@@ -55,7 +55,7 @@ O detalhamento completo está no [acordo](acordo-projeto.md#2-benchmark-de-conco
 - **Foco no Brasil:** nenhum concorrente tem presença ou catálogo aqui.
 - **Sem cadastro:** autenticação anônima, então a sessão começa na hora.
 - **Pronto para evoluir:** MVVM + Firebase desde o MVP permite adicionar o modo grupo sem redesenhar o backend.
-- **Dados reais:** restaurantes via Google Places (endereço, distância, avaliação), não uma lista estática.
+- **Foco local:** comércios da região cadastrados pelo próprio time, com a posição de cada um no nosso banco (decisão de 2026-11-05 no §11).
 
 ## 4. Stack
 
@@ -65,7 +65,8 @@ O detalhamento completo está no [acordo](acordo-projeto.md#2-benchmark-de-conco
 | Estado | Riverpod | Camada ViewModel do MVVM (Notifier/AsyncNotifier) |
 | Dados | Cloud Firestore | Sessões, histórico de escolhas, preferências |
 | Auth | Firebase Authentication (anônima) | Identifica a sessão sem cadastro |
-| Restaurantes | Google Places API | Restaurantes reais próximos por tipo de comida |
+| Mapa | `flutter_map` + OpenStreetMap | Mapa real, sem chave e sem cartão |
+| Restaurantes | `FakeRestaurantRepository`; depois, Cloud Firestore | Hoje, restaurantes fictícios ao redor da pessoa; depois, os do time, por comida e distância |
 | Futuro | Cloud Functions | Orquestração do modo grupo em tempo real |
 
 ## 5. Arquitetura
@@ -92,7 +93,7 @@ lib/
 | View | `screens/<tela>/<tela>_screen.dart` | Renderizar e capturar interação | o ViewModel da própria tela, models, `core/widgets` | `data/`, Firebase, HTTP |
 | ViewModel | `screens/<tela>/<tela>_view_model.dart` | Estado da tela, orquestrar as ações | models, interfaces de `data/` | widgets, `BuildContext`, Firebase/HTTP diretamente, o ViewModel de outra tela |
 | Model | `models/` | Dados imutáveis e regras de negócio (FoodCategory, CategoryTree, SwipeChoice, Session, Restaurant) | nada além de Dart | Flutter |
-| Data | `data/` | Abstrair a origem dos dados (CategoryRepository, FirestoreRepository, PlacesService) | models, SDKs externos | `screens/` |
+| Data | `data/` | Abstrair a origem dos dados (CategoryRepository, FirestoreRepository, RestaurantRepository) | models, SDKs externos | `screens/` |
 
 Telas previstas (numeração do Figma): `swipe` (01–03, Sprint 2), `result` (04)
 e `restaurants` (05, 08, Sprint 3), `restaurant_contact` (06) e `login` (Sprint 4),
@@ -106,7 +107,7 @@ Telas em alta fidelidade e protótipo: [Figma do Rango](https://www.figma.com/de
 
 1. O usuário abre o app como **visitante**: a sessão anônima é criada automaticamente, sem cadastro.
 2. A primeira escolha é ampla (salgado vs. doce). Depois as comidas da lista escolhida aparecem uma por vez, num card único no centro, como no Tinder: arrastar para a direita (ou o botão de coração) curte, para a esquerda (ou o botão X) passa. A primeira comida a somar três curtidas é a escolhida (ex.: Salgado → Pizza).
-3. Ao convergir num tipo específico ("Deu match!"), o app consulta o Google Places por restaurantes próximos que servem esse tipo.
+3. Ao convergir num tipo específico ("Deu match!"), o app busca restaurantes próximos que servem esse tipo. Por enquanto eles são fictícios; depois virão do Firestore (decisão de 2026-11-05 no §11).
 4. O usuário vê os restaurantes **no mapa** (nome, nota, distância), escolhe um e decide como pedir: delivery, mapa ou ligação.
 5. Quem **entra com conta** (pelo perfil) tem as decisões salvas no **Histórico**, estatísticas e preferências. O visitante usa o fluxo inteiro, mas nada dele é salvo.
 
@@ -116,8 +117,8 @@ Telas em alta fidelidade e protótipo: [Figma do Rango](https://www.figma.com/de
 
 - **R1:** toda sessão pertence a um usuário do Firebase Auth: anônimo (visitante) ou com conta. Só sessões de usuário com conta são salvas no Firestore; do visitante não se grava histórico, estatística nem preferência. *(E1, decisão de 2026-09-30)*
 - **R2:** a primeira escolha é Salgado vs. Doce; depois, um card por vez com as comidas da lista escolhida (16 em cada), em ordem aleatória. Curtir soma 1 curtida à comida, e as curtidas não zeram; a primeira a chegar em 3 curtidas encerra a sessão nessa comida, sem limite de cards. Passar tira a comida da sessão. Quando o baralho acaba, as comidas que sobraram são embaralhadas de novo (a última mostrada não abre a nova rodada); se todas foram passadas, as 16 voltam. *(E2-S1, decisão de 2026-11-04; substitui o duelo de 2026-10-24)*
-- **R3:** cada comida das listas tem um termo de busca para o Google Places. *(E2-S1)*
-- **R4:** a recomendação considera só restaurantes a até **3 km** da localização atual (até 20 resultados do Places), ordenados do mais perto ao mais longe; o mais perto abre selecionado no mapa. A posição é usada só na busca e não é salva. *(E3-S3, decisão de 2026-10-29)*
+- **R3:** cada comida das listas tem um termo de busca. Sem o Google Places, ele ainda é repassado à busca, mas os restaurantes fictícios o ignoram; sai quando a busca passar para o Firestore. *(E2-S1, decisão de 2026-11-05)*
+- **R4:** a recomendação considera só restaurantes a até **3 km** da localização atual (até 20 resultados), ordenados do mais perto ao mais longe; o mais perto abre selecionado no mapa. A posição é usada só na busca e não é salva. *(E3-S3, decisão de 2026-10-29)*
 - **R5:** "Pedir no delivery" abre o link do iFood cadastrado para o restaurante; sem ele, o primeiro outro link cadastrado; sem nenhum, uma busca "<nome> delivery" no Google. Só links `https` saem do app. *(E3-S5, decisão de 2026-10-29)*
 
 ## 8. Modelo de dados
@@ -138,6 +139,8 @@ restaurants/{placeId}             # cadastrado à mão pelo time; o app só lê
   deliveryLinks: { ifood?, others: [url] }        # R5: iFood → outros → busca no Google
 ```
 
+Os restaurantes reais ainda não estão no banco. A história E3-S7 acrescenta a `restaurants` o nome, a posição (`location`), as comidas (`foods`), o endereço e o telefone.
+
 Cardápio (raiz, Salgado e Doce, e 16 comidas em cada): dado local versionado no app, no `LocalCategoryRepository` (`lib/data/`). Mover para o Firestore é decisão futura (§12).
 
 ## 9. Escopo: MVP vs. futuro
@@ -147,7 +150,7 @@ Cardápio (raiz, Salgado e Doce, e 16 comidas em cada): dado local versionado no
 | Sessão solo como visitante, sem cadastro | Sessão em grupo (vários usuários votando, via Firebase/Functions) |
 | Entrar com conta (opcional) para salvar os rangos | Onboarding que sugere o login na primeira abertura |
 | Convergência de gosto por swipe binário | Favoritos |
-| Recomendação de restaurante via Google Places, no mapa | Lista de restaurantes como visualização alternativa ao mapa (Sprint 5) |
+| Recomendação de restaurante no mapa, primeiro com dados fictícios e depois com os do time | Lista de restaurantes como visualização alternativa ao mapa (Sprint 5) |
 | Histórico de rangos, estatísticas e preferências (com conta) | Filtros avançados (preço, dieta, distância) e envio de notificações |
 
 ## 10. Cronograma e sprints
@@ -220,6 +223,8 @@ Rituais e frentes: [time-e-rituais.md](time-e-rituais.md).
 | 2026-11-04 | O Histórico é uma pilha de cards estilo carteira: o mais recente embaixo e na frente, os antigos acima mostrando só a faixa do título; ao rolar, os cards que chegam ao topo param e se empilham em vez de sair da tela. Até a E2-S4, o `FakeHistoryRepository` com decisões de exemplo é o padrão | Segue o Figma 07d e deixa a última decisão em destaque sem perder o resto de vista |
 | 2026-11-04 | O Histórico sai do subtítulo "N rangos decididos desde <mês>" para os rótulos de mês do Figma (mês e contagem): o último card de cada mês aparece inteiro, seguido de uma pausa com o rótulo no fundo creme, e o rótulo do mês na pilha fica fixo acima dela | Separar por mês diz mais do que um total só, e segue o componente Month Header |
 | 2026-11-04 | O conteúdo rola por trás da Top Bar e da Tab Bar, sob um blur progressivo, e voltar e perfil viram vidro (`color/glass/*`). A Top Bar das abas perde o nome do app e fica só com o perfil. No mapa não há blur nem degradê: ele vai limpo até o topo | O corte do conteúdo formava uma linha no topo das telas, e repetir o nome do app o tempo todo não acrescentava nada. Blur sobre o mapa nativo do Google não é confiável, principalmente no Android |
+| 2026-11-05 | Saem o Google Maps e o Google Places (substitui as decisões de 2026-10-29 sobre eles). O mapa passa a usar `flutter_map` com o OpenStreetMap, nas cores originais e com o crédito sempre visível. Até a E3-S7, os restaurantes são os fictícios do `FakeRestaurantRepository`. Saem as chaves `GOOGLE_*` e `ANDROID_CERT_SHA1`, e o `dio` | O Google exige uma forma de pagamento cadastrada mesmo dentro da cota gratuita, e o time decidiu não usar cartão. O OpenStreetMap não pede chave nem cartão, e a proibição de mostrar dados do Places fora do mapa do Google deixa de valer. O servidor público de mapas não tem garantia de disponibilidade: se atrapalhar, trocar de provedor é mudar uma URL |
+| 2026-11-05 | Os restaurantes reais serão cadastrados pelo time no Firestore, vindos de uma planilha, cada um com sua posição e as comidas que serve. O app mostra os que servem a comida do match a até 3 km da pessoa, sem busca por texto. O Rango é um app local: fora da região cadastrada, mostra "Nenhum lugar perto" | É um app para os comércios da região, sem API paga e com os dados sob controle do time. O acordo do projeto ainda cita o Google Places: fica para o time alinhar com o professor |
 
 ## 12. Em aberto
 

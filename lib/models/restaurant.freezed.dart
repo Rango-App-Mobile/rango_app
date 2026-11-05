@@ -14,8 +14,8 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$Restaurant {
 
- String get placeId; String get name; GeoPoint get location;/// Places `primaryTypeDisplayName`, e.g. "Restaurante italiano".
- String? get cuisine; String? get address; double? get rating;/// Places photo resource name, e.g. `places/X/photos/Y`.
+ String get placeId; String get name; GeoPoint get location;/// Kind of place, e.g. "Restaurante italiano".
+ String? get cuisine; String? get address; double? get rating;/// Reference that `RestaurantRepository.fetchPhotoUri` resolves to a URL.
  String? get photoName;/// Filled by `RestaurantRanking.rank`; 0 until then.
  double get distanceMeters;
 /// Create a copy of Restaurant
@@ -231,11 +231,11 @@ class _Restaurant implements Restaurant {
 @override final  String placeId;
 @override final  String name;
 @override final  GeoPoint location;
-/// Places `primaryTypeDisplayName`, e.g. "Restaurante italiano".
+/// Kind of place, e.g. "Restaurante italiano".
 @override final  String? cuisine;
 @override final  String? address;
 @override final  double? rating;
-/// Places photo resource name, e.g. `places/X/photos/Y`.
+/// Reference that `RestaurantRepository.fetchPhotoUri` resolves to a URL.
 @override final  String? photoName;
 /// Filled by `RestaurantRanking.rank`; 0 until then.
 @override@JsonKey() final  double distanceMeters;

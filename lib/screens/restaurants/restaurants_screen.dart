@@ -17,6 +17,7 @@ import 'package:rango_app/core/widgets/top_bar_layout.dart';
 import 'package:rango_app/models/restaurant_contact_args.dart';
 import 'package:rango_app/screens/restaurants/restaurants_state.dart';
 import 'package:rango_app/screens/restaurants/restaurants_view_model.dart';
+import 'package:rango_app/screens/restaurants/widgets/map_credit.dart';
 import 'package:rango_app/screens/restaurants/widgets/restaurant_map.dart';
 
 /// Restaurants on the map (Figma 08 loading, 05 map, 09 location denied, plus
@@ -86,8 +87,11 @@ class _RestaurantsScreenState extends ConsumerState<RestaurantsScreen> {
   }
 
   Widget _mapBody(RestaurantsState state) {
-    final isReady = state.status == RestaurantsStatus.ready;
-    final selected = state.selected;
+    final selected = state.status == RestaurantsStatus.ready
+        ? state.selected
+        : null;
+    // The drawn map stands in until the position is known and uses no tiles.
+    final showCredit = ref.watch(useTileMapProvider) && state.origin != null;
     return Stack(
       children: [
         Positioned.fill(
@@ -116,7 +120,7 @@ class _RestaurantsScreenState extends ConsumerState<RestaurantsScreen> {
             ],
           ),
         ),
-        if (isReady && selected != null)
+        if (showCredit || selected != null)
           Positioned(
             left: AppSpace.lg,
             right: AppSpace.lg,
@@ -125,26 +129,41 @@ class _RestaurantsScreenState extends ConsumerState<RestaurantsScreen> {
               minimum: const EdgeInsets.only(bottom: AppSpace.lg),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.end,
                 spacing: AppSpace.lg,
                 children: [
-                  RangoIconButton(
-                    icon: Icons.my_location,
-                    semanticLabel: 'Centralizar em você',
-                    onPressed: () => setState(() => _recenterTick++),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    spacing: AppSpace.sm,
+                    children: [
+                      Expanded(
+                        child: showCredit
+                            ? const Align(
+                                alignment: Alignment.bottomLeft,
+                                child: MapCredit(),
+                              )
+                            : const SizedBox.shrink(),
+                      ),
+                      if (selected != null)
+                        RangoIconButton(
+                          icon: Icons.my_location,
+                          semanticLabel: 'Centralizar em você',
+                          onPressed: () => setState(() => _recenterTick++),
+                        ),
+                    ],
                   ),
-                  RestaurantCard(
-                    layout: RestaurantCardLayout.row,
-                    name: selected.name,
-                    cuisine: selected.cuisine,
-                    rating: selected.rating,
-                    distanceMeters: selected.distanceMeters,
-                    foodTheme: resolveFoodTheme(state.foodTheme),
-                    photo: state.photoUri != null
-                        ? NetworkImage(state.photoUri!)
-                        : foodPhoto(state.foodPhoto),
-                    onTap: () => _openContact(state),
-                  ),
+                  if (selected != null)
+                    RestaurantCard(
+                      layout: RestaurantCardLayout.row,
+                      name: selected.name,
+                      cuisine: selected.cuisine,
+                      rating: selected.rating,
+                      distanceMeters: selected.distanceMeters,
+                      foodTheme: resolveFoodTheme(state.foodTheme),
+                      photo: state.photoUri != null
+                          ? NetworkImage(state.photoUri!)
+                          : foodPhoto(state.foodPhoto),
+                      onTap: () => _openContact(state),
+                    ),
                 ],
               ),
             ),

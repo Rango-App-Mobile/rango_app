@@ -138,4 +138,4 @@ simulador, e a aparência contra as telas "07d" e "12" do Figma.
 | Salvar as decisões de verdade | E2-S4 (#13, #60) |
 | Separar por mês ("Setembro", "12 min") como no Figma | Junto com a E2-S4, quando houver dado real |
 | "Pedir de novo" abrindo as opções de contato (06) | E3 |
-| Foto do restaurante e as métricas (distância, tempo) do bloco "Onde você pediu" | Junto com os dados do Places |
+| Foto do restaurante e as métricas (distância, tempo) do bloco "Onde você pediu" | Junto com os dados reais dos restaurantes (E3-S7) |
