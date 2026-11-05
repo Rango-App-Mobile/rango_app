@@ -62,7 +62,7 @@ Regras do time (valem mesmo que o GitHub não consiga obrigar em repo privado no
 
 | Workflow | Quando roda | O que faz |
 |---|---|---|
-| **CI** (`ci.yml`) | PR e push em `main`/`dev` | `dart format`, `flutter analyze`, `flutter test --coverage`. É pulado enquanto não existe `pubspec.yaml`. |
+| **CI** (`ci.yml`) | PR e push em `main`/`dev` | `dart format`, `flutter analyze`, `flutter test --coverage` e build do APK release (`android-release`), publicado como artefato `rango-demo-apk`. Os jobs Flutter são pulados enquanto não existe `pubspec.yaml`. |
 | **Backlog sync** (`backlog-sync.yml`) | Push em `main` alterando o `backlog.yml`, ou manual | Cria/atualiza labels, milestones (sprints), issues, sub-issues e campos do board. Não duplica e não fecha o que foi removido. |
 | **Project automation** (`project-automation.yml`) | Criação de branch e abertura/edição de PR | `feat/<n>-…` → issue n em *In Progress*; PR com `Closes #n` → *In Review*. Nunca volta status. |
 | **Sprint report** (`sprint-report.yml`) | Terça 20h (Brasília) ou manual | Resumo da sprint por frente comentado na issue "Sprint N — acompanhamento". |
