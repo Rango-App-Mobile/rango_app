@@ -42,7 +42,7 @@ Tipos: `feat`, `fix`, `docs`, `test`, `refactor`, `chore`, `ci`.
 - **Alvo:** `dev`. Uma issue por PR, e PR pequeno (idealmente menos de 400 linhas de diff, sem contar gerados).
 - O corpo segue o template e tem **`Closes #<issue>`**, o que move a issue para *In Review* e a fecha no merge.
 - **1 aprovação** de outra pessoa antes do merge. Se a mudança tocar `lib/`, ao menos um revisor da frente dev.
-- **CI verde:** `format`, `analyze` e `test`. Rode antes de abrir o PR:
+- **CI verde:** `format`, `analyze`, `test` e `android-release` (build do APK de demonstração). Localmente, rode antes de abrir o PR:
 
 ```bash
 dart format . && flutter analyze && flutter test
