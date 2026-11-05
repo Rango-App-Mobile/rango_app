@@ -52,7 +52,7 @@ class RestaurantContactViewModel extends Notifier<RestaurantContactState> {
         photoUri: state.photoUri ?? photo,
       );
     } on Failure {
-      // Contact actions have safe fallbacks: a search link, no phone and no photo.
+      // Contact actions have safe fallbacks: a search link, no phone, no photo.
       if (!ref.mounted) return;
       state = state.copyWith(loadingDetails: false);
     }
