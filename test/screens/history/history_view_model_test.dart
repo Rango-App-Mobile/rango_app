@@ -58,19 +58,32 @@ void main() {
     expect(state.isEmpty, isTrue);
   });
 
-  test('the subtitle counts the decisions since the first month', () async {
+  test('groups the decisions by month, oldest first', () async {
     final state = await load([
       entry('a', 'acai', DateTime(2026, 8, 30)),
       entry('b', 'pizza', DateTime(2026, 10, 2)),
+      entry('c', 'pastel', DateTime(2026, 10, 20)),
     ]);
 
-    expect(state.subtitle, '2 rangos decididos desde agosto.');
+    expect(state.months, [
+      (label: 'Agosto', countLabel: '1 rango', firstIndex: 0),
+      (label: 'Outubro', countLabel: '2 rangos', firstIndex: 1),
+    ]);
   });
 
-  test('one decision is singular', () async {
-    final state = await load([entry('a', 'pizza', DateTime(2026, 10, 2))]);
+  test('the same month of another year is another group', () async {
+    final state = await load([
+      entry('a', 'acai', DateTime(2025, 9, 2)),
+      entry('b', 'pizza', DateTime(2026, 9, 2)),
+    ]);
 
-    expect(state.subtitle, '1 rango decidido desde outubro.');
+    expect(state.months.map((month) => month.firstIndex), [0, 1]);
+  });
+
+  test('no decisions have no months', () async {
+    final state = await load(const []);
+
+    expect(state.months, isEmpty);
   });
 
   test('each item shows the day and the short month', () async {
@@ -83,7 +96,11 @@ void main() {
     final state = await load(FakeHistoryRepository.sample);
 
     expect(state.items, hasLength(FakeHistoryRepository.sample.length));
-    expect(state.subtitle, contains('desde setembro'));
+    expect(state.months.map((month) => month.label), [
+      'Setembro',
+      'Outubro',
+      'Novembro',
+    ]);
   });
 
   test('exposes the error when the repository fails', () async {

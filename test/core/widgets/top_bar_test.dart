@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rango_app/app/theme/app_theme.dart';
+import 'package:rango_app/core/theme/app_space.dart';
 import 'package:rango_app/core/widgets/avatar_button.dart';
+import 'package:rango_app/core/widgets/rango_icon_button.dart';
 import 'package:rango_app/core/widgets/top_bar.dart';
 
 Future<void> pump(WidgetTester tester, Widget child) {
@@ -17,15 +19,22 @@ Future<void> pump(WidgetTester tester, Widget child) {
 
 void main() {
   group('TopBar.principal', () {
-    testWidgets('shows the logo and the avatar, no back button', (
+    testWidgets('shows only the avatar, no app name and no back button', (
       tester,
     ) async {
       final handle = tester.ensureSemantics();
       await pump(tester, TopBar.principal(onProfile: () {}));
-      expect(find.text('Rango'), findsOneWidget);
+      expect(find.text('Rango'), findsNothing);
       expect(find.byType(AvatarButton), findsOneWidget);
       expect(find.bySemanticsLabel('Voltar'), findsNothing);
       handle.dispose();
+    });
+
+    testWidgets('keeps the avatar at the right margin', (tester) async {
+      await pump(tester, TopBar.principal(onProfile: () {}));
+      final bar = tester.getTopRight(find.byType(TopBar));
+      final avatar = tester.getTopRight(find.byType(AvatarButton));
+      expect(bar.dx - avatar.dx, AppSpace.lg);
     });
 
     testWidgets('tapping the avatar calls onProfile', (tester) async {
@@ -33,15 +42,6 @@ void main() {
       await pump(tester, TopBar.principal(onProfile: () => taps++));
       await tester.tap(find.byType(AvatarButton));
       expect(taps, 1);
-    });
-
-    testWidgets('logo is decorative and not in the semantics tree', (
-      tester,
-    ) async {
-      final handle = tester.ensureSemantics();
-      await pump(tester, TopBar.principal(onProfile: () {}));
-      expect(find.bySemanticsLabel('Rango'), findsNothing);
-      handle.dispose();
     });
 
     testWidgets('is 64 high', (tester) async {
@@ -58,6 +58,14 @@ void main() {
       expect(find.text('Rango'), findsNothing);
       expect(find.byType(AvatarButton), findsNothing);
       handle.dispose();
+    });
+
+    testWidgets('the back button is glass', (tester) async {
+      await pump(tester, TopBar.flow(onBack: () {}));
+      final button = tester.widget<RangoIconButton>(
+        find.byType(RangoIconButton),
+      );
+      expect(button.style, RangoIconButtonStyle.glass);
     });
 
     testWidgets('tapping back calls onBack', (tester) async {

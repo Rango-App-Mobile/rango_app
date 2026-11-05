@@ -9,6 +9,8 @@ import 'package:rango_app/core/widgets/page_header.dart';
 import 'package:rango_app/core/widgets/rango_button.dart';
 import 'package:rango_app/core/widgets/rango_tab_bar.dart';
 import 'package:rango_app/core/widgets/top_bar.dart';
+import 'package:rango_app/core/widgets/top_bar_layout.dart';
+import 'package:rango_app/core/widgets/top_bar_scroll_view.dart';
 import 'package:rango_app/models/food_category.dart';
 import 'package:rango_app/models/like_state.dart';
 import 'package:rango_app/screens/swipe/swipe_state.dart';
@@ -73,33 +75,36 @@ class SwipeScreen extends ConsumerWidget {
     }
 
     final body = Scaffold(
-      body: SafeArea(
-        bottom: isFlow,
-        child: Column(
-          children: [
-            if (isFlow) TopBar.flow(onBack: exit) else const TopBar.principal(),
-            Expanded(
-              child: session.when(
-                loading: () => const Center(child: CircularProgressIndicator()),
-                error: (error, _) => _LoadError(
-                  onRetry: () => ref.invalidate(swipeViewModelProvider),
-                ),
-                data: (state) => switch (state.game) {
-                  null => _SwipeContent(
-                    state: state,
-                    bottomInset: isFlow ? 0 : RangoTabBar.reservedHeight,
-                    onChoose: onChoose,
-                  ),
-                  final game => _DeckContent(
-                    game: game,
-                    swipeCount: state.history.length,
-                    onLike: () => viewModel().like(),
-                    onPass: () => viewModel().pass(),
-                  ),
-                },
+      body: TopBarLayout(
+        topBar: isFlow ? TopBar.flow(onBack: exit) : const TopBar.principal(),
+        body: session.when(
+          loading: () => SafeArea(
+            bottom: isFlow,
+            child: const Center(child: CircularProgressIndicator()),
+          ),
+          error: (error, _) => SafeArea(
+            bottom: isFlow,
+            child: _LoadError(
+              onRetry: () => ref.invalidate(swipeViewModelProvider),
+            ),
+          ),
+          data: (state) => switch (state.game) {
+            null => _SwipeContent(
+              state: state,
+              safeBottom: isFlow,
+              bottomInset: isFlow ? 0 : RangoTabBar.reservedHeight,
+              onChoose: onChoose,
+            ),
+            final game => SafeArea(
+              bottom: isFlow,
+              child: _DeckContent(
+                game: game,
+                swipeCount: state.history.length,
+                onLike: () => viewModel().like(),
+                onPass: () => viewModel().pass(),
               ),
             ),
-          ],
+          },
         ),
       ),
     );
@@ -118,17 +123,20 @@ class SwipeScreen extends ConsumerWidget {
 class _SwipeContent extends StatelessWidget {
   const _SwipeContent({
     required this.state,
+    required this.safeBottom,
     required this.bottomInset,
     required this.onChoose,
   });
 
   final SwipeState state;
+  final bool safeBottom;
   final double bottomInset;
   final ValueChanged<FoodCategory> onChoose;
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
+    return TopBarScrollView(
+      safeBottom: safeBottom,
       padding: EdgeInsets.only(bottom: bottomInset),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,

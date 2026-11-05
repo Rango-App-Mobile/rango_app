@@ -12,8 +12,8 @@ import 'package:rango_app/core/widgets/rango_button.dart';
 import 'package:rango_app/core/widgets/rango_chip.dart';
 import 'package:rango_app/core/widgets/rango_icon_button.dart';
 import 'package:rango_app/core/widgets/restaurant_card.dart';
-import 'package:rango_app/core/widgets/scrim.dart';
 import 'package:rango_app/core/widgets/top_bar.dart';
+import 'package:rango_app/core/widgets/top_bar_layout.dart';
 import 'package:rango_app/models/restaurant_contact_args.dart';
 import 'package:rango_app/screens/restaurants/restaurants_state.dart';
 import 'package:rango_app/screens/restaurants/restaurants_view_model.dart';
@@ -100,7 +100,6 @@ class _RestaurantsScreenState extends ConsumerState<RestaurantsScreen> {
             onSelect: (id) => _onSelect(state, id),
           ),
         ),
-        const Positioned(top: 0, left: 0, right: 0, child: Scrim.top()),
         SafeArea(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -197,35 +196,31 @@ class _RestaurantsScreenState extends ConsumerState<RestaurantsScreen> {
 
     return ColoredBox(
       color: context.colors.bgCanvas,
-      child: SafeArea(
-        child: Column(
-          children: [
-            TopBar.flow(onBack: _goHome),
-            Expanded(
-              child: Center(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.symmetric(horizontal: AppSpace.lg),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    spacing: AppSpace.lg,
-                    children: [
-                      EmptyState(icon: icon, title: title, message: message),
-                      RangoButton(
-                        label: primary.label,
-                        onPressed: primary.onPressed,
-                      ),
-                      RangoButton(
-                        label: secondary.label,
-                        style: RangoButtonStyle.secondary,
-                        onPressed: secondary.onPressed,
-                      ),
-                    ],
+      child: TopBarLayout(
+        topBar: TopBar.flow(onBack: _goHome),
+        body: SafeArea(
+          child: Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: AppSpace.lg),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                spacing: AppSpace.lg,
+                children: [
+                  EmptyState(icon: icon, title: title, message: message),
+                  RangoButton(
+                    label: primary.label,
+                    onPressed: primary.onPressed,
                   ),
-                ),
+                  RangoButton(
+                    label: secondary.label,
+                    style: RangoButtonStyle.secondary,
+                    onPressed: secondary.onPressed,
+                  ),
+                ],
               ),
             ),
-          ],
+          ),
         ),
       ),
     );

@@ -123,7 +123,7 @@ void main() {
       findsOneWidget,
     );
     expect(find.text('ou'), findsOneWidget);
-    expect(find.text('Rango'), findsOneWidget);
+    expect(find.text('Rango'), findsNothing);
     expect(find.bySemanticsLabel('Abrir perfil'), findsOneWidget);
     expect(voltar, findsNothing);
   });

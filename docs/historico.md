@@ -4,7 +4,7 @@
 modelo `HistoryEntry` e o `HistoryRepository` com o `FakeHistoryRepository`.
 Mostra as decisões da pessoa como uma pilha de cards, como uma carteira: o mais
 recente embaixo, inteiro e na frente; os antigos acima, cada um mostrando só a
-faixa do título. Tocar num card abre o detalhe da decisão (`HistoryDetailScreen`, em
+faixa do título, menos o último de cada mês, que aparece inteiro. Tocar num card abre o detalhe da decisão (`HistoryDetailScreen`, em
 `/history/<id>`). Figma: "07d Histórico", "10 Histórico vazio" e "12 Detalhe
 do histórico".
 
@@ -17,7 +17,7 @@ Ainda não há dado real: salvar a sessão é a E2-S4 (#13, #60). Até lá o
 | Situação | Tela |
 | --- | --- |
 | Carregando | `CircularProgressIndicator` |
-| Com decisões | "Seu histórico", "N rangos decididos desde <mês>." e a pilha. A lista abre embaixo, no mais recente |
+| Com decisões | "Seu histórico" e a pilha, separada por mês. A lista abre embaixo, no mais recente |
 | Sem decisões | O estado vazio: Empty Card "Seu primeiro rango", o texto e "Decidir meu rango" (vai para a Home) |
 | Erro | "Não deu para carregar seu histórico." e "Tentar novamente", que invalida o provider |
 
@@ -36,19 +36,35 @@ a cada quadro, a partir do quanto a lista já rolou.
 | Constante | Valor | Para quê |
 | --- | --- | --- |
 | `stripHeight` | 84 | Parte visível de um card embaixo do seguinte |
-| `pileTop` | 20 | Onde a pilha descansa, a partir do topo da lista |
+| `pileTop` | 56 | Onde a pilha descansa, a partir do topo da lista: abaixo do rótulo do mês e das bordas da pilha |
 | `pileStep` | 6 | Borda de cada card que aparece acima do seguinte na pilha |
 | `pileDepth` | 3 | Cards da pilha com borda visível; os de trás não são desenhados |
 | `scaleStep` | 0,04 | Quanto cada card mais ao fundo da pilha encolhe |
 
 - Rolando para cima, os cards antigos descem e voltam inteiros (só a faixa).
-- Um card que chega ao topo não sai da tela: para em `pileTop`, encolhe e sobe
+- Dentro de um mês, um card que chega ao topo para em `pileTop`, encolhe e sobe
   `pileStep` por "card de distância", até `pileDepth`. Assim a pilha mostra
   algumas bordas finas, como cartões numa carteira.
+- O último card do mês não para: chega ao topo e sai inteiro por baixo do topo da
+  lista, levando a pilha do mês junto.
 - Os mais novos ficam sempre na frente: os cards são desenhados do mais antigo
   para o mais novo.
-- O tamanho da rolagem vem de um `Column` invisível: uma faixa por card antigo
-  e o card mais novo inteiro, medido de verdade (`Visibility` sem desenhar).
+- O tamanho da rolagem vem de um `Column` invisível: as faixas, os cards inteiros
+  e os rótulos dos meses antigos e o card mais novo inteiro, medido de verdade (`Visibility` sem
+  desenhar).
+
+## Os meses
+
+Um `MonthHeader` (Figma "Month Header") separa os meses: o nome do mês e um chip
+com a contagem ("4 rangos"). O mesmo mês de outro ano é outro grupo.
+
+- O último card de cada mês aparece sempre inteiro, sem mudar de tamanho durante
+  a rolagem, e depois vem a pausa com o rótulo do mês seguinte no fundo creme. A
+  altura do card é medida no `Column` invisível (`_cardHeight`).
+- O rótulo do mês no topo fica fixo até o do mês seguinte chegar e empurrá-lo para
+  fora, como um cabeçalho de seção.
+- Os cards saem por baixo de um véu no topo da lista, creme atrás do rótulo e com
+  blur progressivo abaixo dele, em vez de serem cortados numa linha reta.
 
 ## O detalhe
 
@@ -96,7 +112,7 @@ for aberto direto, sem passar pelo Histórico (deep link), ele passa pelo
 | Regra | Onde | Por quê ali |
 | --- | --- | --- |
 | Ordem do mais antigo para o mais novo; decisões de comida fora do cardápio são ignoradas | `HistoryViewModel` | A View recebe a lista pronta |
-| "9 rangos decididos desde setembro." (singular com 1) e o chip "21 set" | `HistoryState.subtitle` e `HistoryItem.dateLabel` | Formatação testável sem widget |
+| Agrupar por mês, "4 rangos" (singular com 1) e o chip "21 set" | `HistoryState.months` e `HistoryItem.dateLabel` | Formatação testável sem widget |
 | Posição, escala e o que entra na pilha | `HistoryStack` (View) | É geometria de rolagem, não regra de negócio |
 | Achar a decisão pelo id, a comida e o grupo, já no primeiro quadro; data com hora | `HistoryDetailViewModel` (síncrono, sobre `historyEntriesProvider` e `categoriesProvider`) e `HistoryDetailState` | A tela de detalhe não importa o estado do Histórico (`CLAUDE.md`): recebe só o id pela rota |
 | A tag do Hero, igual nas duas telas | `HistoryCardHero` em `lib/core/widgets/` | As duas telas precisam dela e uma tela não importa a outra |
@@ -105,7 +121,7 @@ for aberto direto, sem passar pelo Histórico (deep link), ele passa pelo
 
 | Arquivo | O que cobre |
 | --- | --- |
-| `test/screens/history/history_view_model_test.dart` | Ordem, comida fora do cardápio, vazio, subtítulo (plural e singular), data curta, o histórico de exemplo, erro |
+| `test/screens/history/history_view_model_test.dart` | Ordem, comida fora do cardápio, vazio, meses (plural, singular e outro ano), data curta, o histórico de exemplo, erro |
 | `test/screens/history_detail/history_detail_view_model_test.dart` | Pronto na hora quando o Histórico já carregou; decisão, comida e grupo; data com hora e minutos com dois dígitos; aberto direto carrega e depois mostra; id desconhecido; histórico com erro |
 | `test/screens/history_detail/history_detail_screen_test.dart` | Comida, data, caminho e restaurante, sem adesivo; botões levam aos restaurantes; "Voltar"; id desconhecido; 375x667 |
 | `test/core/widgets/history_card_hero_test.dart` | A trajetória: começa e termina nos cards, primeiro sobe reto para fora da pilha, só depois cresce; na volta passa pelo ponto acima da pilha |

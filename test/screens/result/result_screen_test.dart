@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:rango_app/app/theme/app_theme.dart';
+import 'package:rango_app/core/widgets/top_bar.dart';
 import 'package:rango_app/data/category_repository.dart';
 import 'package:rango_app/data/local_category_repository.dart';
 import 'package:rango_app/screens/result/result_screen.dart';
@@ -64,6 +65,18 @@ void main() {
     );
     expect(find.text('Ver restaurantes perto'), findsOneWidget);
     expect(find.text('Recomeçar'), findsOneWidget);
+  });
+
+  testWidgets('content scrolls behind the Top Bar, not cut below it', (
+    tester,
+  ) async {
+    await pumpScreen(tester, size: const Size(375, 667));
+
+    expect(tester.getTopLeft(find.byType(SingleChildScrollView)).dy, 0);
+    expect(
+      tester.getTopLeft(find.text('Salgado, macarrão')).dy,
+      greaterThan(tester.getBottomLeft(find.byType(TopBar)).dy),
+    );
   });
 
   testWidgets('"Ver restaurantes perto" opens restaurants for the category', (

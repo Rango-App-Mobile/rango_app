@@ -26,4 +26,9 @@ abstract final class AppPrimitives {
   static const copper = Color(0xFFBE8A4E);
   static const cocoa = Color(0xFF2B2118);
   static const bubblegum = Color(0xFFFFB8C9);
+
+  // Paper and mustard at 60% and 70%: Figma keeps the alpha in `color/glass/*`.
+  static const paperGlass = Color(0x99FFFDF8);
+  static const paperGlassBorder = Color(0xB3FFFDF8);
+  static const mustardGlass = Color(0x99FFC83D);
 }

@@ -11,6 +11,8 @@ import 'package:rango_app/core/widgets/food_photo.dart';
 import 'package:rango_app/core/widgets/history_card_hero.dart';
 import 'package:rango_app/core/widgets/rango_button.dart';
 import 'package:rango_app/core/widgets/top_bar.dart';
+import 'package:rango_app/core/widgets/top_bar_layout.dart';
+import 'package:rango_app/core/widgets/top_bar_scroll_view.dart';
 import 'package:rango_app/screens/history_detail/history_detail_state.dart';
 import 'package:rango_app/screens/history_detail/history_detail_view_model.dart';
 
@@ -25,18 +27,14 @@ class HistoryDetailScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final detail = ref.watch(historyDetailViewModelProvider(entryId));
     return Scaffold(
-      body: SafeArea(
-        child: Column(
-          children: [
-            _LateFade(child: TopBar.flow(onBack: () => context.pop())),
-            Expanded(
-              child: detail.when(
-                loading: () => const Center(child: CircularProgressIndicator()),
-                error: (_, _) => const _NotFound(),
-                data: (state) => _Detail(state: state, entryId: entryId),
-              ),
-            ),
-          ],
+      body: TopBarLayout(
+        topBar: _LateFade(child: TopBar.flow(onBack: () => context.pop())),
+        body: detail.when(
+          loading: () => const SafeArea(
+            child: Center(child: CircularProgressIndicator()),
+          ),
+          error: (_, _) => const SafeArea(child: _NotFound()),
+          data: (state) => _Detail(state: state, entryId: entryId),
         ),
       ),
     );
@@ -55,7 +53,7 @@ class _Detail extends StatelessWidget {
     void seeRestaurants() =>
         unawaited(context.push('/restaurants?category=${food.id}'));
 
-    return SingleChildScrollView(
+    return TopBarScrollView(
       padding: const EdgeInsets.all(AppSpace.lg),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,

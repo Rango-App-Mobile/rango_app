@@ -7,6 +7,8 @@ import 'package:rango_app/core/theme/theme_context.dart';
 import 'package:rango_app/core/widgets/rango_button.dart';
 import 'package:rango_app/core/widgets/restaurant_card.dart';
 import 'package:rango_app/core/widgets/top_bar.dart';
+import 'package:rango_app/core/widgets/top_bar_layout.dart';
+import 'package:rango_app/core/widgets/top_bar_scroll_view.dart';
 import 'package:rango_app/models/restaurant_contact_args.dart';
 import 'package:rango_app/screens/restaurant_contact/restaurant_contact_view_model.dart';
 
@@ -35,64 +37,58 @@ class RestaurantContactScreen extends ConsumerWidget {
     final typeLine = [?restaurant.cuisine, ?restaurant.address].join('. ');
 
     return Scaffold(
-      body: SafeArea(
-        child: Column(
-          children: [
-            TopBar.flow(onBack: context.pop),
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(AppSpace.lg),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  spacing: AppSpace.lg,
-                  children: [
-                    RestaurantCard(
-                      name: restaurant.name,
-                      foodTheme: resolveFoodTheme(args.foodTheme),
-                      cuisine: typeLine.isEmpty ? null : typeLine,
-                      photo: photoUri == null ? null : NetworkImage(photoUri),
-                      rating: restaurant.rating,
-                      distanceMeters: restaurant.distanceMeters,
-                    ),
-                    Text(
-                      'Como você quer pedir?',
-                      style: context.textStyles.heading.copyWith(
-                        color: context.colors.textPrimary,
-                      ),
-                    ),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      spacing: AppSpace.sm,
-                      children: [
-                        RangoButton(
-                          label: 'Pedir no delivery',
-                          icon: Icons.shopping_bag_outlined,
-                          expand: true,
-                          onPressed: state.loadingDetails
-                              ? null
-                              : viewModel.orderDelivery,
-                        ),
-                        if (!state.loadingDetails && state.phoneUri != null)
-                          RangoButton(
-                            label: 'Ligar',
-                            style: RangoButtonStyle.secondary,
-                            icon: Icons.phone_outlined,
-                            expand: true,
-                            onPressed: viewModel.callRestaurant,
-                          ),
-                      ],
-                    ),
-                    RangoButton(
-                      label: 'Voltar ao início',
-                      style: RangoButtonStyle.ghost,
-                      expand: true,
-                      onPressed: () => context.go('/home'),
-                    ),
-                  ],
+      body: TopBarLayout(
+        topBar: TopBar.flow(onBack: context.pop),
+        body: TopBarScrollView(
+          padding: const EdgeInsets.all(AppSpace.lg),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            spacing: AppSpace.lg,
+            children: [
+              RestaurantCard(
+                name: restaurant.name,
+                foodTheme: resolveFoodTheme(args.foodTheme),
+                cuisine: typeLine.isEmpty ? null : typeLine,
+                photo: photoUri == null ? null : NetworkImage(photoUri),
+                rating: restaurant.rating,
+                distanceMeters: restaurant.distanceMeters,
+              ),
+              Text(
+                'Como você quer pedir?',
+                style: context.textStyles.heading.copyWith(
+                  color: context.colors.textPrimary,
                 ),
               ),
-            ),
-          ],
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                spacing: AppSpace.sm,
+                children: [
+                  RangoButton(
+                    label: 'Pedir no delivery',
+                    icon: Icons.shopping_bag_outlined,
+                    expand: true,
+                    onPressed: state.loadingDetails
+                        ? null
+                        : viewModel.orderDelivery,
+                  ),
+                  if (!state.loadingDetails && state.phoneUri != null)
+                    RangoButton(
+                      label: 'Ligar',
+                      style: RangoButtonStyle.secondary,
+                      icon: Icons.phone_outlined,
+                      expand: true,
+                      onPressed: viewModel.callRestaurant,
+                    ),
+                ],
+              ),
+              RangoButton(
+                label: 'Voltar ao início',
+                style: RangoButtonStyle.ghost,
+                expand: true,
+                onPressed: () => context.go('/home'),
+              ),
+            ],
+          ),
         ),
       ),
     );

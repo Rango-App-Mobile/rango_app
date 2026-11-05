@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:rango_app/core/theme/app_radius.dart';
 import 'package:rango_app/core/theme/app_shadows.dart';
 import 'package:rango_app/core/theme/theme_context.dart';
+import 'package:rango_app/core/widgets/glass_circle.dart';
 
 /// Figma `Icon Button` variants: `Style` property.
-enum RangoIconButtonStyle { surface, inverse, outline }
+enum RangoIconButtonStyle { surface, inverse, outline, glass }
 
 /// Circular 48x48 icon button, Figma component `Icon Button`.
 class RangoIconButton extends StatelessWidget {
@@ -49,7 +50,27 @@ class RangoIconButton extends StatelessWidget {
         BorderSide(color: colors.borderStrong, width: AppRadius.stroke),
         const <BoxShadow>[],
       ),
+      RangoIconButtonStyle.glass => (
+        colors.glassSurface,
+        colors.iconDefault,
+        BorderSide(color: colors.glassBorder),
+        const <BoxShadow>[],
+      ),
     };
+
+    final button = Material(
+      color: fill,
+      shape: CircleBorder(side: border),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onPressed,
+        customBorder: const CircleBorder(),
+        child: SizedBox.square(
+          dimension: _size,
+          child: Icon(icon, size: _iconSize, color: ink),
+        ),
+      ),
+    );
 
     return Semantics(
       button: true,
@@ -60,22 +81,15 @@ class RangoIconButton extends StatelessWidget {
       child: Tooltip(
         message: semanticLabel,
         excludeFromSemantics: true,
-        child: DecoratedBox(
-          decoration: BoxDecoration(shape: BoxShape.circle, boxShadow: shadows),
-          child: Material(
-            color: fill,
-            shape: CircleBorder(side: border),
-            clipBehavior: Clip.antiAlias,
-            child: InkWell(
-              onTap: onPressed,
-              customBorder: const CircleBorder(),
-              child: SizedBox.square(
-                dimension: _size,
-                child: Icon(icon, size: _iconSize, color: ink),
+        child: style == RangoIconButtonStyle.glass
+            ? GlassCircle(child: button)
+            : DecoratedBox(
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  boxShadow: shadows,
+                ),
+                child: button,
               ),
-            ),
-          ),
-        ),
       ),
     );
   }
