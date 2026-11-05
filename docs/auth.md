@@ -36,6 +36,22 @@ O provider padrão do `AuthRepository` é o Firebase. O `FakeAuthRepository`
 sobrescrevem `authRepositoryProvider`, e pelo `main.dart` quando não há chave
 do Firebase (próxima seção).
 
+## Regras de segurança do Firestore
+
+Uma pessoa com conta pode ler e gravar apenas o próprio documento
+`users/{uid}` e suas sessões em `users/{uid}/sessions/{sessionId}`.
+Visitantes anônimos e clientes sem autenticação não acessam esses dados
+privados. Qualquer sessão autenticada, inclusive visitante, pode ler
+`restaurants/{placeId}`; clientes não podem gravar restaurantes. Os demais
+caminhos são negados.
+
+Para executar os testes das regras, instale Node.js e Java (necessário pelo
+emulador do Firestore) e rode:
+
+```sh
+npx --yes firebase-tools@latest emulators:exec --project demo-rango-app --only auth,firestore 'node --test test/firestore_rules_test.mjs'
+```
+
 ## Configuração do Firebase
 
 | Peça | Onde fica | No git? |
