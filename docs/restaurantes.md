@@ -67,8 +67,8 @@ por cima: ele aparece acima da prévia, ao lado do botão de centralizar.
 | GPS não respondeu em 10 s | `UnexpectedFailure` | Erro com "Tentar de novo" e "Voltar ao início" |
 | Sem rede para baixar o mapa | — | Os pins aparecem sobre o fundo liso; o mapa volta quando a rede voltar |
 | Nenhum lugar a até 3 km | — | "Nenhum lugar perto", com "Tentar de novo" e "Voltar ao início" |
-| Falha em qualquer busca dos dados de contato | `Failure` | O carregamento termina; o delivery cai na busca no Google e telefone/foto ficam opcionais |
-| Falha ao buscar telefone ou foto | — | "Ligar" some; o card usa a cor da comida |
+| Falha ao ler o Firestore | — (o repositório devolve `null`) | Nada: "Pedir no delivery" cai na busca no Google |
+| Falha ao buscar telefone ou foto | `Failure`, tratada no ViewModel | O carregamento termina; "Ligar" some; o card usa a cor da comida |
 | O celular não abre o link | — | SnackBar "Não deu para abrir. Tente de novo." |
 
 ## Configuração
