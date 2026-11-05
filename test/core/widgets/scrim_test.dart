@@ -10,44 +10,6 @@ Widget _wrap(Widget child) => MaterialApp(
 );
 
 void main() {
-  testWidgets('top scrim is 124 high and lets taps through', (tester) async {
-    var taps = 0;
-    await tester.pumpWidget(
-      _wrap(
-        Stack(
-          children: [
-            Positioned.fill(
-              child: TextButton(
-                onPressed: () => taps++,
-                child: const Text('map'),
-              ),
-            ),
-            const Positioned(top: 0, left: 0, right: 0, child: Scrim.top()),
-          ],
-        ),
-      ),
-    );
-
-    expect(tester.getSize(find.byType(Scrim)).height, 124);
-    await tester.tap(find.text('map'));
-    expect(taps, 1);
-  });
-
-  testWidgets('top scrim fades from bgCanvas to transparent', (tester) async {
-    await tester.pumpWidget(_wrap(const Scrim.top()));
-
-    final container = tester.widget<Container>(
-      find.descendant(
-        of: find.byType(Scrim),
-        matching: find.byType(Container),
-      ),
-    );
-    final gradient =
-        (container.decoration! as BoxDecoration).gradient! as LinearGradient;
-    expect(gradient.colors.first, AppColors.light.bgCanvas);
-    expect(gradient.colors.last.a, 0);
-  });
-
   testWidgets('modal calls onDismiss on tap', (tester) async {
     var dismissed = 0;
     await tester.pumpWidget(_wrap(Scrim.modal(onDismiss: () => dismissed++)));

@@ -6,6 +6,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:rango_app/app/app.dart';
+import 'package:rango_app/core/widgets/progressive_blur.dart';
+import 'package:rango_app/core/widgets/rango_tab_bar.dart';
 import 'package:rango_app/core/widgets/restaurant_card.dart';
 import 'package:rango_app/data/auth_repository.dart';
 import 'package:rango_app/data/category_repository.dart';
@@ -100,6 +102,25 @@ void main() {
     expect(find.textContaining('Bora decidir'), findsOneWidget);
     expect(homeTab, findsOneWidget);
     expect(historyTab, findsOneWidget);
+  });
+
+  testWidgets('the Tab Bar floats on a blur rising from the bottom edge', (
+    tester,
+  ) async {
+    await pumpApp(tester);
+
+    final blur = find.byWidgetPredicate(
+      (widget) =>
+          widget is ProgressiveBlur &&
+          widget.edge == ProgressiveBlurEdge.bottom,
+    );
+    expect(blur, findsOneWidget);
+    expect(tester.getBottomLeft(blur).dy, 874);
+    expect(tester.getSize(blur).height, 114);
+    expect(
+      tester.getTopLeft(find.byType(RangoTabBar)).dy,
+      greaterThan(tester.getTopLeft(blur).dy),
+    );
   });
 
   testWidgets('switches between the Home and Histórico tabs', (tester) async {

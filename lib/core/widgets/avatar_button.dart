@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:rango_app/core/theme/app_radius.dart';
 import 'package:rango_app/core/theme/food_theme.dart';
 import 'package:rango_app/core/theme/theme_context.dart';
+import 'package:rango_app/core/widgets/glass_circle.dart';
 
 /// Profile entry point, Figma component `Avatar Button` (guest variant).
 ///
-/// A 44x44 mustard circle with a person icon inside a 48x48 touch target.
+/// A 44x44 circle of mustard glass with a person icon inside a 48x48 touch
+/// target.
 /// Photo and badge variants are future work.
 class AvatarButton extends StatelessWidget {
   const AvatarButton({required this.onPressed, super.key});
@@ -33,24 +34,23 @@ class AvatarButton extends StatelessWidget {
         child: SizedBox.square(
           dimension: _target,
           child: Center(
-            child: Material(
-              color: FoodTheme.mustard.background,
-              shape: CircleBorder(
-                side: BorderSide(
-                  color: colors.borderStrong,
-                  width: AppRadius.stroke,
+            child: GlassCircle(
+              child: Material(
+                color: colors.glassMustard,
+                shape: CircleBorder(
+                  side: BorderSide(color: colors.glassBorder),
                 ),
-              ),
-              clipBehavior: Clip.antiAlias,
-              child: InkWell(
-                onTap: onPressed,
-                customBorder: const CircleBorder(),
-                child: SizedBox.square(
-                  dimension: _circle,
-                  child: Icon(
-                    Icons.person_outline,
-                    size: _iconSize,
-                    color: FoodTheme.mustard.foreground,
+                clipBehavior: Clip.antiAlias,
+                child: InkWell(
+                  onTap: onPressed,
+                  customBorder: const CircleBorder(),
+                  child: SizedBox.square(
+                    dimension: _circle,
+                    child: Icon(
+                      Icons.person_outline,
+                      size: _iconSize,
+                      color: FoodTheme.mustard.foreground,
+                    ),
                   ),
                 ),
               ),

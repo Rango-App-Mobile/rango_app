@@ -4,6 +4,7 @@ import 'package:rango_app/app/theme/app_theme.dart';
 import 'package:rango_app/core/theme/app_colors.dart';
 import 'package:rango_app/core/theme/app_radius.dart';
 import 'package:rango_app/core/theme/app_shadows.dart';
+import 'package:rango_app/core/widgets/glass_circle.dart';
 import 'package:rango_app/core/widgets/rango_icon_button.dart';
 
 Future<void> pump(WidgetTester tester, Widget child) {
@@ -78,6 +79,31 @@ void main() {
     await pump(tester, make(RangoIconButtonStyle.inverse));
     expect(buttonMaterial(tester).color, colors.bgInverse);
     expect(tester.widget<Icon>(find.byType(Icon)).color, colors.iconInverse);
+  });
+
+  testWidgets('glass is translucent, with a light border and default icon', (
+    tester,
+  ) async {
+    await pump(tester, make(RangoIconButtonStyle.glass));
+    final material = buttonMaterial(tester);
+    expect(material.color, colors.glassSurface);
+    expect(material.color!.a, lessThan(1));
+    final side = (material.shape! as CircleBorder).side;
+    expect(side.color, colors.glassBorder);
+    expect(side.width, 1);
+    expect(tester.widget<Icon>(find.byType(Icon)).color, colors.iconDefault);
+    expect(
+      find.descendant(
+        of: find.byType(RangoIconButton),
+        matching: find.byType(GlassCircle),
+      ),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('only glass blurs what is behind the button', (tester) async {
+    await pump(tester, make(RangoIconButtonStyle.surface));
+    expect(find.byType(GlassCircle), findsNothing);
   });
 
   testWidgets('outline has strong border and no fill', (tester) async {

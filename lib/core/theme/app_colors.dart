@@ -24,6 +24,9 @@ class AppColors extends ThemeExtension<AppColors> {
     required this.iconDefault,
     required this.iconInverse,
     required this.iconMuted,
+    required this.glassSurface,
+    required this.glassBorder,
+    required this.glassMustard,
   });
 
   static const light = AppColors(
@@ -45,6 +48,9 @@ class AppColors extends ThemeExtension<AppColors> {
     iconDefault: AppPrimitives.ink900,
     iconInverse: AppPrimitives.cream,
     iconMuted: AppPrimitives.ink300,
+    glassSurface: AppPrimitives.paperGlass,
+    glassBorder: AppPrimitives.paperGlassBorder,
+    glassMustard: AppPrimitives.mustardGlass,
   );
 
   final Color bgCanvas;
@@ -65,6 +71,9 @@ class AppColors extends ThemeExtension<AppColors> {
   final Color iconDefault;
   final Color iconInverse;
   final Color iconMuted;
+  final Color glassSurface;
+  final Color glassBorder;
+  final Color glassMustard;
 
   @override
   AppColors copyWith({
@@ -86,6 +95,9 @@ class AppColors extends ThemeExtension<AppColors> {
     Color? iconDefault,
     Color? iconInverse,
     Color? iconMuted,
+    Color? glassSurface,
+    Color? glassBorder,
+    Color? glassMustard,
   }) {
     return AppColors(
       bgCanvas: bgCanvas ?? this.bgCanvas,
@@ -106,6 +118,9 @@ class AppColors extends ThemeExtension<AppColors> {
       iconDefault: iconDefault ?? this.iconDefault,
       iconInverse: iconInverse ?? this.iconInverse,
       iconMuted: iconMuted ?? this.iconMuted,
+      glassSurface: glassSurface ?? this.glassSurface,
+      glassBorder: glassBorder ?? this.glassBorder,
+      glassMustard: glassMustard ?? this.glassMustard,
     );
   }
 
@@ -132,6 +147,9 @@ class AppColors extends ThemeExtension<AppColors> {
       iconDefault: mix(iconDefault, other.iconDefault),
       iconInverse: mix(iconInverse, other.iconInverse),
       iconMuted: mix(iconMuted, other.iconMuted),
+      glassSurface: mix(glassSurface, other.glassSurface),
+      glassBorder: mix(glassBorder, other.glassBorder),
+      glassMustard: mix(glassMustard, other.glassMustard),
     );
   }
 }

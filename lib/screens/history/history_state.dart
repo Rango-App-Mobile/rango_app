@@ -4,6 +4,10 @@ import 'package:rango_app/models/history_entry.dart';
 
 part 'history_state.freezed.dart';
 
+/// A month of the Histórico: its name, "5 rangos" and where it starts in
+/// [HistoryState.items].
+typedef HistoryMonth = ({String label, String countLabel, int firstIndex});
+
 /// A decision ready to draw: the saved entry and the food it points to.
 @freezed
 abstract class HistoryItem with _$HistoryItem {
@@ -32,27 +36,41 @@ abstract class HistoryState with _$HistoryState {
 
   bool get isEmpty => items.isEmpty;
 
-  /// "9 rangos decididos desde setembro."
-  String get subtitle {
-    final count = items.length;
-    final since = isEmpty ? '' : months[items.first.entry.decidedAt.month - 1];
-    final noun = count == 1 ? 'rango decidido' : 'rangos decididos';
-    return '$count $noun desde $since.';
+  /// The decisions grouped by month, in the same order as [items].
+  List<HistoryMonth> get months {
+    final months = <HistoryMonth>[];
+    var first = 0;
+    for (var i = 1; i <= items.length; i++) {
+      if (i < items.length && _sameMonth(items[first], items[i])) continue;
+      final count = i - first;
+      months.add((
+        label: monthNames[items[first].entry.decidedAt.month - 1],
+        countLabel: '$count ${count == 1 ? 'rango' : 'rangos'}',
+        firstIndex: first,
+      ));
+      first = i;
+    }
+    return months;
   }
 
-  static const months = [
-    'janeiro',
-    'fevereiro',
-    'março',
-    'abril',
-    'maio',
-    'junho',
-    'julho',
-    'agosto',
-    'setembro',
-    'outubro',
-    'novembro',
-    'dezembro',
+  static bool _sameMonth(HistoryItem a, HistoryItem b) {
+    final (first, second) = (a.entry.decidedAt, b.entry.decidedAt);
+    return first.year == second.year && first.month == second.month;
+  }
+
+  static const monthNames = [
+    'Janeiro',
+    'Fevereiro',
+    'Março',
+    'Abril',
+    'Maio',
+    'Junho',
+    'Julho',
+    'Agosto',
+    'Setembro',
+    'Outubro',
+    'Novembro',
+    'Dezembro',
   ];
 
   static const shortMonths = [

@@ -10,6 +10,8 @@ import 'package:rango_app/core/widgets/page_header.dart';
 import 'package:rango_app/core/widgets/rango_button.dart';
 import 'package:rango_app/core/widgets/rango_tab_bar.dart';
 import 'package:rango_app/core/widgets/top_bar.dart';
+import 'package:rango_app/core/widgets/top_bar_layout.dart';
+import 'package:rango_app/core/widgets/top_bar_scroll_view.dart';
 import 'package:rango_app/screens/history/history_state.dart';
 import 'package:rango_app/screens/history/history_view_model.dart';
 import 'package:rango_app/screens/history/widgets/history_stack.dart';
@@ -23,24 +25,26 @@ class HistoryScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final history = ref.watch(historyViewModelProvider);
     return Scaffold(
-      body: SafeArea(
-        bottom: false,
-        child: Column(
-          children: [
-            // Profile Sheet is story #64.
-            const TopBar.principal(),
-            Expanded(
-              child: switch (history) {
-                AsyncData(:final value) when value.isEmpty => const _Empty(),
-                AsyncData(:final value) => _Stack(state: value),
-                AsyncError() => _LoadError(
-                  onRetry: () => ref.invalidate(historyViewModelProvider),
-                ),
-                _ => const Center(child: CircularProgressIndicator()),
-              },
+      body: TopBarLayout(
+        // Profile Sheet is story #64.
+        topBar: const TopBar.principal(),
+        body: switch (history) {
+          AsyncData(:final value) when value.isEmpty => const _Empty(),
+          AsyncData(:final value) => SafeArea(
+            bottom: false,
+            child: _Stack(state: value),
+          ),
+          AsyncError() => SafeArea(
+            bottom: false,
+            child: _LoadError(
+              onRetry: () => ref.invalidate(historyViewModelProvider),
             ),
-          ],
-        ),
+          ),
+          _ => const SafeArea(
+            bottom: false,
+            child: Center(child: CircularProgressIndicator()),
+          ),
+        },
       ),
     );
   }
@@ -55,16 +59,18 @@ class _Stack extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
+      spacing: AppSpace.md,
       children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: AppSpace.lg),
-          child: PageHeader(title: 'Seu histórico', subtitle: state.subtitle),
+        const Padding(
+          padding: EdgeInsets.symmetric(horizontal: AppSpace.lg),
+          child: PageHeader(title: 'Seu histórico'),
         ),
         Expanded(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: AppSpace.lg),
             child: HistoryStack(
               items: state.items,
+              months: state.months,
               bottomInset: RangoTabBar.reservedHeight,
               onOpen: (item) =>
                   unawaited(context.push('/history/${item.entry.id}')),
@@ -84,7 +90,8 @@ class _Empty extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
+    return TopBarScrollView(
+      safeBottom: false,
       padding: const EdgeInsets.fromLTRB(
         AppSpace.lg,
         0,

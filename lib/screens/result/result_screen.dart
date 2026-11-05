@@ -6,6 +6,8 @@ import 'package:rango_app/core/theme/theme_context.dart';
 import 'package:rango_app/core/widgets/page_header.dart';
 import 'package:rango_app/core/widgets/rango_button.dart';
 import 'package:rango_app/core/widgets/top_bar.dart';
+import 'package:rango_app/core/widgets/top_bar_layout.dart';
+import 'package:rango_app/core/widgets/top_bar_scroll_view.dart';
 import 'package:rango_app/screens/result/result_state.dart';
 import 'package:rango_app/screens/result/result_view_model.dart';
 import 'package:rango_app/screens/result/widgets/match_card.dart';
@@ -28,19 +30,14 @@ class ResultScreen extends ConsumerWidget {
         if (!didPop) goHome();
       },
       child: Scaffold(
-        body: SafeArea(
-          child: Column(
-            children: [
-              TopBar.flow(onBack: goHome),
-              Expanded(
-                child: result.when(
-                  loading: () =>
-                      const Center(child: CircularProgressIndicator()),
-                  error: (_, _) => _ErrorBody(onRestart: goHome),
-                  data: (state) => _ResultBody(state: state, onRestart: goHome),
-                ),
-              ),
-            ],
+        body: TopBarLayout(
+          topBar: TopBar.flow(onBack: goHome),
+          body: result.when(
+            loading: () => const SafeArea(
+              child: Center(child: CircularProgressIndicator()),
+            ),
+            error: (_, _) => SafeArea(child: _ErrorBody(onRestart: goHome)),
+            data: (state) => _ResultBody(state: state, onRestart: goHome),
           ),
         ),
       ),
@@ -56,7 +53,7 @@ class _ResultBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
+    return TopBarScrollView(
       padding: const EdgeInsets.all(AppSpace.lg),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,

@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rango_app/app/theme/app_theme.dart';
 import 'package:rango_app/core/theme/app_colors.dart';
-import 'package:rango_app/core/theme/app_radius.dart';
 import 'package:rango_app/core/theme/food_theme.dart';
 import 'package:rango_app/core/widgets/avatar_button.dart';
+import 'package:rango_app/core/widgets/glass_circle.dart';
 
 Future<void> pump(WidgetTester tester, Widget child) {
   return tester.pumpWidget(
@@ -39,7 +39,7 @@ void main() {
     expect(taps, 1);
   });
 
-  testWidgets('guest variant has mustard fill and strong border', (
+  testWidgets('guest variant is mustard glass with a light border', (
     tester,
   ) async {
     await pump(tester, AvatarButton(onPressed: () {}));
@@ -49,10 +49,18 @@ void main() {
         matching: find.byType(Material),
       ),
     );
-    expect(material.color, FoodTheme.mustard.background);
+    expect(material.color, colors.glassMustard);
+    expect(material.color!.a, lessThan(1));
     final side = (material.shape! as CircleBorder).side;
-    expect(side.color, colors.borderStrong);
-    expect(side.width, AppRadius.stroke);
+    expect(side.color, colors.glassBorder);
+    expect(side.width, 1);
+    expect(
+      find.descendant(
+        of: find.byType(AvatarButton),
+        matching: find.byType(GlassCircle),
+      ),
+      findsOneWidget,
+    );
     final icon = tester.widget<Icon>(find.byType(Icon));
     expect(icon.icon, Icons.person_outline);
     expect(icon.color, FoodTheme.mustard.foreground);
