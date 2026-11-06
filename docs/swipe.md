@@ -103,6 +103,11 @@ e ficam em `assets/images/food/` (800 px de largura, JPEG). No Figma cada uma é
 um frame `photo-<nome>` na página "Assets". O teste do seed garante que toda
 comida tem foto e que todo `photo` tem arquivo.
 
+A exceção é `xis.jpg`, porque os bancos livres não têm xis de verdade. A imagem
+foi fornecida pelo time e parece ser da
+[série "Xis" de Marcelo Araujo no iStock](https://www.istockphoto.com/br/foto/xis-gm1216463533-354731317),
+que é paga. **A licença ainda precisa ser confirmada antes de distribuir o app.**
+
 O arquivo tem o nome do id da comida (`lasagna.jpg`, `ice_cream.jpg`), com
 estas exceções, que já existiam antes do cardápio:
 
