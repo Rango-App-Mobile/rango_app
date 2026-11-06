@@ -375,11 +375,14 @@ epics:
         estimate: 5
         description: >
           Trocar os restaurantes fictícios pelos que o time cadastrou numa planilha: cada um com
-          nome, posição, comidas, endereço, telefone e links de delivery. Um script importa a
-          planilha para `restaurants` no Firestore, e o app mostra os que servem a comida do
-          match a até 3 km da pessoa, sem busca por texto (contexto.md §11, 2026-11-05).
+          nome, posição, comidas, endereço, telefone e links de delivery. Um Apps Script instalado
+          na planilha grava em `restaurants` no Firestore todo dia e por um botão, e o app mostra
+          os que servem a comida do match a até 3 km da pessoa, sem busca por texto (contexto.md
+          §11, 2026-11-05).
         acceptance:
           - "O script valida a planilha (coordenadas e comidas do menu) antes de gravar e pode rodar de novo sem duplicar"
+          - "O script roda sozinho uma vez por dia e também por um botão na planilha"
+          - "Planilha vazia ou sem uma coluna obrigatória não altera nada no banco, e o erro aparece na planilha"
           - "A chave da conta de serviço do script fica fora do git"
           - "O mapa mostra só os restaurantes que servem a comida do match, a até 3 km, do mais perto ao mais longe"
           - "Telefone e links de delivery vêm do cadastro do restaurante"
