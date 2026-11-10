@@ -12,11 +12,14 @@ class _MockAuthRepository extends Mock implements AuthRepository {}
 
 Future<ProfileState> _load(AppUser user) {
   final repository = _MockAuthRepository();
-  when(repository.ensureSignedIn).thenAnswer((_) async => user);
+  when(repository.watchUser).thenAnswer((_) => Stream.value(user));
   final container = ProviderContainer(
     overrides: [authRepositoryProvider.overrideWithValue(repository)],
   );
   addTearDown(container.dispose);
+  // A provider nobody listens to is paused and would never emit.
+  final subscription = container.listen(profileViewModelProvider, (_, _) {});
+  addTearDown(subscription.close);
   return container.read(profileViewModelProvider.future);
 }
 
@@ -79,7 +82,9 @@ void main() {
 
   test('stays in error without retrying when the session fails', () async {
     final repository = _MockAuthRepository();
-    when(repository.ensureSignedIn).thenThrow(const NetworkFailure());
+    when(
+      repository.watchUser,
+    ).thenAnswer((_) => Stream.error(const NetworkFailure()));
     final container = ProviderContainer(
       overrides: [authRepositoryProvider.overrideWithValue(repository)],
     );
@@ -91,6 +96,50 @@ void main() {
       container.read(profileViewModelProvider.future),
       throwsA(isA<NetworkFailure>()),
     );
-    verify(repository.ensureSignedIn).called(1);
+    verify(repository.watchUser).called(1);
+  });
+
+  test('follows the user after sign-in and sign-out', () async {
+    final repository = FakeAuthRepository();
+    final container = ProviderContainer(
+      overrides: [authRepositoryProvider.overrideWithValue(repository)],
+    );
+    addTearDown(container.dispose);
+    final subscription = container.listen(profileViewModelProvider, (_, _) {});
+    addTearDown(subscription.close);
+    await container.read(profileViewModelProvider.future);
+
+    await repository.signUp(
+      name: 'Joana',
+      email: 'joana@email.com',
+      password: '12345678',
+    );
+    await pumpEventQueue();
+    expect(container.read(profileViewModelProvider).value?.name, 'Joana');
+
+    await container.read(profileViewModelProvider.notifier).signOut();
+    await pumpEventQueue();
+    expect(container.read(profileViewModelProvider).value?.isGuest, isTrue);
+  });
+
+  test('shows the guest when signing out fails', () async {
+    final repository = _MockAuthRepository();
+    when(repository.watchUser).thenAnswer(
+      (_) => Stream.value(
+        const AppUser(uid: 'u1', isAnonymous: false, name: 'Joana'),
+      ),
+    );
+    when(repository.signOut).thenThrow(const NetworkFailure());
+    final container = ProviderContainer(
+      overrides: [authRepositoryProvider.overrideWithValue(repository)],
+    );
+    addTearDown(container.dispose);
+    final subscription = container.listen(profileViewModelProvider, (_, _) {});
+    addTearDown(subscription.close);
+    await container.read(profileViewModelProvider.future);
+
+    await container.read(profileViewModelProvider.notifier).signOut();
+
+    expect(container.read(profileViewModelProvider).value?.isGuest, isTrue);
   });
 }

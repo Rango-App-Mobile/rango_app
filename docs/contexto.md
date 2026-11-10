@@ -228,6 +228,7 @@ Rituais e frentes: [time-e-rituais.md](time-e-rituais.md).
 | 2026-11-05 | Os restaurantes reais serão cadastrados pelo time no Firestore, vindos de uma planilha, cada um com sua posição e as comidas que serve. O app mostra os que servem a comida do match a até 3 km da pessoa, sem busca por texto. O Rango é um app local: fora da região cadastrada, mostra "Nenhum lugar perto" | É um app para os comércios da região, sem API paga e com os dados sob controle do time. O acordo do projeto ainda cita o Google Places: fica para o time alinhar com o professor |
 | 2026-11-06 | O login opcional é por e-mail e senha, Google e Apple. As telas estão no Figma, no fluxo 06 (13 Entrar, 14 Criar conta, 15 Recuperar senha) | Apple e Google entram com um toque, e o e-mail atende quem não quer usar nenhum dos dois. Já existe uma conta Apple Developer, e a App Store pede uma opção como a da Apple de quem oferece o login do Google |
 | 2026-11-06 | No Profile Sheet, o visitante vê só o convite para entrar e o Sobre, sem estatísticas nem preferências. O desenho antigo mostrava números e dizia que o histórico ficava salvo no aparelho | Segue R1: sem conta nada é salvo, então não há número para mostrar |
+| 2026-11-10 | O login entra em duas partes: e-mail e senha primeiro (E1-S3); Google e Apple depois, numa story própria. Até lá, os dois botões aparecem desligados | Google e Apple pedem dois pacotes novos e configuração no console do Firebase e na conta da Apple. O e-mail já entrega a conta sem depender disso |
 
 ## 12. Em aberto
 

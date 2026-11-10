@@ -15,8 +15,9 @@ quê.
 |---|---|---|
 | 1 | Toca no Avatar Button, na Home ou no Histórico | A Top Bar Principal chama `showProfileSheet` |
 | 2 | A folha sobe da base em 350 ms sobre um véu escuro a 45%, cobrindo também a Tab Bar | `showModalBottomSheet` no navigator raiz. Com "reduzir movimento" ligado, abre sem animação |
-| 3 | Visitante: "Visitante", "Entrar ou criar conta" (desligado) e o aviso de que nada fica salvo | `ProfileViewModel` lê o usuário em `AuthRepository.ensureSignedIn()`, e `ProfileState.fromUser` decide o que mostrar |
+| 3 | Visitante: "Visitante", "Entrar ou criar conta" e o aviso de que nada fica salvo | `ProfileViewModel` segue o usuário em `AuthRepository.watchUser()`, e `ProfileState.fromUser` decide o que mostrar. O botão fecha a folha e abre o login (`docs/login.md`) |
 | 3' | Com conta: nome, e-mail e foto no cabeçalho | Sem foto, ou se ela falhar ao carregar, aparece o ícone de visitante. Sem nome, o e-mail ocupa o lugar dele |
+| 3'' | Com conta: "Sair da conta" | `ProfileViewModel.signOut`; a folha vira a de visitante sozinha |
 | 4 | Fecha pelo X, arrastando para baixo ou tocando no véu | O X dá `pop`; arrastar e tocar no véu são do próprio `showModalBottomSheet` |
 
 ## Onde cada regra mora
@@ -35,28 +36,24 @@ endereço próprio e abre por cima de qualquer tela raiz, sem mudar a rota atual
 ## Erros
 
 A sessão já existe quando a folha abre, porque o app inteiro espera por ela
-(`docs/auth.md`). Se a leitura falhar mesmo assim, a folha mostra o modo
-visitante: é a resposta segura, já que visitante não mostra dado nenhum.
+(`docs/auth.md`). Se a leitura falhar mesmo assim, ou se sair da conta falhar,
+a folha mostra o modo visitante: é a resposta segura, já que visitante não
+mostra dado nenhum.
 
 ## Testes
 
 | Arquivo | Cobre |
 |---|---|
-| `test/screens/profile/profile_view_model_test.dart` | Visitante; conta com nome, e-mail e foto; os casos sem nome; erro sem novas tentativas |
+| `test/screens/profile/profile_view_model_test.dart` | Visitante; conta com nome, e-mail e foto; os casos sem nome; erro sem novas tentativas; seguir o usuário; sair da conta |
 | `test/screens/profile/profile_sheet_test.dart` | Véu, raio e posição; 350 ms e reduzir movimento; os três jeitos de fechar; os dois modos; tela pequena e nome longo |
 | `test/data/firebase_auth_repository_test.dart` | Nome, e-mail e foto vindos do Firebase |
 | `test/screens/history/history_screen_test.dart`, `test/screens/swipe/swipe_screen_test.dart` | O Avatar Button abre a folha nas duas abas |
-
-Não coberto por teste automatizado: o modo com conta no app rodando, porque
-ainda não há como entrar numa conta (E1-S3). Por enquanto ele só é exercitado
-nos testes, com um repositório de mentira.
 
 ## O que não está aqui
 
 | Fora desta entrega | Onde vai |
 |---|---|
-| "Entrar ou criar conta" funcionando (o botão fica desligado) e "Sair da conta" | E1-S3 (telas no fluxo 06 do Figma) |
-| Foto da pessoa no próprio Avatar Button da Top Bar | E1-S3 |
+| Foto da pessoa no próprio Avatar Button da Top Bar | Junto com o login por Google e Apple (`docs/login.md`) |
 | Estatísticas com conta | E10-S2 |
 | Preferências com conta | E10-S3 |
 | "Sobre o Rango", Privacidade e "Apagar meus dados" | E10-S4 |

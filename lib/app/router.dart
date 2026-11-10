@@ -5,9 +5,12 @@ import 'package:rango_app/app/app_shell.dart';
 import 'package:rango_app/models/restaurant_contact_args.dart';
 import 'package:rango_app/screens/history/history_screen.dart';
 import 'package:rango_app/screens/history_detail/history_detail_screen.dart';
+import 'package:rango_app/screens/login/login_screen.dart';
+import 'package:rango_app/screens/password_reset/password_reset_screen.dart';
 import 'package:rango_app/screens/restaurant_contact/restaurant_contact_screen.dart';
 import 'package:rango_app/screens/restaurants/restaurants_screen.dart';
 import 'package:rango_app/screens/result/result_screen.dart';
+import 'package:rango_app/screens/sign_up/sign_up_screen.dart';
 import 'package:rango_app/screens/swipe/swipe_screen.dart';
 
 /// Provider (not a global) so the auth story can add a `redirect`
@@ -43,6 +46,26 @@ final routerProvider = Provider<GoRouter>((ref) {
             ],
           ),
         ],
+      ),
+      GoRoute(
+        path: '/login',
+        parentNavigatorKey: rootKey,
+        builder: (context, state) => const LoginScreen(),
+      ),
+      GoRoute(
+        path: '/signup',
+        parentNavigatorKey: rootKey,
+        builder: (context, state) => const SignUpScreen(),
+      ),
+      GoRoute(
+        path: '/password-reset',
+        parentNavigatorKey: rootKey,
+        builder: (context, state) {
+          final email = state.extra;
+          return PasswordResetScreen(
+            initialEmail: email is String ? email : null,
+          );
+        },
       ),
       GoRoute(
         path: '/choose',

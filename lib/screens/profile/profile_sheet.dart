@@ -1,8 +1,12 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:rango_app/core/theme/app_radius.dart';
 import 'package:rango_app/core/theme/app_space.dart';
 import 'package:rango_app/core/theme/theme_context.dart';
+import 'package:rango_app/core/widgets/list_row.dart';
 import 'package:rango_app/core/widgets/rango_button.dart';
 import 'package:rango_app/core/widgets/rango_icon_button.dart';
 import 'package:rango_app/core/widgets/scrim.dart';
@@ -69,10 +73,19 @@ class ProfileSheet extends ConsumerWidget {
           children: [
             const _Handle(),
             _Header(state: state),
-            if (state.isGuest)
-              const Flexible(
-                child: SingleChildScrollView(child: _GuestInvitation()),
+            Flexible(
+              child: SingleChildScrollView(
+                child: state.isGuest
+                    ? const _GuestInvitation()
+                    : ListRow(
+                        icon: Icons.logout,
+                        label: 'Sair da conta',
+                        onTap: () => unawaited(
+                          ref.read(profileViewModelProvider.notifier).signOut(),
+                        ),
+                      ),
               ),
+            ),
           ],
         ),
       ),
@@ -158,13 +171,16 @@ class _GuestInvitation extends StatelessWidget {
     return Column(
       spacing: AppSpace.xs,
       children: [
-        const RangoButton(
+        RangoButton(
           label: 'Entrar ou criar conta',
           icon: Icons.person_outline,
           style: RangoButtonStyle.secondary,
           expand: true,
-          // Sign-in arrives with E1-S3 (Figma flow 06).
-          onPressed: null,
+          onPressed: () {
+            final router = GoRouter.of(context);
+            Navigator.of(context).pop();
+            unawaited(router.push('/login'));
+          },
         ),
         Text(
           'Sem conta, seus rangos não ficam salvos.',
