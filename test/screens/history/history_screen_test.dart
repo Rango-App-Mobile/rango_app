@@ -4,8 +4,11 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:rango_app/app/theme/app_theme.dart';
+import 'package:rango_app/core/widgets/avatar_button.dart';
 import 'package:rango_app/core/widgets/food_card.dart';
+import 'package:rango_app/data/auth_repository.dart';
 import 'package:rango_app/data/category_repository.dart';
+import 'package:rango_app/data/fake_auth_repository.dart';
 import 'package:rango_app/data/fake_history_repository.dart';
 import 'package:rango_app/data/history_repository.dart';
 import 'package:rango_app/data/local_category_repository.dart';
@@ -13,6 +16,7 @@ import 'package:rango_app/models/history_entry.dart';
 import 'package:rango_app/screens/history/history_screen.dart';
 import 'package:rango_app/screens/history/widgets/history_stack.dart';
 import 'package:rango_app/screens/history/widgets/month_header.dart';
+import 'package:rango_app/screens/profile/profile_sheet.dart';
 
 class _MockHistoryRepository extends Mock implements HistoryRepository {}
 
@@ -30,6 +34,7 @@ Future<void> _pump(
     ProviderScope(
       retry: (_, _) => null,
       overrides: [
+        authRepositoryProvider.overrideWithValue(FakeAuthRepository()),
         categoryRepositoryProvider.overrideWithValue(LocalCategoryRepository()),
         historyRepositoryProvider.overrideWithValue(
           repository ?? FakeHistoryRepository(),
@@ -68,6 +73,15 @@ Finder get drawnCards => find.descendant(
 );
 
 void main() {
+  testWidgets('the avatar opens the Profile Sheet', (tester) async {
+    await _pump(tester);
+
+    await tester.tap(find.byType(AvatarButton));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(ProfileSheet), findsOneWidget);
+  });
+
   group('with decisions', () {
     testWidgets('shows the title and the newest card whole, in front', (
       tester,

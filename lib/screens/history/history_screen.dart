@@ -15,6 +15,7 @@ import 'package:rango_app/core/widgets/top_bar_scroll_view.dart';
 import 'package:rango_app/screens/history/history_state.dart';
 import 'package:rango_app/screens/history/history_view_model.dart';
 import 'package:rango_app/screens/history/widgets/history_stack.dart';
+import 'package:rango_app/screens/profile/profile_sheet.dart';
 
 /// Histórico tab: the user's decisions as a stack of cards, the newest in
 /// front (Figma "07d Histórico"), or the empty state ("10 Histórico vazio").
@@ -26,8 +27,9 @@ class HistoryScreen extends ConsumerWidget {
     final history = ref.watch(historyViewModelProvider);
     return Scaffold(
       body: TopBarLayout(
-        // Profile Sheet is story #64.
-        topBar: const TopBar.principal(),
+        topBar: TopBar.principal(
+          onProfile: () => unawaited(showProfileSheet(context)),
+        ),
         body: switch (history) {
           AsyncData(:final value) when value.isEmpty => const _Empty(),
           AsyncData(:final value) => SafeArea(

@@ -96,7 +96,7 @@ lib/
 | Data | `data/` | Abstrair a origem dos dados (CategoryRepository, FirestoreRepository, RestaurantRepository) | models, SDKs externos | `screens/` |
 
 Telas previstas (numeração do Figma): `swipe` (01–03, Sprint 2), `result` (04)
-e `restaurants` (05, 08, Sprint 3), `restaurant_contact` (06) e `login` (Sprint 4),
+e `restaurants` (05, 08, Sprint 3), `restaurant_contact` (06) e `login` (13–15, Sprint 4),
 `history` (07, 10, Sprint 4), `history_detail` (12) e o Profile Sheet (11, Sprint 4–5).
 A sessão anônima não tem tela: é um repositório em `data/`. Como montar a estrutura: [guia de setup](guia-setup.md), passo 3.
 
@@ -226,12 +226,13 @@ Rituais e frentes: [time-e-rituais.md](time-e-rituais.md).
 | 2026-11-04 | O conteúdo rola por trás da Top Bar e da Tab Bar, sob um blur progressivo, e voltar e perfil viram vidro (`color/glass/*`). A Top Bar das abas perde o nome do app e fica só com o perfil. No mapa não há blur nem degradê: ele vai limpo até o topo | O corte do conteúdo formava uma linha no topo das telas, e repetir o nome do app o tempo todo não acrescentava nada. Blur sobre o mapa nativo do Google não é confiável, principalmente no Android |
 | 2026-11-05 | Saem o Google Maps e o Google Places (substitui as decisões de 2026-10-29 sobre eles). O mapa passa a usar `flutter_map` com o OpenStreetMap, nas cores originais e com o crédito sempre visível. Até a E3-S7, os restaurantes são os fictícios do `FakeRestaurantRepository`. Saem as chaves `GOOGLE_*` e `ANDROID_CERT_SHA1`, e o `dio` | O Google exige uma forma de pagamento cadastrada mesmo dentro da cota gratuita, e o time decidiu não usar cartão. O OpenStreetMap não pede chave nem cartão, e a proibição de mostrar dados do Places fora do mapa do Google deixa de valer. O servidor público de mapas não tem garantia de disponibilidade: se atrapalhar, trocar de provedor é mudar uma URL |
 | 2026-11-05 | Os restaurantes reais serão cadastrados pelo time no Firestore, vindos de uma planilha, cada um com sua posição e as comidas que serve. O app mostra os que servem a comida do match a até 3 km da pessoa, sem busca por texto. O Rango é um app local: fora da região cadastrada, mostra "Nenhum lugar perto" | É um app para os comércios da região, sem API paga e com os dados sob controle do time. O acordo do projeto ainda cita o Google Places: fica para o time alinhar com o professor |
+| 2026-11-06 | O login opcional é por e-mail e senha, Google e Apple. As telas estão no Figma, no fluxo 06 (13 Entrar, 14 Criar conta, 15 Recuperar senha) | Apple e Google entram com um toque, e o e-mail atende quem não quer usar nenhum dos dois. Já existe uma conta Apple Developer, e a App Store pede uma opção como a da Apple de quem oferece o login do Google |
+| 2026-11-06 | No Profile Sheet, o visitante vê só o convite para entrar e o Sobre, sem estatísticas nem preferências. O desenho antigo mostrava números e dizia que o histórico ficava salvo no aparelho | Segue R1: sem conta nada é salvo, então não há número para mostrar |
 
 ## 12. Em aberto
 
 - Integrantes e frente de cada um (reunião de 24/09 à noite).
 - Árvore de categorias local ou no Firestore (editável sem publicar o app).
-- Método de login: e-mail, Google e/ou Apple (E6-S3 e E1-S3).
 - O que as notificações avisam (a preferência existe no perfil; o envio é futuro).
 - Fotos das comidas: licença das fotos do Figma ou banco próprio (E8-S7).
 - Nome definitivo e identidade (frente de marketing, Sprint 2).
