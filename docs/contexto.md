@@ -66,7 +66,7 @@ O detalhamento completo está no [acordo](acordo-projeto.md#2-benchmark-de-conco
 | Dados | Cloud Firestore | Sessões, histórico de escolhas, preferências |
 | Auth | Firebase Authentication (anônima) | Identifica a sessão sem cadastro |
 | Mapa | `flutter_map` + OpenStreetMap | Mapa real, sem chave e sem cartão |
-| Restaurantes | `FakeRestaurantRepository`; depois, Cloud Firestore | Hoje, restaurantes fictícios ao redor da pessoa; depois, os do time, por comida e distância |
+| Restaurantes | Cloud Firestore (`FirestoreRestaurantRepository`); `FakeRestaurantRepository` sem Firebase | Os do time, vindos da planilha, por comida e distância |
 | Futuro | Cloud Functions | Orquestração do modo grupo em tempo real |
 
 ## 5. Arquitetura
@@ -107,7 +107,7 @@ Telas em alta fidelidade e protótipo: [Figma do Rango](https://www.figma.com/de
 
 1. O usuário abre o app como **visitante**: a sessão anônima é criada automaticamente, sem cadastro.
 2. A primeira escolha é ampla (salgado vs. doce). Depois as comidas da lista escolhida aparecem uma por vez, num card único no centro, como no Tinder: arrastar para a direita (ou o botão de coração) curte, para a esquerda (ou o botão X) passa. A primeira comida a somar três curtidas é a escolhida (ex.: Salgado → Pizza).
-3. Ao convergir num tipo específico ("Deu match!"), o app busca restaurantes próximos que servem esse tipo. Por enquanto eles são fictícios; depois virão do Firestore (decisão de 2026-11-05 no §11).
+3. Ao convergir num tipo específico ("Deu match!"), o app busca restaurantes próximos que servem esse tipo. Eles vêm do Firestore, cadastrados pelo time (decisão de 2026-11-05 no §11).
 4. O usuário vê os restaurantes **no mapa** (nome, nota, distância), escolhe um e decide como pedir: delivery, mapa ou ligação.
 5. Quem **entra com conta** (pelo perfil) tem as decisões salvas no **Histórico**, estatísticas e preferências. O visitante usa o fluxo inteiro, mas nada dele é salvo.
 
@@ -117,7 +117,7 @@ Telas em alta fidelidade e protótipo: [Figma do Rango](https://www.figma.com/de
 
 - **R1:** toda sessão pertence a um usuário do Firebase Auth: anônimo (visitante) ou com conta. Só sessões de usuário com conta são salvas no Firestore; do visitante não se grava histórico, estatística nem preferência. *(E1, decisão de 2026-09-30)*
 - **R2:** a primeira escolha é Salgado vs. Doce; depois, um card por vez com as comidas da lista escolhida (16 em cada), em ordem aleatória. Curtir soma 1 curtida à comida, e as curtidas não zeram; a primeira a chegar em 3 curtidas encerra a sessão nessa comida, sem limite de cards. Passar tira a comida da sessão. Quando o baralho acaba, as comidas que sobraram são embaralhadas de novo (a última mostrada não abre a nova rodada); se todas foram passadas, as 16 voltam. *(E2-S1, decisão de 2026-11-04; substitui o duelo de 2026-10-24)*
-- **R3:** cada comida das listas tem um termo de busca. Sem o Google Places, ele ainda é repassado à busca, mas os restaurantes fictícios o ignoram; sai quando a busca passar para o Firestore. *(E2-S1, decisão de 2026-11-05)*
+- **R3:** a busca usa o id da comida do match: aparecem os restaurantes cuja lista `foods` contém esse id. Não há termo de busca por texto. *(E3-S7, decisão de 2026-11-12)*
 - **R4:** a recomendação considera só restaurantes a até **3 km** da localização atual (até 20 resultados), ordenados do mais perto ao mais longe; o mais perto abre selecionado no mapa. A posição é usada só na busca e não é salva. *(E3-S3, decisão de 2026-10-29)*
 - **R5:** "Pedir no delivery" abre o link do iFood cadastrado para o restaurante; sem ele, o primeiro outro link cadastrado; sem nenhum, uma busca "<nome> delivery" no Google. Só links `https` saem do app. *(E3-S5, decisão de 2026-10-29)*
 
@@ -141,7 +141,7 @@ restaurants/{placeId}             # vem da planilha do time (ou à mão); o app 
   active, source: sheet, updatedAt                # active falso: saiu da planilha
 ```
 
-Os restaurantes reais entram pela sincronização da planilha (`docs/restaurantes.md`). Até o fim da E3-S7, o app segue mostrando os fictícios.
+Os restaurantes reais entram pela sincronização da planilha (`docs/restaurantes.md`). Sem o Firebase configurado, o app mostra os fictícios.
 
 Cardápio (raiz, Salgado e Doce, e 16 comidas em cada): dado local versionado no app, no `LocalCategoryRepository` (`lib/data/`). Mover para o Firestore é decisão futura (§12).
 
@@ -232,6 +232,7 @@ Rituais e frentes: [time-e-rituais.md](time-e-rituais.md).
 | 2026-11-06 | O login opcional é por e-mail e senha, Google e Apple. As telas estão no Figma, no fluxo 06 (13 Entrar, 14 Criar conta, 15 Recuperar senha) | Apple e Google entram com um toque, e o e-mail atende quem não quer usar nenhum dos dois. Já existe uma conta Apple Developer, e a App Store pede uma opção como a da Apple de quem oferece o login do Google |
 | 2026-11-06 | No Profile Sheet, o visitante vê só o convite para entrar e o Sobre, sem estatísticas nem preferências. O desenho antigo mostrava números e dizia que o histórico ficava salvo no aparelho | Segue R1: sem conta nada é salvo, então não há número para mostrar |
 | 2026-11-10 | O login entra em duas partes: e-mail e senha primeiro (E1-S3); Google e Apple depois, numa story própria. Até lá, os dois botões aparecem desligados | Google e Apple pedem dois pacotes novos e configuração no console do Firebase e na conta da Apple. O e-mail já entrega a conta sem depender disso |
+| 2026-11-12 | O app passa a ler os restaurantes do Firestore (E3-S7): consulta por `foods` contendo o id da comida, até 500 documentos, e o corte de 3 km é feito no celular. Sai o termo de busca das comidas (`placesKeyword`) | Uma região tem poucas dezenas de lugares; ler os da comida e filtrar no celular evita índice geográfico. Se a base crescer, a troca é uma consulta por geohash |
 
 ## 12. Em aberto
 

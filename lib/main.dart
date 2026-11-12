@@ -6,6 +6,8 @@ import 'package:rango_app/data/auth_repository.dart';
 import 'package:rango_app/data/delivery_link_repository.dart';
 import 'package:rango_app/data/fake_auth_repository.dart';
 import 'package:rango_app/data/fake_delivery_link_repository.dart';
+import 'package:rango_app/data/fake_restaurant_repository.dart';
+import 'package:rango_app/data/restaurant_repository.dart';
 import 'package:rango_app/firebase_options.dart';
 
 Future<void> main() async {
@@ -22,6 +24,9 @@ Future<void> main() async {
           authRepositoryProvider.overrideWithValue(FakeAuthRepository()),
           deliveryLinkRepositoryProvider.overrideWithValue(
             FakeDeliveryLinkRepository(),
+          ),
+          restaurantRepositoryProvider.overrideWithValue(
+            FakeRestaurantRepository(),
           ),
         ],
       ],

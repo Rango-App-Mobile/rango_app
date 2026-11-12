@@ -3,8 +3,8 @@ import 'package:rango_app/models/geo_point.dart';
 import 'package:rango_app/models/restaurant.dart';
 import 'package:rango_app/models/restaurant_ranking.dart';
 
-/// Fictional restaurants around the given position, no network. Used until the
-/// team's own restaurants are in Firestore.
+/// Fictional restaurants around the given position, no network, whatever the
+/// food. Used when Firebase is not configured (CI, a fresh clone).
 class FakeRestaurantRepository implements RestaurantRepository {
   // (name, cuisine, rating, dLat, dLng) in degrees; 0.01 deg is about 1.1 km.
   static const List<(String, String, double?, double, double)> _seed = [
@@ -21,7 +21,7 @@ class FakeRestaurantRepository implements RestaurantRepository {
 
   @override
   Future<List<Restaurant>> search({
-    required String keyword,
+    required String foodId,
     required GeoPoint near,
   }) async {
     final places = [

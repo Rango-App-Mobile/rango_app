@@ -8,7 +8,7 @@ void main() {
   final repository = FakeRestaurantRepository();
 
   test('search ranks nearest first, all within 3 km', () async {
-    final result = await repository.search(keyword: 'massa', near: near);
+    final result = await repository.search(foodId: 'spaghetti', near: near);
 
     expect(result, isNotEmpty);
     expect(
@@ -20,14 +20,14 @@ void main() {
   });
 
   test('search cuts the place beyond 3 km', () async {
-    final result = await repository.search(keyword: 'massa', near: near);
+    final result = await repository.search(foodId: 'spaghetti', near: near);
 
     expect(result.map((r) => r.name), isNot(contains('Recanto Distante')));
   });
 
   test('search is deterministic', () async {
-    final a = await repository.search(keyword: 'massa', near: near);
-    final b = await repository.search(keyword: 'massa', near: near);
+    final a = await repository.search(foodId: 'spaghetti', near: near);
+    final b = await repository.search(foodId: 'spaghetti', near: near);
 
     expect(a, b);
   });
