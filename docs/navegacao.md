@@ -15,6 +15,7 @@ flutuante (issue #55), montados com `go_router` em `lib/app/router.dart` e
 | `/result?path=<ids>` | `ResultScreen`: Deu match (Figma 04) | Navigator raiz | Fluxo | Não |
 | `/restaurants?category=<id>` | `RestaurantsScreen`: restaurantes no mapa (Figma 05, 08 e 09; `docs/restaurantes.md`) | Navigator raiz | Fluxo | Não |
 | `/restaurants/contact` (com `extra: RestaurantContactArgs`) | `RestaurantContactScreen`: opções de contato (Figma 06) | Navigator raiz, por cima do mapa | Fluxo | Não |
+| `/login`, `/signup`, `/password-reset` | Entrar, Criar conta e Recuperar senha (Figma 13 a 15; `docs/login.md`) | Navigator raiz | Fluxo | Não |
 
 O app abre em `/home`. As duas abas são um `StatefulShellRoute.indexedStack`:
 cada aba guarda a própria pilha, e trocar de aba não perde o estado da outra.

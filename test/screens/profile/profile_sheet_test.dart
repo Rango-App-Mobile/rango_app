@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:rango_app/app/theme/app_theme.dart';
 import 'package:rango_app/core/theme/app_colors.dart';
 import 'package:rango_app/core/theme/app_radius.dart';
-import 'package:rango_app/core/widgets/rango_button.dart';
 import 'package:rango_app/core/widgets/scrim.dart';
 import 'package:rango_app/data/auth_repository.dart';
 import 'package:rango_app/data/fake_auth_repository.dart';
@@ -21,18 +21,16 @@ const _account = AppUser(
 
 class _MockAuthRepository extends Mock implements AuthRepository {}
 
-class _StubAuthRepository implements AuthRepository {
-  const _StubAuthRepository(this.user);
-
-  final AppUser user;
-
-  @override
-  Future<AppUser> ensureSignedIn() async => user;
+AuthRepository _stub(AppUser user) {
+  final repository = _MockAuthRepository();
+  when(repository.watchUser).thenAnswer((_) => Stream.value(user));
+  when(repository.signOut).thenAnswer((_) async => FakeAuthRepository.user);
+  return repository;
 }
 
 Future<void> _open(
   WidgetTester tester, {
-  AuthRepository repository = const _StubAuthRepository(_account),
+  AuthRepository? repository,
   Size size = const Size(402, 874),
   bool disableAnimations = false,
 }) async {
@@ -43,7 +41,9 @@ Future<void> _open(
 
   await tester.pumpWidget(
     ProviderScope(
-      overrides: [authRepositoryProvider.overrideWithValue(repository)],
+      overrides: [
+        authRepositoryProvider.overrideWithValue(repository ?? _stub(_account)),
+      ],
       child: MaterialApp(
         theme: AppTheme.light,
         builder: (context, child) => MediaQuery(
@@ -209,21 +209,48 @@ void main() {
       }
     });
 
-    testWidgets('the invitation is disabled until sign-in exists (#E1-S3)', (
+    testWidgets('the invitation closes the sheet and opens the login', (
       tester,
     ) async {
-      await _openGuest(tester);
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            authRepositoryProvider.overrideWithValue(FakeAuthRepository()),
+          ],
+          child: MaterialApp.router(
+            theme: AppTheme.light,
+            routerConfig: GoRouter(
+              routes: [
+                GoRoute(
+                  path: '/',
+                  builder: (context, _) => Scaffold(
+                    body: TextButton(
+                      onPressed: () => showProfileSheet(context),
+                      child: const Text('ABRIR'),
+                    ),
+                  ),
+                ),
+                GoRoute(path: '/login', builder: (_, _) => const Text('LOGIN')),
+              ],
+            ),
+          ),
+        ),
+      );
+      await tester.tap(find.text('ABRIR'));
+      await tester.pumpAndSettle();
 
-      final button = tester.widget<RangoButton>(find.byType(RangoButton));
-      expect(button.style, RangoButtonStyle.secondary);
-      expect(button.onPressed, isNull);
+      await tester.tap(find.text('Entrar ou criar conta'));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(ProfileSheet), findsNothing);
+      expect(find.text('LOGIN'), findsOneWidget);
     });
 
     testWidgets('falls back to guest when the session fails', (tester) async {
       final repository = _MockAuthRepository();
-      when(repository.ensureSignedIn).thenAnswer((_) async {
-        throw StateError('no session');
-      });
+      when(
+        repository.watchUser,
+      ).thenAnswer((_) => Stream.error(StateError('no session')));
       await _open(tester, repository: repository);
 
       expect(find.text('Visitante'), findsOneWidget);
@@ -242,11 +269,21 @@ void main() {
       expect(find.text('Entrar ou criar conta'), findsNothing);
     });
 
+    testWidgets('signs out through Sair da conta', (tester) async {
+      final repository = _stub(_account);
+      await _open(tester, repository: repository);
+
+      await tester.tap(find.text('Sair da conta'));
+      await tester.pump();
+
+      verify(repository.signOut).called(1);
+    });
+
     testWidgets('draws the photo when there is one', (tester) async {
       await _open(
         tester,
-        repository: const _StubAuthRepository(
-          AppUser(
+        repository: _stub(
+          const AppUser(
             uid: 'u1',
             isAnonymous: false,
             name: 'Joana',
@@ -274,8 +311,8 @@ void main() {
     ) async {
       await _open(
         tester,
-        repository: const _StubAuthRepository(
-          AppUser(
+        repository: _stub(
+          const AppUser(
             uid: 'u1',
             isAnonymous: false,
             name: 'Maria Eduarda dos Santos Albuquerque de Oliveira',
