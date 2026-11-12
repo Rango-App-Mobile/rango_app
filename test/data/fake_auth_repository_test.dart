@@ -62,4 +62,22 @@ void main() {
 
     expect(names, [null, 'J']);
   });
+
+  for (final (provider, signIn) in [
+    ('Google', (FakeAuthRepository r) => r.signInWithGoogle()),
+    ('Apple', (FakeAuthRepository r) => r.signInWithApple()),
+  ]) {
+    test('$provider signs in to a sample account, keeping the uid', () async {
+      final repository = FakeAuthRepository();
+      final changes = repository.watchUser().skip(1).first;
+
+      final result = await signIn(repository);
+
+      expect(result?.isAnonymous, isFalse);
+      expect(result?.uid, FakeAuthRepository.user.uid);
+      expect(result?.name, isNotNull);
+      expect(result?.email, isNotNull);
+      expect(await changes, result);
+    });
+  }
 }

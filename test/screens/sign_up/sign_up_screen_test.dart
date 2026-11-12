@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:rango_app/core/error/failure.dart';
@@ -136,4 +137,31 @@ void main() {
     await goBack(tester);
     expect(find.text('HOME'), findsOneWidget);
   });
+
+  testWidgets('Google creates the account; Apple shows only on iOS', (
+    tester,
+  ) async {
+    final repository = FakeAuthRepository();
+    await _pump(tester, repository);
+    expect(find.text('Continuar com a Apple'), findsNothing);
+
+    await tapButton(tester, 'Continuar com o Google');
+
+    expect(find.text('HOME'), findsOneWidget);
+    expect((await repository.ensureSignedIn()).isAnonymous, isFalse);
+  });
+
+  testWidgets(
+    'Apple on iOS creates the account',
+    (tester) async {
+      final repository = FakeAuthRepository();
+      await _pump(tester, repository);
+
+      await tapButton(tester, 'Continuar com a Apple');
+
+      expect(find.text('HOME'), findsOneWidget);
+      expect((await repository.ensureSignedIn()).email, contains('icloud'));
+    },
+    variant: TargetPlatformVariant.only(TargetPlatform.iOS),
+  );
 }

@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:rango_app/core/error/failure.dart';
@@ -5,6 +8,7 @@ import 'package:rango_app/core/widgets/inline_alert.dart';
 import 'package:rango_app/core/widgets/rango_button.dart';
 import 'package:rango_app/data/auth_repository.dart';
 import 'package:rango_app/data/fake_auth_repository.dart';
+import 'package:rango_app/models/app_user.dart';
 import 'package:rango_app/screens/login/login_screen.dart';
 
 import '../../helpers/auth_form.dart';
@@ -31,29 +35,81 @@ Future<void> _pump(WidgetTester tester, AuthRepository repository) =>
     );
 
 void main() {
-  testWidgets('fits the screen, with Apple and Google still disabled', (
-    tester,
-  ) async {
+  testWidgets(
+    'fits the screen on iOS, with Apple and Google',
+    (tester) async {
+      await _pump(tester, FakeAuthRepository());
+
+      expect(tester.takeException(), isNull);
+      expect(find.text('Continuar com a Apple'), findsOneWidget);
+      expect(find.text('Continuar com o Google'), findsOneWidget);
+      expect(
+        tester
+            .getBottomLeft(
+              find.widgetWithText(
+                RangoButton,
+                'Ainda não tem conta? Criar conta',
+              ),
+            )
+            .dy,
+        lessThanOrEqualTo(874),
+      );
+    },
+    variant: TargetPlatformVariant.only(TargetPlatform.iOS),
+  );
+
+  testWidgets('Android has no Apple button', (tester) async {
     await _pump(tester, FakeAuthRepository());
 
-    expect(tester.takeException(), isNull);
-    for (final label in ['Continuar com a Apple', 'Continuar com o Google']) {
-      final button = tester.widget<RangoButton>(
-        find.widgetWithText(RangoButton, label),
-      );
-      expect(button.onPressed, isNull, reason: label);
-    }
-    expect(
-      tester
-          .getBottomLeft(
-            find.widgetWithText(
-              RangoButton,
-              'Ainda não tem conta? Criar conta',
-            ),
-          )
-          .dy,
-      lessThanOrEqualTo(874),
+    expect(find.text('Continuar com a Apple'), findsNothing);
+    expect(find.text('Continuar com o Google'), findsOneWidget);
+  });
+
+  testWidgets('Google signs in and goes back to where the person was', (
+    tester,
+  ) async {
+    final repository = FakeAuthRepository();
+    await _pump(tester, repository);
+
+    await tapButton(tester, 'Continuar com o Google');
+
+    expect(find.text('HOME'), findsOneWidget);
+    expect((await repository.ensureSignedIn()).isAnonymous, isFalse);
+  });
+
+  testWidgets(
+    'Apple on iOS calls the repository',
+    (tester) async {
+      final repository = _MockAuthRepository();
+      when(repository.signInWithApple).thenAnswer((_) async => null);
+      await _pump(tester, repository);
+
+      await tapButton(tester, 'Continuar com a Apple');
+
+      // Closing the sheet keeps the person on the form.
+      verify(repository.signInWithApple).called(1);
+      expect(find.byType(LoginScreen), findsOneWidget);
+    },
+    variant: TargetPlatformVariant.only(TargetPlatform.iOS),
+  );
+
+  testWidgets('the social buttons are off while signing in', (tester) async {
+    final repository = _MockAuthRepository();
+    final pending = Completer<AppUser?>();
+    when(repository.signInWithGoogle).thenAnswer((_) => pending.future);
+    await _pump(tester, repository);
+
+    await tester.tap(
+      find.widgetWithText(RangoButton, 'Continuar com o Google'),
     );
+    await tester.pump();
+
+    final google = tester.widget<RangoButton>(
+      find.widgetWithText(RangoButton, 'Continuar com o Google'),
+    );
+    expect(google.onPressed, isNull);
+    pending.complete(null);
+    await tester.pumpAndSettle();
   });
 
   testWidgets('signing in goes back to where the person was', (tester) async {

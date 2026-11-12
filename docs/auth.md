@@ -59,6 +59,12 @@ npx --yes firebase-tools@latest emulators:exec --project demo-rango-app --only a
 | Ids do projeto (`appId`, `projectId`, `messagingSenderId`, `storageBucket`, `iosBundleId`) | `lib/firebase_options.dart`, escrito à mão | Sim |
 | Chave de API Android | `FIREBASE_ANDROID_API_KEY` no `env.json`, lida em `Env` | Não |
 | Chave de API iOS | `FIREBASE_IOS_API_KEY` no `env.json`, lida em `Env` | Não |
+| Ids de cliente OAuth do Google (`googleWebClientId`, `googleIosClientId`) | `lib/firebase_options.dart`, ao lado dos ids do projeto | Sim (são públicos) |
+| Esquema de URL do Google no iOS (id do iOS invertido) | `CFBundleURLSchemes` no `ios/Runner/Info.plist` | Sim |
+| Capacidade Sign in with Apple | `ios/Runner/Runner.entitlements` | Sim |
+
+O login com Google e Apple, e os passos no console para ele funcionar, estão em
+`docs/login.md` (seção "Google e Apple").
 
 - `DefaultFirebaseOptions.currentPlatform` devolve `null` quando o `env.json`
   não tem a chave da plataforma. Aí o `main.dart` não chama

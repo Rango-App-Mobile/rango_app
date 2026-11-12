@@ -1,12 +1,26 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:rango_app/core/error/failure.dart';
 import 'package:rango_app/data/auth_repository.dart';
+import 'package:rango_app/firebase_options.dart';
 import 'package:rango_app/models/app_user.dart';
 
 class FirebaseAuthRepository implements AuthRepository {
-  FirebaseAuthRepository(this._auth);
+  /// [googleIdToken] opens the Google account picker and returns the ID token
+  /// of the chosen account, or null when the person closes it.
+  /// [googleSignOut] forgets that account. Both default to `google_sign_in`;
+  /// tests pass their own, so they run without the plugin.
+  FirebaseAuthRepository(
+    this._auth, {
+    Future<String?> Function()? googleIdToken,
+    Future<void> Function()? googleSignOut,
+  }) : _googleIdToken = googleIdToken ?? _pluginGoogleIdToken,
+       _googleSignOut = googleSignOut ?? _pluginGoogleSignOut;
 
   final FirebaseAuth _auth;
+  final Future<String?> Function() _googleIdToken;
+  final Future<void> Function() _googleSignOut;
 
   @override
   Future<AppUser> ensureSignedIn() {
@@ -70,10 +84,85 @@ class FirebaseAuthRepository implements AuthRepository {
   }
 
   @override
+  Future<AppUser?> signInWithGoogle() => _social(() async {
+    final idToken = await _googleIdToken();
+    if (idToken == null) return null;
+    final credential = GoogleAuthProvider.credential(idToken: idToken);
+    return _linkOrSignIn(
+      link: (guest) => guest.linkWithCredential(credential),
+      signIn: () => _auth.signInWithCredential(credential),
+    );
+  });
+
+  @override
+  Future<AppUser?> signInWithApple() => _social(() {
+    final provider = AppleAuthProvider()
+      ..addScope('email')
+      ..addScope('name');
+    return _linkOrSignIn(
+      link: (guest) => guest.linkWithProvider(provider),
+      signIn: () => _auth.signInWithProvider(provider),
+    );
+  });
+
+  @override
   Future<AppUser> signOut() async {
+    try {
+      // So the next "Continuar com o Google" shows the account picker again.
+      await _googleSignOut();
+    } on Object catch (_) {
+      // Best effort: the Firebase sign-out below is what matters.
+    }
     await _auth.signOut();
     return ensureSignedIn();
   }
+
+  /// A guest links the account, keeping its uid. When the account already
+  /// exists the guest is dropped and the person signs in to it instead: a
+  /// guest has nothing saved (rule R1), so nothing is lost.
+  Future<AppUser> _linkOrSignIn({
+    required Future<UserCredential> Function(User guest) link,
+    required Future<UserCredential> Function() signIn,
+  }) async {
+    final guest = _auth.currentUser;
+    if (guest == null || !guest.isAnonymous) return _user(await signIn());
+    try {
+      return _user(await link(guest));
+    } on FirebaseAuthException catch (error) {
+      if (!_accountExists.contains(error.code)) rethrow;
+      // Reusing the credential Firebase hands back avoids opening the
+      // Apple sheet a second time.
+      final credential = error.credential;
+      return _user(
+        credential == null
+            ? await signIn()
+            : await _auth.signInWithCredential(credential),
+      );
+    }
+  }
+
+  static const _accountExists = {
+    'credential-already-in-use',
+    'email-already-in-use',
+    'account-exists-with-different-credential',
+  };
+
+  /// Closing the Google or Apple sheet is not an error: it returns null.
+  Future<AppUser?> _social(Future<AppUser?> Function() body) =>
+      _guard(() async {
+        try {
+          return await body();
+        } on FirebaseAuthException catch (error) {
+          if (_cancelled.contains(error.code)) return null;
+          rethrow;
+        }
+      });
+
+  static const _cancelled = {
+    'canceled',
+    'web-context-canceled',
+    'web-context-cancelled',
+  };
 
   Future<T> _guard<T>(Future<T> Function() body) async {
     try {
@@ -109,4 +198,35 @@ class FirebaseAuthRepository implements AuthRepository {
     email: user.email,
     photoUrl: user.photoURL,
   );
+}
+
+// `initialize` must run once, before anything else in `google_sign_in`.
+Future<void>? _googleReady;
+
+Future<void> _initializeGoogle() =>
+    _googleReady ??= GoogleSignIn.instance.initialize(
+      clientId: defaultTargetPlatform == TargetPlatform.iOS
+          ? DefaultFirebaseOptions.googleIosClientId
+          : null,
+      serverClientId: DefaultFirebaseOptions.googleWebClientId,
+    );
+
+Future<String?> _pluginGoogleIdToken() async {
+  try {
+    await _initializeGoogle();
+    final account = await GoogleSignIn.instance.authenticate();
+    return account.authentication.idToken;
+  } on Exception catch (error) {
+    if (error is GoogleSignInException &&
+        error.code == GoogleSignInExceptionCode.canceled) {
+      return null;
+    }
+    // A misconfigured client id lands here, too: see `docs/auth.md`.
+    throw const UnexpectedFailure();
+  }
+}
+
+Future<void> _pluginGoogleSignOut() async {
+  await _initializeGoogle();
+  await GoogleSignIn.instance.signOut();
 }

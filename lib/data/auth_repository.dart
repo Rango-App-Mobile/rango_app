@@ -26,6 +26,14 @@ abstract interface class AuthRepository {
   /// find out who is registered.
   Future<void> sendPasswordReset(String email);
 
+  /// Opens the Google account picker and signs in to the chosen account,
+  /// keeping the guest's uid when the account is new. Null when the person
+  /// closes the picker.
+  Future<AppUser?> signInWithGoogle();
+
+  /// The same as [signInWithGoogle], with Apple (iOS only).
+  Future<AppUser?> signInWithApple();
+
   /// Leaves the account and goes back to a guest session.
   Future<AppUser> signOut();
 }

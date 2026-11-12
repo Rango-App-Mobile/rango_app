@@ -82,22 +82,26 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 size: PageHeaderSize.medium,
               ),
               if (alert != null) InlineAlert(message: alert),
-              // Apple and Google arrive with their own story.
-              const Column(
+              Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 spacing: AppSpace.sm,
                 children: [
-                  RangoButton(
-                    label: 'Continuar com a Apple',
-                    style: RangoButtonStyle.secondary,
-                    expand: true,
-                    onPressed: null,
-                  ),
+                  if (viewModel.offersApple)
+                    RangoButton(
+                      label: 'Continuar com a Apple',
+                      style: RangoButtonStyle.secondary,
+                      expand: true,
+                      onPressed: state.submitting
+                          ? null
+                          : () => unawaited(viewModel.continueWithApple()),
+                    ),
                   RangoButton(
                     label: 'Continuar com o Google',
                     style: RangoButtonStyle.secondary,
                     expand: true,
-                    onPressed: null,
+                    onPressed: state.submitting
+                        ? null
+                        : () => unawaited(viewModel.continueWithGoogle()),
                   ),
                 ],
               ),

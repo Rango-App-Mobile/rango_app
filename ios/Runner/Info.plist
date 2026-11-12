@@ -22,6 +22,21 @@
 	<string>$(FLUTTER_BUILD_NAME)</string>
 	<key>CFBundleSignature</key>
 	<string>????</string>
+	<!-- Google sign-in returns to the app through this scheme: the iOS client id
+	     reversed (REVERSED_CLIENT_ID in GoogleService-Info.plist). The client id
+	     itself is passed in Dart (lib/firebase_options.dart). See docs/auth.md.
+	     TODO(antonio): replace the placeholder once Google is enabled. -->
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>com.googleusercontent.apps.TODO-reversed-ios-client-id</string>
+			</array>
+		</dict>
+	</array>
 	<key>CFBundleVersion</key>
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
 	<key>LSRequiresIPhoneOS</key>
