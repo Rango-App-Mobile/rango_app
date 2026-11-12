@@ -129,12 +129,11 @@ Telas em alta fidelidade e protótipo: [Figma do Rango](https://www.figma.com/de
 users/{uid}                       # só usuário com conta (visitante não grava)
   createdAt
   preferences: { deliveryApp, notifications }
-users/{uid}/sessions/{sessionId}
-  startedAt, finishedAt
-  choices: [{ level, optionA, optionB, chosen, at }]
-  result: { categoryId, label, placesQuery }
-  restaurant: { placeId, name, cuisine, rating }   # escolhido na tela de contato
-  channel: delivery | call                         # alimenta o "Pedir de novo"
+users/{uid}/sessions/{autoId}     # uma por "Pedir no delivery"/"Ligar" na tela 06 (E2-S4)
+  foodId                                          # id da comida do match
+  restaurantId, restaurantName, cuisine?          # escolhido na tela de contato
+  channel: delivery | call                        # alimenta o "Pedir de novo"
+  decidedAt                                       # hora do servidor; leitura: 100 mais recentes
 restaurants/{placeId}             # vem da planilha do time (ou à mão); o app só lê
   name, location (geopoint), foods: [id da comida], cuisine, address, rating?, phone?
   deliveryLinks: { ifood?, others: [url] }        # R5: iFood → outros → busca no Google
@@ -233,6 +232,7 @@ Rituais e frentes: [time-e-rituais.md](time-e-rituais.md).
 | 2026-11-06 | No Profile Sheet, o visitante vê só o convite para entrar e o Sobre, sem estatísticas nem preferências. O desenho antigo mostrava números e dizia que o histórico ficava salvo no aparelho | Segue R1: sem conta nada é salvo, então não há número para mostrar |
 | 2026-11-10 | O login entra em duas partes: e-mail e senha primeiro (E1-S3); Google e Apple depois, numa story própria. Até lá, os dois botões aparecem desligados | Google e Apple pedem dois pacotes novos e configuração no console do Firebase e na conta da Apple. O e-mail já entrega a conta sem depender disso |
 | 2026-11-12 | O app passa a ler os restaurantes do Firestore (E3-S7): consulta por `foods` contendo o id da comida, até 500 documentos, e o corte de 3 km é feito no celular. Sai o termo de busca das comidas (`placesKeyword`) | Uma região tem poucas dezenas de lugares; ler os da comida e filtrar no celular evita índice geográfico. Se a base crescer, a troca é uma consulta por geohash |
+| 2026-11-12 | A decisão de quem tem conta é salva em `users/{uid}/sessions` quando a pessoa toca em "Pedir no delivery" ou "Ligar" na tela 06, uma vez por abertura da tela, com comida, restaurante, canal e hora. As escolhas de cada swipe (`choices`) não são salvas por enquanto, e o Histórico lê as 100 decisões mais recentes | Tocar em pedir ou ligar é o momento em que a decisão de fato aconteceu. Sem uso para as escolhas intermediárias, gravá-las só gastaria leituras e escrita; o limite segura o custo por leitura até haver paginação |
 
 ## 12. Em aberto
 

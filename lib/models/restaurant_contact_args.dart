@@ -11,6 +11,9 @@ abstract class RestaurantContactArgs with _$RestaurantContactArgs {
   const factory RestaurantContactArgs({
     required Restaurant restaurant,
 
+    /// Id of the chosen `FoodCategory`, saved with the decision.
+    String? foodId,
+
     /// `FoodCategory.foodTheme` of the chosen food, for the photo placeholder.
     String? foodTheme,
 
