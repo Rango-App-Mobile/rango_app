@@ -49,6 +49,16 @@ class FakeAuthRepository implements AuthRepository {
   @override
   Future<void> sendPasswordReset(String email) async {}
 
+  /// Always picks the same sample account, so the app without Firebase can
+  /// show the flow.
+  @override
+  Future<AppUser?> signInWithGoogle() async =>
+      _set(_account(name: 'Ana Souza', email: 'ana.souza@gmail.com'));
+
+  @override
+  Future<AppUser?> signInWithApple() async =>
+      _set(_account(name: 'Ana Souza', email: 'ana.souza@icloud.com'));
+
   @override
   Future<AppUser> signOut() async => _set(user);
 
