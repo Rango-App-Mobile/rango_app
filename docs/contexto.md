@@ -135,11 +135,13 @@ users/{uid}/sessions/{sessionId}
   result: { categoryId, label, placesQuery }
   restaurant: { placeId, name, cuisine, rating }   # escolhido na tela de contato
   channel: delivery | call                         # alimenta o "Pedir de novo"
-restaurants/{placeId}             # cadastrado à mão pelo time; o app só lê
+restaurants/{placeId}             # vem da planilha do time (ou à mão); o app só lê
+  name, location (geopoint), foods: [id da comida], cuisine, address, rating?, phone?
   deliveryLinks: { ifood?, others: [url] }        # R5: iFood → outros → busca no Google
+  active, source: sheet, updatedAt                # active falso: saiu da planilha
 ```
 
-Os restaurantes reais ainda não estão no banco. A história E3-S7 acrescenta a `restaurants` o nome, a posição (`location`), as comidas (`foods`), o endereço e o telefone.
+Os restaurantes reais entram pela sincronização da planilha (`docs/restaurantes.md`). Até o fim da E3-S7, o app segue mostrando os fictícios.
 
 Cardápio (raiz, Salgado e Doce, e 16 comidas em cada): dado local versionado no app, no `LocalCategoryRepository` (`lib/data/`). Mover para o Firestore é decisão futura (§12).
 
@@ -226,6 +228,7 @@ Rituais e frentes: [time-e-rituais.md](time-e-rituais.md).
 | 2026-11-04 | O conteúdo rola por trás da Top Bar e da Tab Bar, sob um blur progressivo, e voltar e perfil viram vidro (`color/glass/*`). A Top Bar das abas perde o nome do app e fica só com o perfil. No mapa não há blur nem degradê: ele vai limpo até o topo | O corte do conteúdo formava uma linha no topo das telas, e repetir o nome do app o tempo todo não acrescentava nada. Blur sobre o mapa nativo do Google não é confiável, principalmente no Android |
 | 2026-11-05 | Saem o Google Maps e o Google Places (substitui as decisões de 2026-10-29 sobre eles). O mapa passa a usar `flutter_map` com o OpenStreetMap, nas cores originais e com o crédito sempre visível. Até a E3-S7, os restaurantes são os fictícios do `FakeRestaurantRepository`. Saem as chaves `GOOGLE_*` e `ANDROID_CERT_SHA1`, e o `dio` | O Google exige uma forma de pagamento cadastrada mesmo dentro da cota gratuita, e o time decidiu não usar cartão. O OpenStreetMap não pede chave nem cartão, e a proibição de mostrar dados do Places fora do mapa do Google deixa de valer. O servidor público de mapas não tem garantia de disponibilidade: se atrapalhar, trocar de provedor é mudar uma URL |
 | 2026-11-05 | Os restaurantes reais serão cadastrados pelo time no Firestore, vindos de uma planilha, cada um com sua posição e as comidas que serve. O app mostra os que servem a comida do match a até 3 km da pessoa, sem busca por texto. O Rango é um app local: fora da região cadastrada, mostra "Nenhum lugar perto" | É um app para os comércios da região, sem API paga e com os dados sob controle do time. O acordo do projeto ainda cita o Google Places: fica para o time alinhar com o professor |
+| 2026-11-05 | A planilha é sincronizada com o Firestore por um Google Apps Script instalado nela, uma vez por dia e por um botão no menu. O código fica em `tools/restaurant_sync/`, e a chave da conta de serviço nas propriedades do script. As comidas são deduzidas do texto da planilha, com uma coluna opcional de correção. Linha que sai da planilha desativa o restaurante em vez de apagá-lo | Rotina agendada no Firebase exige Cloud Functions, que só funciona no plano Blaze, com cartão. O Apps Script é gratuito e fica à mão de quem cuida da planilha, ao custo de o código rodar fora do repositório e de quem edita a planilha poder ler a chave |
 | 2026-11-06 | O login opcional é por e-mail e senha, Google e Apple. As telas estão no Figma, no fluxo 06 (13 Entrar, 14 Criar conta, 15 Recuperar senha) | Apple e Google entram com um toque, e o e-mail atende quem não quer usar nenhum dos dois. Já existe uma conta Apple Developer, e a App Store pede uma opção como a da Apple de quem oferece o login do Google |
 | 2026-11-06 | No Profile Sheet, o visitante vê só o convite para entrar e o Sobre, sem estatísticas nem preferências. O desenho antigo mostrava números e dizia que o histórico ficava salvo no aparelho | Segue R1: sem conta nada é salvo, então não há número para mostrar |
 
