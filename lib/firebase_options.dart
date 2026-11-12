@@ -44,9 +44,9 @@ abstract final class DefaultFirebaseOptions {
   /// (`docs/auth.md`). Public like `appId`, so they are committed.
   ///
   /// The Web client id: Android needs it to get an ID token Firebase accepts.
-  // TODO(antonio): paste the "Web client" id from Firebase > Authentication >
-  // Google > Web SDK configuration.
-  static const googleWebClientId = 'TODO-web-client-id';
+  static const googleWebClientId =
+      '186996793800-b6sgk5in24e1pl52lr1kmi9mr3m0ku76'
+      '.apps.googleusercontent.com';
 
   /// The iOS client id (`CLIENT_ID` in `GoogleService-Info.plist`). Its
   /// reversed form also goes in `ios/Runner/Info.plist`, `CFBundleURLSchemes`.
