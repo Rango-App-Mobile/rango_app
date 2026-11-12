@@ -50,6 +50,7 @@ abstract final class DefaultFirebaseOptions {
 
   /// The iOS client id (`CLIENT_ID` in `GoogleService-Info.plist`). Its
   /// reversed form also goes in `ios/Runner/Info.plist`, `CFBundleURLSchemes`.
-  // TODO(antonio): paste the iOS client id once Google is enabled.
-  static const googleIosClientId = 'TODO-ios-client-id';
+  static const googleIosClientId =
+      '186996793800-els14t96mssqslhmv3q39fq65d6c2dvu'
+      '.apps.googleusercontent.com';
 }

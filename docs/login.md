@@ -72,11 +72,12 @@ Os ids de cliente OAuth são públicos, como o `appId`, e ficam no git:
 |---|---|---|
 | `DefaultFirebaseOptions.googleWebClientId` | `lib/firebase_options.dart` | Console do Firebase > Authentication > Método de login > Google > Configuração do SDK da Web > ID do cliente da Web. O Android precisa dele para o token ser aceito pelo Firebase |
 | `DefaultFirebaseOptions.googleIosClientId` | `lib/firebase_options.dart` | `CLIENT_ID` do `GoogleService-Info.plist` do app iOS (baixar só para copiar o valor, não fica no projeto) |
-| `CFBundleURLSchemes` (hoje `com.googleusercontent.apps.TODO-reversed-ios-client-id`) | `ios/Runner/Info.plist` | `REVERSED_CLIENT_ID` do mesmo arquivo. É por esse endereço que o Google volta para o app |
+| `CFBundleURLSchemes` | `ios/Runner/Info.plist` | `REVERSED_CLIENT_ID` do mesmo arquivo. É por esse endereço que o Google volta para o app |
 
 Como o id do iOS vai no `initialize`, o `Info.plist` não precisa da chave
-`GIDClientID`. Os valores atuais são marcadores com `TODO(antonio)`: até
-serem trocados, tocar no Google mostra "Algo deu errado".
+`GIDClientID`. Os ids do iOS já estão preenchidos. O id da Web ainda é um
+marcador com `TODO(antonio)`: até ele ser trocado, o Google funciona só no
+iOS e, no Android, tocar no Google mostra "Algo deu errado".
 
 No console e nas contas:
 
