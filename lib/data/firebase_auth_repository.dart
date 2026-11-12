@@ -27,6 +27,11 @@ class FirebaseAuthRepository implements AuthRepository {
     }
   }
 
-  AppUser _toAppUser(User user) =>
-      AppUser(uid: user.uid, isAnonymous: user.isAnonymous);
+  AppUser _toAppUser(User user) => AppUser(
+    uid: user.uid,
+    isAnonymous: user.isAnonymous,
+    name: user.displayName,
+    email: user.email,
+    photoUrl: user.photoURL,
+  );
 }

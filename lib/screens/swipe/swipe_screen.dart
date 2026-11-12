@@ -13,6 +13,7 @@ import 'package:rango_app/core/widgets/top_bar_layout.dart';
 import 'package:rango_app/core/widgets/top_bar_scroll_view.dart';
 import 'package:rango_app/models/food_category.dart';
 import 'package:rango_app/models/like_state.dart';
+import 'package:rango_app/screens/profile/profile_sheet.dart';
 import 'package:rango_app/screens/swipe/swipe_state.dart';
 import 'package:rango_app/screens/swipe/swipe_view_model.dart';
 import 'package:rango_app/screens/swipe/widgets/food_card_deck.dart';
@@ -76,7 +77,11 @@ class SwipeScreen extends ConsumerWidget {
 
     final body = Scaffold(
       body: TopBarLayout(
-        topBar: isFlow ? TopBar.flow(onBack: exit) : const TopBar.principal(),
+        topBar: isFlow
+            ? TopBar.flow(onBack: exit)
+            : TopBar.principal(
+                onProfile: () => unawaited(showProfileSheet(context)),
+              ),
         body: session.when(
           loading: () => SafeArea(
             bottom: isFlow,

@@ -42,7 +42,7 @@ botão.
 | `TopBarLayout` | `lib/core/widgets/top_bar_layout.dart` | Camada `Glass` da Top Bar: o corpo da tela vai até o topo e a barra flutua sobre um blur progressivo. Entrega ao corpo a altura coberta em `MediaQuery.padding.top` |
 | `TopBarScrollView` | `lib/core/widgets/top_bar_scroll_view.dart` | Rolagem das telas com `TopBarLayout`: o conteúdo começa abaixo da barra e passa por trás dela |
 | `GlassCircle` | `lib/core/widgets/glass_circle.dart` | Vidro dos botões redondos: blur do que está atrás e sombra `Elevation/Card` só por fora. Usado pelo Icon Button `Glass` e pelo Avatar Button |
-| `AvatarButton` | `lib/core/widgets/avatar_button.dart` | Avatar Button Guest: alvo 48×48, círculo 44 de vidro mostarda (`color/glass/mustard`), rótulo "Abrir perfil" |
+| `AvatarButton` | `lib/core/widgets/avatar_button.dart` | Avatar Button Guest: alvo 48×48, círculo 44 de vidro mostarda (`color/glass/mustard`), rótulo "Abrir perfil". Abre o Profile Sheet (`docs/perfil.md`) |
 | `RangoTabBar` | `lib/core/widgets/rango_tab_bar.dart` | Tab Bar simplificada: pílula escura só com os ícones, aba ativa numa pílula creme, sem rótulo nem ponto vermelho, itens 64×48. O nome da aba vai para o leitor de tela ("Home, aba 1 de 2") e para o tooltip. Só a pílula creme anima (200 ms; nada com menos movimento) |
 | `AppShell` | `lib/app/app_shell.dart` | Tab Bar centralizada a 20 px da base, sobre um blur progressivo de 114 de altura (Figma 07d) |
 | `ProgressiveBlur` | `lib/core/widgets/progressive_blur.dart` | Blur que cresce em direção a uma borda da tela, usado na Top Bar e em volta da Tab Bar. Não bloqueia toques |

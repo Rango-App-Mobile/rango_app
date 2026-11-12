@@ -50,6 +50,29 @@ void main() {
     verifyNever(auth.signInAnonymously);
   });
 
+  test('brings the name, e-mail and photo of a user with an account', () async {
+    final existing = _MockUser();
+    when(() => existing.uid).thenReturn('account-uid');
+    when(() => existing.isAnonymous).thenReturn(false);
+    when(() => existing.displayName).thenReturn('Joana');
+    when(() => existing.email).thenReturn('joana@email.com');
+    when(() => existing.photoURL).thenReturn('https://example.com/joana.png');
+    when(() => auth.currentUser).thenReturn(existing);
+
+    final result = await repository.ensureSignedIn();
+
+    expect(
+      result,
+      const AppUser(
+        uid: 'account-uid',
+        isAnonymous: false,
+        name: 'Joana',
+        email: 'joana@email.com',
+        photoUrl: 'https://example.com/joana.png',
+      ),
+    );
+  });
+
   test('maps network-request-failed to NetworkFailure', () async {
     when(() => auth.currentUser).thenReturn(null);
     when(auth.signInAnonymously).thenThrow(
