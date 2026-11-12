@@ -35,3 +35,8 @@ abstract interface class AuthRepository {
 final authRepositoryProvider = Provider<AuthRepository>(
   (ref) => FirebaseAuthRepository(FirebaseAuth.instance),
 );
+
+/// The signed-in user, following every change to it.
+final currentUserProvider = StreamProvider<AppUser>(
+  (ref) => ref.watch(authRepositoryProvider).watchUser(),
+);

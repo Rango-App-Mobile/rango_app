@@ -12,6 +12,7 @@ import 'package:rango_app/data/fake_auth_repository.dart';
 import 'package:rango_app/data/fake_history_repository.dart';
 import 'package:rango_app/data/history_repository.dart';
 import 'package:rango_app/data/local_category_repository.dart';
+import 'package:rango_app/models/app_user.dart';
 import 'package:rango_app/models/history_entry.dart';
 import 'package:rango_app/screens/history/history_screen.dart';
 import 'package:rango_app/screens/history/widgets/history_stack.dart';
@@ -36,6 +37,9 @@ Future<void> _pump(
       overrides: [
         authRepositoryProvider.overrideWithValue(FakeAuthRepository()),
         categoryRepositoryProvider.overrideWithValue(LocalCategoryRepository()),
+        currentUserProvider.overrideWithValue(
+          const AsyncData(AppUser(uid: 'u1', isAnonymous: false)),
+        ),
         historyRepositoryProvider.overrideWithValue(
           repository ?? FakeHistoryRepository(),
         ),
@@ -379,7 +383,7 @@ void main() {
     tester,
   ) async {
     final failing = _MockHistoryRepository();
-    when(failing.fetchAll).thenThrow(Exception('offline'));
+    when(() => failing.fetchAll(any())).thenThrow(Exception('offline'));
     await _pump(tester, repository: failing);
 
     expect(find.text('Não deu para carregar seu histórico.'), findsOneWidget);

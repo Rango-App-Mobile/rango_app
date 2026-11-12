@@ -1,10 +1,12 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:rango_app/data/auth_repository.dart';
 import 'package:rango_app/data/category_repository.dart';
 import 'package:rango_app/data/fake_history_repository.dart';
 import 'package:rango_app/data/history_repository.dart';
 import 'package:rango_app/data/local_category_repository.dart';
+import 'package:rango_app/models/app_user.dart';
 import 'package:rango_app/screens/history_detail/history_detail_state.dart';
 import 'package:rango_app/screens/history_detail/history_detail_view_model.dart';
 
@@ -14,6 +16,9 @@ ProviderContainer makeContainer({HistoryRepository? history}) =>
     ProviderContainer.test(
       overrides: [
         categoryRepositoryProvider.overrideWithValue(LocalCategoryRepository()),
+        currentUserProvider.overrideWithValue(
+          const AsyncData(AppUser(uid: 'u1', isAnonymous: false)),
+        ),
         historyRepositoryProvider.overrideWithValue(
           history ?? FakeHistoryRepository(),
         ),
@@ -89,7 +94,7 @@ void main() {
 
   test('a failing history is an error', () async {
     final failing = _MockHistoryRepository();
-    when(failing.fetchAll).thenThrow(Exception('offline'));
+    when(() => failing.fetchAll(any())).thenThrow(Exception('offline'));
     final container = makeContainer(history: failing);
     final provider = historyDetailViewModelProvider('h9');
     container.listen(provider, (_, _) {});

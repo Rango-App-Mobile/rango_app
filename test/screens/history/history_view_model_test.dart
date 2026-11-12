@@ -1,11 +1,15 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:rango_app/data/auth_repository.dart';
 import 'package:rango_app/data/category_repository.dart';
+import 'package:rango_app/data/fake_auth_repository.dart';
 import 'package:rango_app/data/fake_history_repository.dart';
 import 'package:rango_app/data/history_repository.dart';
 import 'package:rango_app/data/local_category_repository.dart';
+import 'package:rango_app/models/app_user.dart';
 import 'package:rango_app/models/history_entry.dart';
+import 'package:rango_app/models/order_channel.dart';
 import 'package:rango_app/screens/history/history_state.dart';
 import 'package:rango_app/screens/history/history_view_model.dart';
 
@@ -15,6 +19,9 @@ Future<HistoryState> load(List<HistoryEntry> entries) {
   final container = ProviderContainer.test(
     overrides: [
       categoryRepositoryProvider.overrideWithValue(LocalCategoryRepository()),
+      currentUserProvider.overrideWithValue(
+        const AsyncData(AppUser(uid: 'u1', isAnonymous: false)),
+      ),
       historyRepositoryProvider.overrideWithValue(
         FakeHistoryRepository(entries: entries),
       ),
@@ -26,7 +33,9 @@ Future<HistoryState> load(List<HistoryEntry> entries) {
 HistoryEntry entry(String id, String foodId, DateTime at) => HistoryEntry(
   id: id,
   foodId: foodId,
+  restaurantId: 'p-$id',
   restaurantName: 'Restaurante $id',
+  channel: OrderChannel.delivery,
   decidedAt: at,
 );
 
@@ -105,10 +114,13 @@ void main() {
 
   test('exposes the error when the repository fails', () async {
     final repository = _MockHistoryRepository();
-    when(repository.fetchAll).thenThrow(Exception('offline'));
+    when(() => repository.fetchAll(any())).thenThrow(Exception('offline'));
     final container = ProviderContainer.test(
       overrides: [
         categoryRepositoryProvider.overrideWithValue(LocalCategoryRepository()),
+        currentUserProvider.overrideWithValue(
+          const AsyncData(AppUser(uid: 'u1', isAnonymous: false)),
+        ),
         historyRepositoryProvider.overrideWithValue(repository),
       ],
       retry: (_, _) => null,
@@ -118,5 +130,43 @@ void main() {
       container.read(historyViewModelProvider.future),
       throwsA(isA<Exception>()),
     );
+  });
+
+  group('who is signed in', () {
+    late FakeAuthRepository auth;
+    late ProviderContainer container;
+
+    setUp(() {
+      auth = FakeAuthRepository();
+      container = ProviderContainer.test(
+        overrides: [
+          authRepositoryProvider.overrideWithValue(auth),
+          categoryRepositoryProvider.overrideWithValue(
+            LocalCategoryRepository(),
+          ),
+          historyRepositoryProvider.overrideWithValue(FakeHistoryRepository()),
+        ],
+      )..listen(historyViewModelProvider, (_, _) {});
+    });
+
+    test('a guest sees the empty state, not the sample (R1)', () async {
+      final state = await container.read(historyViewModelProvider.future);
+
+      expect(state.isEmpty, isTrue);
+    });
+
+    test('reloads on sign-up and on sign-out', () async {
+      await container.read(historyViewModelProvider.future);
+
+      await auth.signUp(name: 'Ana', email: 'ana@x.com', password: '12345678');
+      await Future<void>.delayed(Duration.zero);
+      final signedIn = await container.read(historyViewModelProvider.future);
+      expect(signedIn.items, hasLength(FakeHistoryRepository.sample.length));
+
+      await auth.signOut();
+      await Future<void>.delayed(Duration.zero);
+      final signedOut = await container.read(historyViewModelProvider.future);
+      expect(signedOut.isEmpty, isTrue);
+    });
   });
 }

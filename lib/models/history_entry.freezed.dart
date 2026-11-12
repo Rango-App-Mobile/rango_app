@@ -14,8 +14,9 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$HistoryEntry {
 
+/// Assigned by the repository when saved; ignored by `save`.
  String get id;/// Id of the `FoodCategory` that won the session, e.g. "spaghetti".
- String get foodId; String get restaurantName; DateTime get decidedAt;/// Kind of place and neighborhood, e.g. "Italiana · Moinhos de Vento".
+ String get foodId; String get restaurantId; String get restaurantName; OrderChannel get channel; DateTime get decidedAt;/// Kind of place and neighborhood, e.g. "Italiana · Moinhos de Vento".
  String? get cuisine;
 /// Create a copy of HistoryEntry
 /// with the given fields replaced by the non-null parameter values.
@@ -27,16 +28,16 @@ $HistoryEntryCopyWith<HistoryEntry> get copyWith => _$HistoryEntryCopyWithImpl<H
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is HistoryEntry&&(identical(other.id, id) || other.id == id)&&(identical(other.foodId, foodId) || other.foodId == foodId)&&(identical(other.restaurantName, restaurantName) || other.restaurantName == restaurantName)&&(identical(other.decidedAt, decidedAt) || other.decidedAt == decidedAt)&&(identical(other.cuisine, cuisine) || other.cuisine == cuisine));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is HistoryEntry&&(identical(other.id, id) || other.id == id)&&(identical(other.foodId, foodId) || other.foodId == foodId)&&(identical(other.restaurantId, restaurantId) || other.restaurantId == restaurantId)&&(identical(other.restaurantName, restaurantName) || other.restaurantName == restaurantName)&&(identical(other.channel, channel) || other.channel == channel)&&(identical(other.decidedAt, decidedAt) || other.decidedAt == decidedAt)&&(identical(other.cuisine, cuisine) || other.cuisine == cuisine));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,foodId,restaurantName,decidedAt,cuisine);
+int get hashCode => Object.hash(runtimeType,id,foodId,restaurantId,restaurantName,channel,decidedAt,cuisine);
 
 @override
 String toString() {
-  return 'HistoryEntry(id: $id, foodId: $foodId, restaurantName: $restaurantName, decidedAt: $decidedAt, cuisine: $cuisine)';
+  return 'HistoryEntry(id: $id, foodId: $foodId, restaurantId: $restaurantId, restaurantName: $restaurantName, channel: $channel, decidedAt: $decidedAt, cuisine: $cuisine)';
 }
 
 
@@ -47,7 +48,7 @@ abstract mixin class $HistoryEntryCopyWith<$Res>  {
   factory $HistoryEntryCopyWith(HistoryEntry value, $Res Function(HistoryEntry) _then) = _$HistoryEntryCopyWithImpl;
 @useResult
 $Res call({
- String id, String foodId, String restaurantName, DateTime decidedAt, String? cuisine
+ String id, String foodId, String restaurantId, String restaurantName, OrderChannel channel, DateTime decidedAt, String? cuisine
 });
 
 
@@ -64,12 +65,14 @@ class _$HistoryEntryCopyWithImpl<$Res>
 
 /// Create a copy of HistoryEntry
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? foodId = null,Object? restaurantName = null,Object? decidedAt = null,Object? cuisine = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? foodId = null,Object? restaurantId = null,Object? restaurantName = null,Object? channel = null,Object? decidedAt = null,Object? cuisine = freezed,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,foodId: null == foodId ? _self.foodId : foodId // ignore: cast_nullable_to_non_nullable
+as String,restaurantId: null == restaurantId ? _self.restaurantId : restaurantId // ignore: cast_nullable_to_non_nullable
 as String,restaurantName: null == restaurantName ? _self.restaurantName : restaurantName // ignore: cast_nullable_to_non_nullable
-as String,decidedAt: null == decidedAt ? _self.decidedAt : decidedAt // ignore: cast_nullable_to_non_nullable
+as String,channel: null == channel ? _self.channel : channel // ignore: cast_nullable_to_non_nullable
+as OrderChannel,decidedAt: null == decidedAt ? _self.decidedAt : decidedAt // ignore: cast_nullable_to_non_nullable
 as DateTime,cuisine: freezed == cuisine ? _self.cuisine : cuisine // ignore: cast_nullable_to_non_nullable
 as String?,
   ));
@@ -156,10 +159,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String foodId,  String restaurantName,  DateTime decidedAt,  String? cuisine)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String foodId,  String restaurantId,  String restaurantName,  OrderChannel channel,  DateTime decidedAt,  String? cuisine)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _HistoryEntry() when $default != null:
-return $default(_that.id,_that.foodId,_that.restaurantName,_that.decidedAt,_that.cuisine);case _:
+return $default(_that.id,_that.foodId,_that.restaurantId,_that.restaurantName,_that.channel,_that.decidedAt,_that.cuisine);case _:
   return orElse();
 
 }
@@ -177,10 +180,10 @@ return $default(_that.id,_that.foodId,_that.restaurantName,_that.decidedAt,_that
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String foodId,  String restaurantName,  DateTime decidedAt,  String? cuisine)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String foodId,  String restaurantId,  String restaurantName,  OrderChannel channel,  DateTime decidedAt,  String? cuisine)  $default,) {final _that = this;
 switch (_that) {
 case _HistoryEntry():
-return $default(_that.id,_that.foodId,_that.restaurantName,_that.decidedAt,_that.cuisine);case _:
+return $default(_that.id,_that.foodId,_that.restaurantId,_that.restaurantName,_that.channel,_that.decidedAt,_that.cuisine);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -197,10 +200,10 @@ return $default(_that.id,_that.foodId,_that.restaurantName,_that.decidedAt,_that
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String foodId,  String restaurantName,  DateTime decidedAt,  String? cuisine)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String foodId,  String restaurantId,  String restaurantName,  OrderChannel channel,  DateTime decidedAt,  String? cuisine)?  $default,) {final _that = this;
 switch (_that) {
 case _HistoryEntry() when $default != null:
-return $default(_that.id,_that.foodId,_that.restaurantName,_that.decidedAt,_that.cuisine);case _:
+return $default(_that.id,_that.foodId,_that.restaurantId,_that.restaurantName,_that.channel,_that.decidedAt,_that.cuisine);case _:
   return null;
 
 }
@@ -212,13 +215,16 @@ return $default(_that.id,_that.foodId,_that.restaurantName,_that.decidedAt,_that
 
 
 class _HistoryEntry implements HistoryEntry {
-  const _HistoryEntry({required this.id, required this.foodId, required this.restaurantName, required this.decidedAt, this.cuisine});
+  const _HistoryEntry({required this.id, required this.foodId, required this.restaurantId, required this.restaurantName, required this.channel, required this.decidedAt, this.cuisine});
   
 
+/// Assigned by the repository when saved; ignored by `save`.
 @override final  String id;
 /// Id of the `FoodCategory` that won the session, e.g. "spaghetti".
 @override final  String foodId;
+@override final  String restaurantId;
 @override final  String restaurantName;
+@override final  OrderChannel channel;
 @override final  DateTime decidedAt;
 /// Kind of place and neighborhood, e.g. "Italiana · Moinhos de Vento".
 @override final  String? cuisine;
@@ -233,16 +239,16 @@ _$HistoryEntryCopyWith<_HistoryEntry> get copyWith => __$HistoryEntryCopyWithImp
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _HistoryEntry&&(identical(other.id, id) || other.id == id)&&(identical(other.foodId, foodId) || other.foodId == foodId)&&(identical(other.restaurantName, restaurantName) || other.restaurantName == restaurantName)&&(identical(other.decidedAt, decidedAt) || other.decidedAt == decidedAt)&&(identical(other.cuisine, cuisine) || other.cuisine == cuisine));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _HistoryEntry&&(identical(other.id, id) || other.id == id)&&(identical(other.foodId, foodId) || other.foodId == foodId)&&(identical(other.restaurantId, restaurantId) || other.restaurantId == restaurantId)&&(identical(other.restaurantName, restaurantName) || other.restaurantName == restaurantName)&&(identical(other.channel, channel) || other.channel == channel)&&(identical(other.decidedAt, decidedAt) || other.decidedAt == decidedAt)&&(identical(other.cuisine, cuisine) || other.cuisine == cuisine));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,foodId,restaurantName,decidedAt,cuisine);
+int get hashCode => Object.hash(runtimeType,id,foodId,restaurantId,restaurantName,channel,decidedAt,cuisine);
 
 @override
 String toString() {
-  return 'HistoryEntry(id: $id, foodId: $foodId, restaurantName: $restaurantName, decidedAt: $decidedAt, cuisine: $cuisine)';
+  return 'HistoryEntry(id: $id, foodId: $foodId, restaurantId: $restaurantId, restaurantName: $restaurantName, channel: $channel, decidedAt: $decidedAt, cuisine: $cuisine)';
 }
 
 
@@ -253,7 +259,7 @@ abstract mixin class _$HistoryEntryCopyWith<$Res> implements $HistoryEntryCopyWi
   factory _$HistoryEntryCopyWith(_HistoryEntry value, $Res Function(_HistoryEntry) _then) = __$HistoryEntryCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String foodId, String restaurantName, DateTime decidedAt, String? cuisine
+ String id, String foodId, String restaurantId, String restaurantName, OrderChannel channel, DateTime decidedAt, String? cuisine
 });
 
 
@@ -270,12 +276,14 @@ class __$HistoryEntryCopyWithImpl<$Res>
 
 /// Create a copy of HistoryEntry
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? foodId = null,Object? restaurantName = null,Object? decidedAt = null,Object? cuisine = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? foodId = null,Object? restaurantId = null,Object? restaurantName = null,Object? channel = null,Object? decidedAt = null,Object? cuisine = freezed,}) {
   return _then(_HistoryEntry(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,foodId: null == foodId ? _self.foodId : foodId // ignore: cast_nullable_to_non_nullable
+as String,restaurantId: null == restaurantId ? _self.restaurantId : restaurantId // ignore: cast_nullable_to_non_nullable
 as String,restaurantName: null == restaurantName ? _self.restaurantName : restaurantName // ignore: cast_nullable_to_non_nullable
-as String,decidedAt: null == decidedAt ? _self.decidedAt : decidedAt // ignore: cast_nullable_to_non_nullable
+as String,channel: null == channel ? _self.channel : channel // ignore: cast_nullable_to_non_nullable
+as OrderChannel,decidedAt: null == decidedAt ? _self.decidedAt : decidedAt // ignore: cast_nullable_to_non_nullable
 as DateTime,cuisine: freezed == cuisine ? _self.cuisine : cuisine // ignore: cast_nullable_to_non_nullable
 as String?,
   ));

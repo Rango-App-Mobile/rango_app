@@ -14,7 +14,8 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$RestaurantContactArgs {
 
- Restaurant get restaurant;/// `FoodCategory.foodTheme` of the chosen food, for the photo placeholder.
+ Restaurant get restaurant;/// Id of the chosen `FoodCategory`, saved with the decision.
+ String? get foodId;/// `FoodCategory.foodTheme` of the chosen food, for the photo placeholder.
  String? get foodTheme;/// Photo URL the map already fetched for the selected pin, if any.
  String? get photoUri;
 /// Create a copy of RestaurantContactArgs
@@ -27,16 +28,16 @@ $RestaurantContactArgsCopyWith<RestaurantContactArgs> get copyWith => _$Restaura
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is RestaurantContactArgs&&(identical(other.restaurant, restaurant) || other.restaurant == restaurant)&&(identical(other.foodTheme, foodTheme) || other.foodTheme == foodTheme)&&(identical(other.photoUri, photoUri) || other.photoUri == photoUri));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is RestaurantContactArgs&&(identical(other.restaurant, restaurant) || other.restaurant == restaurant)&&(identical(other.foodId, foodId) || other.foodId == foodId)&&(identical(other.foodTheme, foodTheme) || other.foodTheme == foodTheme)&&(identical(other.photoUri, photoUri) || other.photoUri == photoUri));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,restaurant,foodTheme,photoUri);
+int get hashCode => Object.hash(runtimeType,restaurant,foodId,foodTheme,photoUri);
 
 @override
 String toString() {
-  return 'RestaurantContactArgs(restaurant: $restaurant, foodTheme: $foodTheme, photoUri: $photoUri)';
+  return 'RestaurantContactArgs(restaurant: $restaurant, foodId: $foodId, foodTheme: $foodTheme, photoUri: $photoUri)';
 }
 
 
@@ -47,7 +48,7 @@ abstract mixin class $RestaurantContactArgsCopyWith<$Res>  {
   factory $RestaurantContactArgsCopyWith(RestaurantContactArgs value, $Res Function(RestaurantContactArgs) _then) = _$RestaurantContactArgsCopyWithImpl;
 @useResult
 $Res call({
- Restaurant restaurant, String? foodTheme, String? photoUri
+ Restaurant restaurant, String? foodId, String? foodTheme, String? photoUri
 });
 
 
@@ -64,10 +65,11 @@ class _$RestaurantContactArgsCopyWithImpl<$Res>
 
 /// Create a copy of RestaurantContactArgs
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? restaurant = null,Object? foodTheme = freezed,Object? photoUri = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? restaurant = null,Object? foodId = freezed,Object? foodTheme = freezed,Object? photoUri = freezed,}) {
   return _then(_self.copyWith(
 restaurant: null == restaurant ? _self.restaurant : restaurant // ignore: cast_nullable_to_non_nullable
-as Restaurant,foodTheme: freezed == foodTheme ? _self.foodTheme : foodTheme // ignore: cast_nullable_to_non_nullable
+as Restaurant,foodId: freezed == foodId ? _self.foodId : foodId // ignore: cast_nullable_to_non_nullable
+as String?,foodTheme: freezed == foodTheme ? _self.foodTheme : foodTheme // ignore: cast_nullable_to_non_nullable
 as String?,photoUri: freezed == photoUri ? _self.photoUri : photoUri // ignore: cast_nullable_to_non_nullable
 as String?,
   ));
@@ -163,10 +165,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( Restaurant restaurant,  String? foodTheme,  String? photoUri)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( Restaurant restaurant,  String? foodId,  String? foodTheme,  String? photoUri)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _RestaurantContactArgs() when $default != null:
-return $default(_that.restaurant,_that.foodTheme,_that.photoUri);case _:
+return $default(_that.restaurant,_that.foodId,_that.foodTheme,_that.photoUri);case _:
   return orElse();
 
 }
@@ -184,10 +186,10 @@ return $default(_that.restaurant,_that.foodTheme,_that.photoUri);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( Restaurant restaurant,  String? foodTheme,  String? photoUri)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( Restaurant restaurant,  String? foodId,  String? foodTheme,  String? photoUri)  $default,) {final _that = this;
 switch (_that) {
 case _RestaurantContactArgs():
-return $default(_that.restaurant,_that.foodTheme,_that.photoUri);case _:
+return $default(_that.restaurant,_that.foodId,_that.foodTheme,_that.photoUri);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -204,10 +206,10 @@ return $default(_that.restaurant,_that.foodTheme,_that.photoUri);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( Restaurant restaurant,  String? foodTheme,  String? photoUri)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( Restaurant restaurant,  String? foodId,  String? foodTheme,  String? photoUri)?  $default,) {final _that = this;
 switch (_that) {
 case _RestaurantContactArgs() when $default != null:
-return $default(_that.restaurant,_that.foodTheme,_that.photoUri);case _:
+return $default(_that.restaurant,_that.foodId,_that.foodTheme,_that.photoUri);case _:
   return null;
 
 }
@@ -219,10 +221,12 @@ return $default(_that.restaurant,_that.foodTheme,_that.photoUri);case _:
 
 
 class _RestaurantContactArgs implements RestaurantContactArgs {
-  const _RestaurantContactArgs({required this.restaurant, this.foodTheme, this.photoUri});
+  const _RestaurantContactArgs({required this.restaurant, this.foodId, this.foodTheme, this.photoUri});
   
 
 @override final  Restaurant restaurant;
+/// Id of the chosen `FoodCategory`, saved with the decision.
+@override final  String? foodId;
 /// `FoodCategory.foodTheme` of the chosen food, for the photo placeholder.
 @override final  String? foodTheme;
 /// Photo URL the map already fetched for the selected pin, if any.
@@ -238,16 +242,16 @@ _$RestaurantContactArgsCopyWith<_RestaurantContactArgs> get copyWith => __$Resta
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _RestaurantContactArgs&&(identical(other.restaurant, restaurant) || other.restaurant == restaurant)&&(identical(other.foodTheme, foodTheme) || other.foodTheme == foodTheme)&&(identical(other.photoUri, photoUri) || other.photoUri == photoUri));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _RestaurantContactArgs&&(identical(other.restaurant, restaurant) || other.restaurant == restaurant)&&(identical(other.foodId, foodId) || other.foodId == foodId)&&(identical(other.foodTheme, foodTheme) || other.foodTheme == foodTheme)&&(identical(other.photoUri, photoUri) || other.photoUri == photoUri));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,restaurant,foodTheme,photoUri);
+int get hashCode => Object.hash(runtimeType,restaurant,foodId,foodTheme,photoUri);
 
 @override
 String toString() {
-  return 'RestaurantContactArgs(restaurant: $restaurant, foodTheme: $foodTheme, photoUri: $photoUri)';
+  return 'RestaurantContactArgs(restaurant: $restaurant, foodId: $foodId, foodTheme: $foodTheme, photoUri: $photoUri)';
 }
 
 
@@ -258,7 +262,7 @@ abstract mixin class _$RestaurantContactArgsCopyWith<$Res> implements $Restauran
   factory _$RestaurantContactArgsCopyWith(_RestaurantContactArgs value, $Res Function(_RestaurantContactArgs) _then) = __$RestaurantContactArgsCopyWithImpl;
 @override @useResult
 $Res call({
- Restaurant restaurant, String? foodTheme, String? photoUri
+ Restaurant restaurant, String? foodId, String? foodTheme, String? photoUri
 });
 
 
@@ -275,10 +279,11 @@ class __$RestaurantContactArgsCopyWithImpl<$Res>
 
 /// Create a copy of RestaurantContactArgs
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? restaurant = null,Object? foodTheme = freezed,Object? photoUri = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? restaurant = null,Object? foodId = freezed,Object? foodTheme = freezed,Object? photoUri = freezed,}) {
   return _then(_RestaurantContactArgs(
 restaurant: null == restaurant ? _self.restaurant : restaurant // ignore: cast_nullable_to_non_nullable
-as Restaurant,foodTheme: freezed == foodTheme ? _self.foodTheme : foodTheme // ignore: cast_nullable_to_non_nullable
+as Restaurant,foodId: freezed == foodId ? _self.foodId : foodId // ignore: cast_nullable_to_non_nullable
+as String?,foodTheme: freezed == foodTheme ? _self.foodTheme : foodTheme // ignore: cast_nullable_to_non_nullable
 as String?,photoUri: freezed == photoUri ? _self.photoUri : photoUri // ignore: cast_nullable_to_non_nullable
 as String?,
   ));
