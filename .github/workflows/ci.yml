@@ -37,7 +37,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: subosito/flutter-action@v2
-        with: { channel: stable, cache: true }
+        with: { flutter-version: "3.44.4", channel: stable, cache: true }
       - run: flutter pub get
       # Arquivos gerados (*.g.dart, *.freezed.dart) não entram no format check.
       - run: dart format --output=none --set-exit-if-changed $(git ls-files '*.dart' | grep -v -E '\.(g|freezed)\.dart$')
@@ -49,7 +49,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: subosito/flutter-action@v2
-        with: { channel: stable, cache: true }
+        with: { flutter-version: "3.44.4", channel: stable, cache: true }
       - run: flutter pub get
       - run: flutter analyze
 
@@ -60,7 +60,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: subosito/flutter-action@v2
-        with: { channel: stable, cache: true }
+        with: { flutter-version: "3.44.4", channel: stable, cache: true }
       - run: flutter pub get
       - uses: actions/setup-node@v4
         with:
