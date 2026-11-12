@@ -75,9 +75,7 @@ Os ids de cliente OAuth são públicos, como o `appId`, e ficam no git:
 | `CFBundleURLSchemes` | `ios/Runner/Info.plist` | `REVERSED_CLIENT_ID` do mesmo arquivo. É por esse endereço que o Google volta para o app |
 
 Como o id do iOS vai no `initialize`, o `Info.plist` não precisa da chave
-`GIDClientID`. Os ids do iOS já estão preenchidos. O id da Web ainda é um
-marcador com `TODO(antonio)`: até ele ser trocado, o Google funciona só no
-iOS e, no Android, tocar no Google mostra "Algo deu errado".
+`GIDClientID`.
 
 No console e nas contas:
 
