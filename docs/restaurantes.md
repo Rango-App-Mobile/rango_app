@@ -100,6 +100,69 @@ Só links `https` são usados; o resto é ignorado. As regras de segurança da
 coleção (leitura para usuário autenticado, sem escrita pelo app) ficam na
 E4-S2 (#22).
 
+### Sincronização da planilha
+
+A planilha [restaurantes](https://docs.google.com/spreadsheets/d/1Wct3C90S9gJr21CMIERYt2uC27NPNv5idFiwdhmYnlQ/edit)
+é a fonte dos restaurantes reais. Um Google Apps Script instalado nela grava a
+aba principal em `restaurants`, uma vez por dia de madrugada ou na hora, pelo
+menu **Rango > Sincronizar agora**. O resultado aparece na aba **Sincronização**.
+Uma alteração feita hoje só chega ao app na próxima rodada, se ninguém usar o
+botão. O app ainda não lê esses dados: a troca do `FakeRestaurantRepository` faz
+parte da E3-S7.
+
+O código fica em `tools/restaurant_sync/`, que é a fonte: uma mudança passa por
+PR e depois é copiada para o editor do Apps Script.
+
+| Na planilha | O que acontece |
+|---|---|
+| Linha nova ou alterada | Grava no Firestore; o que não mudou não é regravado |
+| Linha apagada | O documento fica com `active: false`, nunca é excluído |
+| Linha com problema (coordenada inválida, comida fora do cardápio, nome repetido) | Fica de fora, com o motivo na aba Sincronização; o documento que já existia não muda |
+| Nenhuma comida do cardápio | Não entra: o app nunca a mostraria |
+| Planilha vazia, sem uma coluna obrigatória ou com menos da metade dos restaurantes ativos | Para sem alterar nada, avisa na aba e manda e-mail para quem ligou a rotina |
+| Documento cadastrado à mão (sem `source: sheet`) | Não é tocado |
+
+As comidas são deduzidas por palavras-chave nas colunas "Tipo de comida" e
+"Comidas Servidas". A coluna opcional **Comidas (correção)** substitui a dedução:
+aceita os nomes do cardápio separados por ponto e vírgula, ou `Nenhuma`. O id do
+documento vem do nome e do bairro; renomear um restaurante cria um documento novo
+e desativa o antigo.
+
+Os links de pedido são os endereços guardados dentro das células da coluna "Links
+para pedir", não o texto que elas mostram, como "iFood | 99Food". A "Pesquisa
+Google" não é gravada, porque o app já oferece essa busca quando o restaurante
+não tem link. A rotina procura as colunas pelo nome exato: quem renomear "Nota
+principal (Google > iFood > outras)", "Links para pedir (Google quando não houver
+link direto)" ou outra coluna obrigatória faz a sincronização parar, sem alterar
+nada, até o nome voltar ou o código mudar. A aba **Comidas sem cobertura** não
+entra na sincronização.
+
+Por que Apps Script: rotina agendada dentro do Firebase exige Cloud Functions,
+que só funciona no plano Blaze, com cartão (§11, 2026-11-05). O Apps Script é
+gratuito e fica à mão de quem cuida da planilha.
+
+**Para instalar**, com uma conta que edite a planilha e o projeto `rango-f0485`:
+
+1. No [Google Cloud Console](https://console.cloud.google.com/iam-admin/serviceaccounts?project=rango-f0485),
+   crie uma conta de serviço com o papel **Usuário do Cloud Datastore**. Em
+   *Chaves > Adicionar chave > JSON*, baixe a chave. Ela nunca vai para o git.
+2. Na planilha, abra *Extensões > Apps Script* e crie os arquivos `rules.gs` e
+   `sync.gs` com o conteúdo de `tools/restaurant_sync/`. Em *Configurações do
+   projeto*, ligue "Mostrar appsscript.json" e cole o `appsscript.json`.
+3. Ainda em *Configurações do projeto*, crie a propriedade do script
+   `FIRESTORE_SERVICE_ACCOUNT` com o JSON inteiro da chave. Depois apague o
+   arquivo baixado.
+4. Recarregue a planilha, use **Rango > Sincronizar agora** e autorize. O Google
+   avisa que o app não foi verificado: *Avançado > Acessar*. Confira a aba
+   Sincronização.
+5. Use **Rango > Ligar sincronização diária**. A rotina roda na conta de quem fez
+   isso; se ela perder o acesso à planilha, a rotina para.
+
+**Cuidado com quem edita a planilha:** quem edita também abre o Apps Script e
+pode ler a chave, e essa conta de serviço lê e grava todo o Firestore, inclusive
+`users`. Dê acesso de edição só a quem cuida dos dados e deixe os demais como
+leitores. Se a chave vazar, apague-a no console e crie outra.
+
 ## Testes
 
 | Arquivo | O que cobre |
@@ -114,9 +177,11 @@ E4-S2 (#22).
 | `test/screens/restaurants/widgets/osm_restaurant_map_test.dart` | Mapa real sem rede: um pin por restaurante, toque, balão só no selecionado, ponta do pin na coordenada, centralizar, mapa desenhado sem posição, identificação do app e URL do servidor |
 | `test/screens/restaurant_contact/` | ViewModel (iFood, outros, Google, telefone) e tela (botões, "Ligar" sem telefone, sem "Abrir no mapa" nem histórico, voltar, 375×667) |
 | `test/app/app_test.dart` | Fluxo swipe → Deu match → mapa → contato com os fakes |
+| `test/restaurant_sync_test.mjs` | Leitura da planilha (nota, telefone, posição, links, comidas, correção, linhas inválidas), ids das comidas iguais aos do cardápio, o que gravar ou desativar, e parada sem alterações quando a planilha está quebrada. Roda com `node --test` |
 
-**Sem teste automatizado:** o download real do mapa e a abertura real de links e
-do discador. Roteiro manual: abrir o mapa, conferir o mapa real, o crédito e os
+**Sem teste automatizado:** a sincronização contra o Google de verdade (assinatura
+da chave, Firestore, gatilho diário), o download real do mapa e a abertura real de
+links e do discador. Roteiro manual: abrir o mapa, conferir o mapa real, o crédito e os
 pins na cor da comida, tocar pins, recentralizar, abrir o contato, "Pedir no
 delivery" e "Ligar"; negar a permissão nos ajustes e voltar ao app para ver a
 tela 09.
