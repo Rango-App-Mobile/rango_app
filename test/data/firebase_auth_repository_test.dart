@@ -199,6 +199,10 @@ void main() {
       ('invalid-email', isA<InvalidEmailFailure>()),
       ('network-request-failed', isA<NetworkFailure>()),
       ('too-many-requests', isA<UnexpectedFailure>()),
+      (
+        'account-exists-with-different-credential',
+        isA<AccountExistsWithOtherMethodFailure>(),
+      ),
     ]) {
       test('signing in maps $code', () {
         when(

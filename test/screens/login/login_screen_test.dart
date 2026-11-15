@@ -4,12 +4,15 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:rango_app/core/error/failure.dart';
+import 'package:rango_app/core/widgets/apple_sign_in_button.dart';
+import 'package:rango_app/core/widgets/google_sign_in_button.dart';
 import 'package:rango_app/core/widgets/inline_alert.dart';
 import 'package:rango_app/core/widgets/rango_button.dart';
 import 'package:rango_app/data/auth_repository.dart';
 import 'package:rango_app/data/fake_auth_repository.dart';
 import 'package:rango_app/models/app_user.dart';
 import 'package:rango_app/screens/login/login_screen.dart';
+import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 
 import '../../helpers/auth_form.dart';
 
@@ -71,7 +74,7 @@ void main() {
     final repository = FakeAuthRepository();
     await _pump(tester, repository);
 
-    await tapButton(tester, 'Continuar com o Google');
+    await tapText(tester, 'Continuar com o Google');
 
     expect(find.text('HOME'), findsOneWidget);
     expect((await repository.ensureSignedIn()).isAnonymous, isFalse);
@@ -84,7 +87,7 @@ void main() {
       when(repository.signInWithApple).thenAnswer((_) async => null);
       await _pump(tester, repository);
 
-      await tapButton(tester, 'Continuar com a Apple');
+      await tapText(tester, 'Continuar com a Apple');
 
       // Closing the sheet keeps the person on the form.
       verify(repository.signInWithApple).called(1);
@@ -99,18 +102,33 @@ void main() {
     when(repository.signInWithGoogle).thenAnswer((_) => pending.future);
     await _pump(tester, repository);
 
-    await tester.tap(
-      find.widgetWithText(RangoButton, 'Continuar com o Google'),
-    );
-    await tester.pump();
+    await tapText(tester, 'Continuar com o Google', settle: false);
 
-    final google = tester.widget<RangoButton>(
-      find.widgetWithText(RangoButton, 'Continuar com o Google'),
+    final google = tester.widget<GoogleSignInButton>(
+      find.byType(GoogleSignInButton),
     );
     expect(google.onPressed, isNull);
+    final apple = tester.widget<AppleSignInButton>(
+      find.byType(AppleSignInButton),
+    );
+    expect(apple.onPressed, isNull);
     pending.complete(null);
     await tester.pumpAndSettle();
-  });
+  }, variant: TargetPlatformVariant.only(TargetPlatform.iOS));
+
+  testWidgets(
+    'Apple uses the official button',
+    (tester) async {
+      await _pump(tester, FakeAuthRepository());
+
+      final button = tester.widget<SignInWithAppleButton>(
+        find.byType(SignInWithAppleButton),
+      );
+      expect(button.style, SignInWithAppleButtonStyle.black);
+      expect(button.text, 'Continuar com a Apple');
+    },
+    variant: TargetPlatformVariant.only(TargetPlatform.iOS),
+  );
 
   testWidgets('signing in goes back to where the person was', (tester) async {
     final repository = await _withJoana();

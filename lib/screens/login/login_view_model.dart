@@ -58,10 +58,14 @@ class LoginViewModel extends Notifier<AuthFormState> {
       final user = await signIn();
       if (ref.mounted) state = AuthFormState(done: user != null);
     } on Failure catch (failure) {
-      // No field caused it, so anything but the network is an alert.
+      // No field caused it, so only the network and a taken e-mail keep their
+      // own message; the rest is a generic alert.
       if (ref.mounted) {
         state = AuthFormState.failed(
-          failure is NetworkFailure ? failure : const UnexpectedFailure(),
+          failure is NetworkFailure ||
+                  failure is AccountExistsWithOtherMethodFailure
+              ? failure
+              : const UnexpectedFailure(),
         );
       }
     }

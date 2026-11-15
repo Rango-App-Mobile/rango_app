@@ -73,6 +73,22 @@ Future<void> tapButton(WidgetTester tester, String label) async {
   await tester.pumpAndSettle();
 }
 
+/// Taps any widget by its text (the social buttons are not `RangoButton`s).
+Future<void> tapText(
+  WidgetTester tester,
+  String text, {
+  bool settle = true,
+}) async {
+  final target = find.text(text);
+  await tester.ensureVisible(target);
+  await tester.tap(target);
+  if (settle) {
+    await tester.pumpAndSettle();
+  } else {
+    await tester.pump();
+  }
+}
+
 /// What the back gesture does: pops the top route.
 Future<void> goBack(WidgetTester tester) async {
   GoRouter.of(tester.element(find.byType(Scaffold).last)).pop();

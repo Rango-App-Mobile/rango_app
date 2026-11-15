@@ -86,6 +86,20 @@ void main() {
       );
     });
 
+    test('$provider with an account under another method says so', () async {
+      when(
+        () => signIn(repository),
+      ).thenThrow(const AccountExistsWithOtherMethodFailure());
+
+      await continueWith(viewModel());
+
+      expect(
+        state().alert,
+        'Este e-mail já tem conta com outro jeito de entrar. '
+        'Use o mesmo de antes.',
+      );
+    });
+
     test('$provider ignores a second tap while signing in', () async {
       final pending = Completer<AppUser?>();
       when(() => signIn(repository)).thenAnswer((_) => pending.future);
