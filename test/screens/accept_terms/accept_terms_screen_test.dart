@@ -1,10 +1,14 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
+import 'package:rango_app/app/theme/app_theme.dart';
 import 'package:rango_app/core/widgets/rango_button.dart';
 import 'package:rango_app/core/widgets/rango_loading_view.dart';
 import 'package:rango_app/data/account_repository.dart';
+import 'package:rango_app/data/auth_repository.dart';
 import 'package:rango_app/data/fake_account_repository.dart';
 import 'package:rango_app/data/fake_auth_repository.dart';
 import 'package:rango_app/screens/accept_terms/accept_terms_screen.dart';
@@ -72,6 +76,43 @@ void main() {
     expect(find.byType(RangoLoadingView), findsOneWidget);
     accounts.gate.complete();
     await tester.pumpAndSettle();
+  });
+
+  testWidgets('accepting closes the login left underneath', (tester) async {
+    final auth = FakeAuthRepository();
+    await auth.signInWithGoogle();
+    final accounts = FakeAccountRepository();
+    final router = GoRouter(
+      initialLocation: '/home',
+      routes: [
+        GoRoute(path: '/home', builder: (_, _) => const Text('HOME')),
+        GoRoute(path: '/login', builder: (_, _) => const Text('LOGIN')),
+        GoRoute(
+          path: '/accept-terms',
+          builder: (_, _) => const AcceptTermsScreen(),
+        ),
+      ],
+    );
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          authRepositoryProvider.overrideWithValue(auth),
+          accountRepositoryProvider.overrideWithValue(accounts),
+        ],
+        child: MaterialApp.router(theme: AppTheme.light, routerConfig: router),
+      ),
+    );
+    unawaited(router.push<void>('/login'));
+    await tester.pumpAndSettle();
+    unawaited(router.push<void>('/accept-terms'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byType(Switch));
+    await tester.pump();
+    await tapButton(tester, 'Continuar');
+
+    expect(find.text('HOME'), findsOneWidget);
+    expect(find.text('LOGIN'), findsNothing);
   });
 
   testWidgets('Agora não signs out and goes back', (tester) async {

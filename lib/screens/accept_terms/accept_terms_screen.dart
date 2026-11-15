@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:rango_app/core/theme/app_space.dart';
 import 'package:rango_app/core/widgets/inline_alert.dart';
 import 'package:rango_app/core/widgets/page_header.dart';
@@ -43,7 +42,9 @@ class _AcceptTermsScreenState extends ConsumerState<AcceptTermsScreen> {
         if (name != null && _name.text.isEmpty) _name.text = name;
       })
       ..listen(acceptTermsViewModelProvider.select((s) => s.done), (_, done) {
-        if (done) context.pop();
+        // Login (and the sign-up pushed on it) may still be underneath:
+        // close the whole auth flow, back to where it was opened.
+        if (done) Navigator.of(context).popUntil((route) => route.isFirst);
       });
 
     final form = Scaffold(
