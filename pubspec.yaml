@@ -86,6 +86,8 @@ flutter:
   # Dish photos from the Figma "Assets" page (see docs/swipe.md).
   assets:
     - assets/images/food/
+    # Official Google "G" (Google Identity branding kit), 1x/2x/3x.
+    - assets/images/google_g.png
 
 
 flutter_launcher_icons:
