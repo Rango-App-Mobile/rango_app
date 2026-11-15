@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:rango_app/core/error/failure.dart';
 import 'package:rango_app/data/auth_repository.dart';
 import 'package:rango_app/data/category_repository.dart';
 import 'package:rango_app/data/fake_auth_repository.dart';
@@ -129,6 +130,27 @@ void main() {
     await expectLater(
       container.read(historyViewModelProvider.future),
       throwsA(isA<Exception>()),
+    );
+  });
+
+  test('reaches the error state without waiting for retries', () async {
+    final repository = _MockHistoryRepository();
+    when(() => repository.fetchAll(any())).thenThrow(const UnexpectedFailure());
+    final container = ProviderContainer.test(
+      overrides: [
+        categoryRepositoryProvider.overrideWithValue(LocalCategoryRepository()),
+        currentUserProvider.overrideWithValue(
+          const AsyncData(AppUser(uid: 'u1', isAnonymous: false)),
+        ),
+        historyRepositoryProvider.overrideWithValue(repository),
+      ],
+    );
+
+    await expectLater(
+      container
+          .read(historyViewModelProvider.future)
+          .timeout(const Duration(seconds: 2)),
+      throwsA(isA<UnexpectedFailure>()),
     );
   });
 

@@ -13,7 +13,10 @@ final historyDetailViewModelProvider =
       HistoryDetailViewModel,
       AsyncValue<HistoryDetailState>,
       String
-    >(HistoryDetailViewModel.new);
+    >(
+      HistoryDetailViewModel.new,
+      retry: (_, _) => null,
+    ); // no auto-retry: show errors at once
 
 /// Synchronous on purpose: when the Histórico opens a decision, the entries
 /// and the menu are already loaded, so the detail is data on its very first

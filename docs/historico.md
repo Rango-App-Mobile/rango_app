@@ -162,3 +162,4 @@ simulador, e a aparência contra as telas "07d" e "12" do Figma.
 | Paginação além das 100 mais recentes | Quando alguém passar disso |
 | "Pedir de novo" abrindo as opções de contato (06) | E3 |
 | Foto do restaurante e as métricas (distância, tempo) do bloco "Onde você pediu" | Junto com os dados reais dos restaurantes (E3-S7) |
+- O retry automático do Riverpod está desligado nos providers do histórico: o estado de erro aparece na hora.

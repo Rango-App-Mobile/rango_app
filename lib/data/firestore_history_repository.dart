@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import 'package:rango_app/core/error/failure.dart';
 import 'package:rango_app/data/history_repository.dart';
 import 'package:rango_app/models/history_entry.dart';
@@ -35,6 +36,8 @@ class FirestoreHistoryRepository implements HistoryRepository {
           .timeout(timeout);
       return [for (final doc in snapshot.docs) ?_parse(doc.id, doc.data())];
     } on FirebaseException catch (e) {
+      // TEMP(debug): remove after the device check.
+      debugPrint('RANGO_FIRESTORE ${e.code}: ${e.message}');
       throw e.code == 'unavailable'
           ? const NetworkFailure()
           : const UnexpectedFailure();
