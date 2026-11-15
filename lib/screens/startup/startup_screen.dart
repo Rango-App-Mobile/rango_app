@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:rango_app/core/error/failure.dart';
+import 'package:rango_app/core/widgets/rango_loading_view.dart';
 import 'package:rango_app/screens/startup/startup_view_model.dart';
 
 /// Shown while the anonymous session is created, and when it fails. Once the
@@ -16,7 +17,7 @@ class StartupScreen extends ConsumerWidget {
     return Scaffold(
       body: Center(
         child: switch (error) {
-          null => const CircularProgressIndicator(),
+          null => const RangoLoadingView(),
           final error => Padding(
             padding: const EdgeInsets.all(24),
             child: Column(

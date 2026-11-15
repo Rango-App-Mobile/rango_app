@@ -87,6 +87,8 @@ flutter:
   # Dish photos from the Figma "Assets" page (see docs/swipe.md).
   assets:
     - assets/images/food/
+    # Animated loading xis (Figma "00 Loading", see docs/splash.md).
+    - assets/images/loading/
     # Official Google "G" (Google Identity branding kit), 1x/2x/3x.
     - assets/images/google_g.png
     # Placeholder text of the Terms of Use (docs/login.md).
@@ -131,3 +133,15 @@ flutter_launcher_icons:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
+
+# Native splash that hands over to RangoLoadingView (docs/splash.md).
+# Regenerate with `dart run flutter_native_splash:create`.
+flutter_native_splash:
+  color: "#2F5D3A"
+  image: assets/splash/xis.png
+  android: true
+  ios: true
+  fullscreen: false
+  android_12:
+    color: "#2F5D3A"
+    image: assets/splash/xis_android12.png
