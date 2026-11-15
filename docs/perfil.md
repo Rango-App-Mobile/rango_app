@@ -60,6 +60,9 @@ interrompe a sequência:
 1. `AuthRepository.reauthenticate`: o Firebase só apaga uma conta com login
    recente. Conta de e-mail usa a senha digitada; Google reabre o seletor da
    conta; Apple reabre a folha da Apple. `false` se a pessoa fechar a janela.
+   O provedor é o da sessão atual (`sign_in_provider` do token), porque uma
+   conta pode ter mais de um ligado (o mesmo e-mail no Google e na Apple). Sem
+   essa informação, a ordem é Apple, Google, senha.
 2. `AccountRepository.deleteData(uid)`: apaga `users/{uid}/sessions` e
    `users/{uid}`. Vem antes porque `firestore.rules` só deixa a própria conta
    (não anônima) apagar os dados dela; sem a conta, os dados ficariam órfãos.

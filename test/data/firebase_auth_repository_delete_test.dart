@@ -10,7 +10,11 @@ class _MockUser extends Mock implements User {}
 
 class _MockUserCredential extends Mock implements UserCredential {}
 
-class _MockUserInfo extends Mock implements UserInfo {}
+class _MockUserInfo extends Mock implements UserInfo {
+  void stubId(String id) => when(() => providerId).thenReturn(id);
+}
+
+class _MockIdTokenResult extends Mock implements IdTokenResult {}
 
 class _MockAdditionalUserInfo extends Mock implements AdditionalUserInfo {}
 
@@ -27,10 +31,23 @@ void main() {
     registerFallbackValue(AppleAuthProvider());
   });
 
-  void signedInWith(String providerId) {
-    final info = _MockUserInfo();
-    when(() => info.providerId).thenReturn(providerId);
-    when(() => user.providerData).thenReturn([info]);
+  /// [providerId] is how this session signed in (the token's
+  /// `sign_in_provider`, unless [session] says otherwise); [alsoLinked] are
+  /// other providers on the same account.
+  void signedInWith(
+    String providerId, {
+    List<String> alsoLinked = const [],
+    String? session = '',
+  }) {
+    final infos = [
+      for (final id in [providerId, ...alsoLinked]) _MockUserInfo()..stubId(id),
+    ];
+    when(() => user.providerData).thenReturn(infos);
+    final token = _MockIdTokenResult();
+    when(
+      () => token.signInProvider,
+    ).thenReturn(session == '' ? providerId : session);
+    when(user.getIdTokenResult).thenAnswer((_) async => token);
   }
 
   setUp(() {
@@ -100,6 +117,30 @@ void main() {
       verify(() => user.reauthenticateWithProvider(any())).called(1);
     });
 
+    test(
+      'an account with Google and Apple uses the one it signed in with',
+      () async {
+        signedInWith('apple.com', alsoLinked: ['google.com', 'password']);
+        when(
+          () => user.reauthenticateWithProvider(any()),
+        ).thenAnswer((_) async => _MockUserCredential());
+
+        expect(await repository.reauthenticate(password: 'x'), isTrue);
+        verify(() => user.reauthenticateWithProvider(any())).called(1);
+        verifyNever(() => user.reauthenticateWithCredential(any()));
+      },
+    );
+
+    test('without the session provider it prefers Apple over Google', () async {
+      signedInWith('google.com', alsoLinked: ['apple.com'], session: null);
+      when(
+        () => user.reauthenticateWithProvider(any()),
+      ).thenAnswer((_) async => _MockUserCredential());
+
+      expect(await repository.reauthenticate(), isTrue);
+      verify(() => user.reauthenticateWithProvider(any())).called(1);
+    });
+
     for (final code in ['canceled', 'web-context-canceled']) {
       test('closing the Apple sheet ($code) returns false', () async {
         signedInWith('apple.com');
@@ -111,7 +152,7 @@ void main() {
       });
     }
 
-    test('maps wrong password, mismatch, recent login and network', () {
+    test('maps wrong password, mismatch, recent login and network', () async {
       signedInWith('password');
       final expected = {
         'wrong-password': isA<InvalidCredentialsFailure>(),
@@ -123,7 +164,7 @@ void main() {
         when(
           () => user.reauthenticateWithCredential(any()),
         ).thenThrow(FirebaseAuthException(code: key));
-        expect(
+        await expectLater(
           repository.reauthenticate(password: 'x'),
           throwsA(value),
           reason: key,

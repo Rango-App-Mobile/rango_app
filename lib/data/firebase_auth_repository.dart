@@ -26,6 +26,10 @@ class FirebaseAuthRepository implements AuthRepository {
   /// authorization, which [reauthenticate] obtains just before the deletion.
   String? _appleAuthorizationCode;
 
+  /// Fallback when the token does not say how the session signed in: Apple
+  /// first, since its sheet is native on iOS and its token must be revoked.
+  static const _reauthOrder = ['apple.com', 'google.com', 'password'];
+
   @override
   Future<AppUser> ensureSignedIn() {
     // Firebase Auth keeps the user on the device; signing in again would
@@ -149,9 +153,15 @@ class FirebaseAuthRepository implements AuthRepository {
   Future<bool> reauthenticate({String? password}) => _guard(() async {
     final user = _auth.currentUser;
     if (user == null) throw const UnexpectedFailure();
-    final providers = user.providerData.map((i) => i.providerId).toSet();
+    final linked = user.providerData.map((i) => i.providerId).toSet();
+    // An account can have several providers (same e-mail on Google and
+    // Apple); re-authenticate with the one this session signed in with.
+    final session = (await user.getIdTokenResult()).signInProvider;
+    final provider = linked.contains(session)
+        ? session
+        : _reauthOrder.where(linked.contains).firstOrNull;
     try {
-      if (providers.contains('password')) {
+      if (provider == 'password') {
         final email = user.email;
         if (password == null || password.isEmpty || email == null) {
           throw const InvalidCredentialsFailure();
@@ -159,13 +169,13 @@ class FirebaseAuthRepository implements AuthRepository {
         await user.reauthenticateWithCredential(
           EmailAuthProvider.credential(email: email, password: password),
         );
-      } else if (providers.contains('google.com')) {
+      } else if (provider == 'google.com') {
         final idToken = await _googleIdToken();
         if (idToken == null) return false;
         await user.reauthenticateWithCredential(
           GoogleAuthProvider.credential(idToken: idToken),
         );
-      } else if (providers.contains('apple.com')) {
+      } else if (provider == 'apple.com') {
         final credential = await user.reauthenticateWithProvider(
           AppleAuthProvider(),
         );
