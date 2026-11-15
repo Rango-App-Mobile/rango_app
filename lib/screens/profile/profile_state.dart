@@ -15,15 +15,6 @@ abstract class ProfileState with _$ProfileState {
 
     /// A password account whose e-mail is not confirmed yet.
     @Default(false) bool needsVerification,
-
-    /// Deleting the account asks for the password only when there is one.
-    @Default(false) bool usesPassword,
-
-    /// The account and its data are being deleted.
-    @Default(false) bool deleting,
-
-    /// Why the last deletion did not happen, ready to show.
-    String? deleteError,
   }) = _ProfileState;
 
   factory ProfileState.fromUser(AppUser user) {
@@ -37,7 +28,6 @@ abstract class ProfileState with _$ProfileState {
       subtitle: hasName ? user.email : null,
       photoUrl: user.photoUrl,
       needsVerification: user.usesPassword && !user.emailVerified,
-      usesPassword: user.usesPassword,
     );
   }
 

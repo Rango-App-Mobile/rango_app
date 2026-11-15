@@ -62,6 +62,7 @@ final class AccountExistsWithOtherMethodFailure extends Failure {
 
 final class RequiresRecentLoginFailure extends Failure {
   const RequiresRecentLoginFailure([
-    super.message = 'Entre de novo para excluir sua conta.',
+    super.message =
+        'Por segurança, saia e entre de novo na sua conta para excluí-la.',
   ]);
 }

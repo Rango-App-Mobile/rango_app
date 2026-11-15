@@ -17,7 +17,6 @@ const _account = AppUser(
   isAnonymous: false,
   name: 'Joana',
   email: 'joana@email.com',
-  usesPassword: true,
 );
 
 void main() {
@@ -31,9 +30,7 @@ void main() {
     when(auth.reload).thenAnswer((_) async {});
     when(auth.watchUser).thenAnswer((_) => Stream.value(_account));
     when(auth.ensureSignedIn).thenAnswer((_) async => _account);
-    when(
-      () => auth.reauthenticate(password: any(named: 'password')),
-    ).thenAnswer((_) async => true);
+    when(auth.refreshLoginSilently).thenAnswer((_) async => true);
     when(() => accounts.deleteData(any())).thenAnswer((_) async {});
     when(auth.deleteAccount).thenAnswer((_) async => FakeAuthRepository.user);
     container = ProviderContainer(
@@ -50,68 +47,39 @@ void main() {
   ProfileViewModel viewModel() =>
       container.read(profileViewModelProvider.notifier);
 
-  test('reauthenticates, deletes the data, then the account', () async {
-    expect(await viewModel().deleteAccount(password: 'secret'), isTrue);
+  test('deletes the data, then the account, without asking anything', () async {
+    expect(await viewModel().deleteAccount(), isNull);
 
     verifyInOrder([
-      () => auth.reauthenticate(password: 'secret'),
+      auth.refreshLoginSilently,
       () => accounts.deleteData('u1'),
       auth.deleteAccount,
     ]);
-    expect(container.read(profileViewModelProvider).value?.isGuest, isTrue);
   });
 
-  test(
-    'closing the re-login sheet deletes nothing and shows no error',
-    () async {
-      when(
-        () => auth.reauthenticate(password: any(named: 'password')),
-      ).thenAnswer((_) async => false);
+  test('an old login that cannot be refreshed deletes nothing', () async {
+    when(auth.refreshLoginSilently).thenAnswer((_) async => false);
 
-      expect(await viewModel().deleteAccount(), isFalse);
-
-      verifyNever(() => accounts.deleteData(any()));
-      verifyNever(auth.deleteAccount);
-      final state = container.read(profileViewModelProvider).value;
-      expect(state?.deleting, isFalse);
-      expect(state?.deleteError, isNull);
-      expect(state?.isGuest, isFalse);
-    },
-  );
-
-  test('a wrong password keeps the account and shows its message', () async {
-    when(
-      () => auth.reauthenticate(password: any(named: 'password')),
-    ).thenThrow(const InvalidCredentialsFailure());
-
-    expect(await viewModel().deleteAccount(password: 'bad'), isFalse);
-
+    expect(
+      await viewModel().deleteAccount(),
+      const RequiresRecentLoginFailure().message,
+    );
     verifyNever(() => accounts.deleteData(any()));
-    final state = container.read(profileViewModelProvider).value;
-    expect(state?.deleteError, 'E-mail ou senha incorretos.');
-    expect(state?.deleting, isFalse);
-    expect(state?.isGuest, isFalse);
+    verifyNever(auth.deleteAccount);
   });
 
   test('a network failure while deleting the data keeps the account', () async {
     when(() => accounts.deleteData(any())).thenThrow(const NetworkFailure());
 
-    expect(await viewModel().deleteAccount(password: 'x'), isFalse);
-
+    expect(await viewModel().deleteAccount(), 'Sem conexão.');
     verifyNever(auth.deleteAccount);
-    expect(
-      container.read(profileViewModelProvider).value?.deleteError,
-      'Sem conexão.',
-    );
   });
 
   test('any other failure shows the generic message', () async {
     when(auth.deleteAccount).thenThrow(const UnexpectedFailure());
 
-    expect(await viewModel().deleteAccount(password: 'x'), isFalse);
-
     expect(
-      container.read(profileViewModelProvider).value?.deleteError,
+      await viewModel().deleteAccount(),
       'Não foi possível excluir sua conta. Tente de novo.',
     );
   });

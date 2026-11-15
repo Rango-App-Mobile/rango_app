@@ -6,7 +6,6 @@ import 'package:go_router/go_router.dart';
 import 'package:rango_app/core/theme/app_radius.dart';
 import 'package:rango_app/core/theme/app_space.dart';
 import 'package:rango_app/core/theme/theme_context.dart';
-import 'package:rango_app/core/widgets/inline_alert.dart';
 import 'package:rango_app/core/widgets/list_row.dart';
 import 'package:rango_app/core/widgets/rango_button.dart';
 import 'package:rango_app/core/widgets/rango_icon_button.dart';
@@ -54,7 +53,6 @@ class ProfileSheet extends ConsumerWidget {
 
   static const double _handleTop = 10;
   static const double _gap = 20;
-  static const double _deletingHeight = 360;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -62,17 +60,6 @@ class ProfileSheet extends ConsumerWidget {
     // once. Guest is also the honest answer if it ever fails: nothing is saved.
     final state =
         ref.watch(profileViewModelProvider).value ?? ProfileState.guest;
-
-    // Nothing to tap or dismiss while the account is being deleted.
-    if (state.deleting) {
-      return const PopScope(
-        canPop: false,
-        child: SizedBox(
-          height: _deletingHeight,
-          child: RangoLoadingView(message: 'Excluindo sua conta…'),
-        ),
-      );
-    }
 
     return SafeArea(
       top: false,
@@ -100,13 +87,6 @@ class ProfileSheet extends ConsumerWidget {
                     ? const _GuestInvitation()
                     : Column(
                         children: [
-                          if (state.deleteError case final error?)
-                            Padding(
-                              padding: const EdgeInsets.only(
-                                bottom: AppSpace.sm,
-                              ),
-                              child: InlineAlert(message: error),
-                            ),
                           ListRow(
                             icon: Icons.logout,
                             label: 'Sair da conta',
@@ -121,7 +101,7 @@ class ProfileSheet extends ConsumerWidget {
                             label: 'Excluir conta',
                             destructive: true,
                             onTap: () => unawaited(
-                              _delete(context, ref, state.usesPassword),
+                              _delete(context, ref),
                             ),
                           ),
                         ],
@@ -135,23 +115,31 @@ class ProfileSheet extends ConsumerWidget {
   }
 }
 
-Future<void> _delete(
-  BuildContext context,
-  WidgetRef ref,
-  bool askPassword,
-) async {
+Future<void> _delete(BuildContext context, WidgetRef ref) async {
+  if (!await showDeleteAccountDialog(context)) return;
+  if (!context.mounted) return;
   final messenger = ScaffoldMessenger.of(context);
-  final navigator = Navigator.of(context);
-  final answer = await showDeleteAccountDialog(
-    context,
-    askPassword: askPassword,
+  final sheet = Navigator.of(context);
+  final root = Navigator.of(context, rootNavigator: true);
+  // The splash covers the whole app, not the sheet, and nothing can be
+  // tapped or dismissed until the account is gone.
+  showGeneralDialog<void>(
+    context: context,
+    transitionDuration: Duration.zero,
+    pageBuilder: (_, _, _) => const PopScope(
+      canPop: false,
+      child: RangoLoadingView(message: 'Excluindo sua conta…'),
+    ),
   );
-  if (answer == null) return;
-  final deleted = await ref
+  final error = await ref
       .read(profileViewModelProvider.notifier)
-      .deleteAccount(password: answer.password);
-  if (!deleted) return;
-  navigator.pop();
+      .deleteAccount();
+  root.pop();
+  if (error != null) {
+    if (root.mounted) await showDeleteAccountError(root.context, error);
+    return;
+  }
+  sheet.pop();
   messenger.showSnackBar(
     const SnackBar(content: Text('Sua conta foi excluída.')),
   );

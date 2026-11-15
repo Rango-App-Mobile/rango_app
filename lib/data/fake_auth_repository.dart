@@ -73,13 +73,7 @@ class FakeAuthRepository implements AuthRepository {
   Future<AppUser> signOut() async => _set(user);
 
   @override
-  Future<bool> reauthenticate({String? password}) async {
-    final account = _accounts[_current.email];
-    if (account != null && account.password != password) {
-      throw const InvalidCredentialsFailure();
-    }
-    return true;
-  }
+  Future<bool> refreshLoginSilently() async => true;
 
   @override
   Future<AppUser> deleteAccount() async {

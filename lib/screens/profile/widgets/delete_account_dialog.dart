@@ -1,40 +1,47 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:rango_app/core/theme/app_space.dart';
 import 'package:rango_app/core/theme/theme_context.dart';
-import 'package:rango_app/core/widgets/rango_text_field.dart';
 
-/// Asks whether to delete the account. Null when the person cancels;
-/// otherwise the password they typed (null for accounts without one).
-Future<({String? password})?> showDeleteAccountDialog(
-  BuildContext context, {
-  required bool askPassword,
-}) => showAdaptiveDialog<({String? password})>(
-  context: context,
-  builder: (_) => _DeleteAccountDialog(askPassword: askPassword),
-);
+/// Asks whether to delete the account. True only when the person confirms.
+Future<bool> showDeleteAccountDialog(BuildContext context) async =>
+    await showAdaptiveDialog<bool>(
+      context: context,
+      builder: (context) => const _AdaptiveAlert(
+        title: 'Excluir sua conta?',
+        message:
+            'Seu histórico e seus dados serão apagados. '
+            'Isso não pode ser desfeito.',
+        actions: [
+          ('Cancelar', false, false),
+          ('Excluir', true, true),
+        ],
+      ),
+    ) ??
+    false;
 
-class _DeleteAccountDialog extends StatefulWidget {
-  const _DeleteAccountDialog({required this.askPassword});
+/// Why the account could not be deleted.
+Future<void> showDeleteAccountError(BuildContext context, String message) =>
+    showAdaptiveDialog<void>(
+      context: context,
+      builder: (context) => _AdaptiveAlert(
+        title: 'Não deu para excluir',
+        message: message,
+        actions: const [('OK', null, false)],
+      ),
+    );
 
-  final bool askPassword;
+class _AdaptiveAlert extends StatelessWidget {
+  const _AdaptiveAlert({
+    required this.title,
+    required this.message,
+    required this.actions,
+  });
 
-  @override
-  State<_DeleteAccountDialog> createState() => _DeleteAccountDialogState();
-}
+  final String title;
+  final String message;
 
-class _DeleteAccountDialogState extends State<_DeleteAccountDialog> {
-  final _password = TextEditingController();
-
-  @override
-  void dispose() {
-    _password.dispose();
-    super.dispose();
-  }
-
-  void _confirm() => Navigator.of(context).pop((
-    password: widget.askPassword ? _password.text : null,
-  ));
+  /// Label, the value it pops with, and whether it is destructive.
+  final List<(String, bool?, bool)> actions;
 
   @override
   Widget build(BuildContext context) {
@@ -45,46 +52,24 @@ class _DeleteAccountDialogState extends State<_DeleteAccountDialog> {
     final danger = context.colors.textDanger;
 
     return AlertDialog.adaptive(
-      title: const Text('Excluir sua conta?'),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        spacing: AppSpace.md,
-        children: [
-          const Text(
-            'Seu histórico e seus dados serão apagados. '
-            'Isso não pode ser desfeito.',
-          ),
-          if (widget.askPassword)
-            RangoTextField(
-              label: 'Senha',
-              controller: _password,
-              isPassword: true,
-              textInputAction: TextInputAction.done,
-              onSubmitted: (_) => _confirm(),
-            ),
-        ],
-      ),
+      title: Text(title),
+      content: Text(message),
       actions: [
-        if (isCupertino) ...[
-          CupertinoDialogAction(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancelar'),
-          ),
-          CupertinoDialogAction(
-            isDestructiveAction: true,
-            onPressed: _confirm,
-            child: const Text('Excluir'),
-          ),
-        ] else ...[
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancelar'),
-          ),
-          TextButton(
-            onPressed: _confirm,
-            child: Text('Excluir', style: TextStyle(color: danger)),
-          ),
-        ],
+        for (final (label, value, destructive) in actions)
+          if (isCupertino)
+            CupertinoDialogAction(
+              isDestructiveAction: destructive,
+              onPressed: () => Navigator.of(context).pop(value),
+              child: Text(label),
+            )
+          else
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(value),
+              child: Text(
+                label,
+                style: destructive ? TextStyle(color: danger) : null,
+              ),
+            ),
       ],
     );
   }

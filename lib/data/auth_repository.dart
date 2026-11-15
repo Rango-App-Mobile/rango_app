@@ -47,14 +47,15 @@ abstract interface class AuthRepository {
   /// Leaves the account and goes back to a guest session.
   Future<AppUser> signOut();
 
-  /// Proves the current account is still the person's: the password for a
-  /// password account, the Google or Apple sheet otherwise. False when the
-  /// person closes the sheet. Firebase asks for it before deleting an account.
-  Future<bool> reauthenticate({String? password});
+  /// Firebase only deletes an account with a recent login. True when the
+  /// last one is recent enough, or after refreshing a Google login without
+  /// showing anything. Never opens a sheet or asks for a password; false
+  /// means the person has to sign in again first.
+  Future<bool> refreshLoginSilently();
 
-  /// Deletes the current account (revoking the Apple token when it applies)
-  /// and returns the new guest session. Call [reauthenticate] first, and
-  /// delete the Firestore data before this: its rules need the account.
+  /// Deletes the current account and returns the new guest session. Call
+  /// [refreshLoginSilently] first, and delete the Firestore data before
+  /// this: its rules need the account.
   Future<AppUser> deleteAccount();
 }
 

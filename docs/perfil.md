@@ -46,37 +46,36 @@ Exigida pela App Store (diretriz 5.1.1(v)): quem cria conta no app precisa
 poder apagá-la dentro dele. A linha "Excluir conta" (em vermelho, `textDanger`)
 aparece só no modo com conta, abaixo de "Sair da conta".
 
+Direto, sem pedir login de novo:
+
 | # | O que a pessoa vê | O que acontece |
 |---|---|---|
-| 1 | Toca em "Excluir conta" | `showAdaptiveDialog` (visual nativo no iOS): "Excluir sua conta?", "Seu histórico e seus dados serão apagados. Isso não pode ser desfeito.", "Cancelar" e "Excluir" (destrutivo). Conta de e-mail e senha vê também o campo "Senha" |
-| 2 | Confirma | `ProfileViewModel.deleteAccount({password})`. A folha vira a tela de carregamento "Excluindo sua conta…" e não fecha até terminar |
-| 3 | Sucesso | A folha fecha e aparece o SnackBar "Sua conta foi excluída."; o app volta ao modo visitante |
-| 3' | Erro | A conta continua. A folha mostra o aviso: senha errada ("E-mail ou senha incorretos."), sem rede ("Sem conexão.") ou "Não foi possível excluir sua conta. Tente de novo." |
-| 3'' | Fecha a janela do Google ou da Apple | Nada é apagado e nada é mostrado |
+| 1 | Toca em "Excluir conta" | Alerta nativo (`showAdaptiveDialog`): "Excluir sua conta?", "Seu histórico e seus dados serão apagados. Isso não pode ser desfeito.", "Cancelar" e "Excluir" (destrutivo). Só isso, sem campo de senha |
+| 2 | Confirma | A animação de carregamento ("Excluindo sua conta…") cobre o app inteiro, por cima da folha, e nada pode ser tocado até terminar |
+| 3 | Sucesso | O carregamento e a folha fecham e aparece o SnackBar "Sua conta foi excluída."; o app volta ao modo visitante |
+| 3' | Erro | O carregamento fecha e um alerta "Não deu para excluir" explica: sem rede ("Sem conexão."), login antigo (abaixo) ou "Não foi possível excluir sua conta. Tente de novo." A conta continua |
 
 **A ordem importa** (`ProfileViewModel.deleteAccount`), e qualquer `Failure`
 interrompe a sequência:
 
-1. `AuthRepository.reauthenticate`: o Firebase só apaga uma conta com login
-   recente. Conta de e-mail usa a senha digitada; Google reabre o seletor da
-   conta; Apple reabre a folha da Apple. `false` se a pessoa fechar a janela.
-   O provedor é o da sessão atual (`sign_in_provider` do token), porque uma
-   conta pode ter mais de um ligado (o mesmo e-mail no Google e na Apple). Sem
-   essa informação, a ordem é Apple, Google, senha.
+1. `AuthRepository.refreshLoginSilently`: o Firebase só apaga uma conta com
+   login de até uns 5 minutos atrás. Se o último login é desse tempo (com folga
+   de 4 minutos), segue. Senão, uma conta com Google renova o login em silêncio
+   (`attemptLightweightAuthentication`, sem tela). Nunca abre a folha da Apple,
+   o seletor do Google nem pede senha. Se não der, nada é apagado e o alerta
+   diz "Por segurança, saia e entre de novo na sua conta para excluí-la."
+   (`RequiresRecentLoginFailure`).
 2. `AccountRepository.deleteData(uid)`: apaga `users/{uid}/sessions` e
    `users/{uid}`. Vem antes porque `firestore.rules` só deixa a própria conta
    (não anônima) apagar os dados dela; sem a conta, os dados ficariam órfãos.
-3. `AuthRepository.deleteAccount`: revoga o token da Apple (se for conta Apple),
-   apaga o usuário no Firebase, sai do Google e cria um novo visitante anônimo.
+3. `AuthRepository.deleteAccount`: apaga o usuário no Firebase, sai do Google e
+   cria um novo visitante anônimo.
 
-**Revogação da Apple.** O reautenticar com a Apple devolve
-`additionalUserInfo.authorizationCode`; o `FirebaseAuthRepository` guarda esse
-código e o entrega a `FirebaseAuth.revokeTokenWithAuthorizationCode` antes de
-apagar o usuário. Se a revogação falhar, a exclusão segue mesmo assim: a conta
-some do app, e a pessoa ainda pode remover o app nos ajustes da Apple.
-
-Se o Firebase ainda pedir login recente, o erro vira
-`RequiresRecentLoginFailure` ("Entre de novo para excluir sua conta.").
+**Limites conhecidos.** Apagar sempre, sem depender do login recente, e revogar
+o token da Apple (a Apple pede isso na exclusão) só dá pelo servidor, com Cloud
+Functions, que exige o plano Blaze com cartão (`docs/contexto.md` §11). Revogar
+pelo app exigiria abrir a folha da Apple, e a exclusão não pede login. Se a
+revisão da App Store cobrar a revogação, ela entra por uma função no servidor.
 
 ## Erros
 

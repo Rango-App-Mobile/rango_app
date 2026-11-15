@@ -1,9 +1,12 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:rango_app/app/theme/app_theme.dart';
 import 'package:rango_app/core/error/failure.dart';
+import 'package:rango_app/core/widgets/rango_loading_view.dart';
 import 'package:rango_app/data/account_repository.dart';
 import 'package:rango_app/data/auth_repository.dart';
 import 'package:rango_app/data/fake_auth_repository.dart';
@@ -34,9 +37,7 @@ Future<void> _open(WidgetTester tester, AppUser user) async {
   when(_auth.reload).thenAnswer((_) async {});
   when(_auth.watchUser).thenAnswer((_) => Stream.value(user));
   when(_auth.ensureSignedIn).thenAnswer((_) async => user);
-  when(
-    () => _auth.reauthenticate(password: any(named: 'password')),
-  ).thenAnswer((_) async => true);
+  when(_auth.refreshLoginSilently).thenAnswer((_) async => true);
   when(() => _accounts.deleteData(any())).thenAnswer((_) async {});
   when(_auth.deleteAccount).thenAnswer((_) async => FakeAuthRepository.user);
 
@@ -79,21 +80,14 @@ void main() {
     expect(find.text('Excluir conta'), findsNothing);
   });
 
-  testWidgets('an account has it, and the dialog asks to confirm', (
+  testWidgets('an account has it, and the dialog only asks to confirm', (
     tester,
   ) async {
-    await _open(tester, _social);
+    await _open(tester, _social.copyWith(usesPassword: true));
     await tester.tap(find.text('Excluir conta'));
     await tester.pumpAndSettle();
 
     expect(find.text('Excluir sua conta?'), findsOneWidget);
-    expect(
-      find.text(
-        'Seu histórico e seus dados serão apagados. '
-        'Isso não pode ser desfeito.',
-      ),
-      findsOneWidget,
-    );
     expect(find.byType(TextField), findsNothing);
 
     await tester.tap(find.text('Cancelar'));
@@ -101,56 +95,58 @@ void main() {
     verifyNever(() => _accounts.deleteData(any()));
   });
 
-  testWidgets('a password account is asked for the password', (tester) async {
-    await _open(
-      tester,
-      _social.copyWith(usesPassword: true, emailVerified: true),
-    );
+  testWidgets('while deleting, the loading covers the whole screen', (
+    tester,
+  ) async {
+    await _open(tester, _social);
+    final gate = Completer<void>();
+    when(() => _accounts.deleteData(any())).thenAnswer((_) => gate.future);
     await tester.tap(find.text('Excluir conta'));
     await tester.pumpAndSettle();
-    expect(find.text('Senha'), findsOneWidget);
-
-    await tester.enterText(find.byType(TextField), 'secret123');
     await tester.tap(find.text('Excluir'));
-    await tester.pumpAndSettle();
+    await tester.pump();
+    await tester.pump();
 
-    verify(() => _auth.reauthenticate(password: 'secret123')).called(1);
+    final loading = find.byType(RangoLoadingView);
+    expect(loading, findsOneWidget);
+    expect(tester.getSize(loading), const Size(402, 874));
+    expect(
+      find.descendant(of: find.byType(ProfileSheet), matching: loading),
+      findsNothing,
+    );
+
+    gate.complete();
+    await tester.pumpAndSettle();
   });
 
-  testWidgets('success closes the sheet and shows the SnackBar', (
+  testWidgets('success closes everything and shows the SnackBar', (
     tester,
   ) async {
     await _open(tester, _social);
     await _confirm(tester);
 
     expect(find.byType(ProfileSheet), findsNothing);
+    expect(find.byType(RangoLoadingView), findsNothing);
     expect(find.text('Sua conta foi excluída.'), findsOneWidget);
     verifyInOrder([
-      () => _auth.reauthenticate(),
       () => _accounts.deleteData('u1'),
       _auth.deleteAccount,
     ]);
   });
 
-  testWidgets('an error keeps the sheet and shows the message', (tester) async {
+  testWidgets('an error closes the loading and explains in an alert', (
+    tester,
+  ) async {
     await _open(tester, _social);
     when(() => _accounts.deleteData(any())).thenThrow(const NetworkFailure());
     await _confirm(tester);
 
-    expect(find.byType(ProfileSheet), findsOneWidget);
+    expect(find.byType(RangoLoadingView), findsNothing);
+    expect(find.text('Não deu para excluir'), findsOneWidget);
     expect(find.text('Sem conexão.'), findsOneWidget);
-    expect(find.text('Excluir conta'), findsOneWidget);
-  });
 
-  testWidgets('closing the re-login sheet shows nothing', (tester) async {
-    await _open(tester, _social);
-    when(
-      () => _auth.reauthenticate(password: any(named: 'password')),
-    ).thenAnswer((_) async => false);
-    await _confirm(tester);
-
+    await tester.tap(find.text('OK'));
+    await tester.pumpAndSettle();
     expect(find.byType(ProfileSheet), findsOneWidget);
-    expect(find.text('Sua conta foi excluída.'), findsNothing);
-    expect(find.text('Sem conexão.'), findsNothing);
   });
 }

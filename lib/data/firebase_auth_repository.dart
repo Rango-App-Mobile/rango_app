@@ -9,26 +9,30 @@ import 'package:rango_app/models/app_user.dart';
 class FirebaseAuthRepository implements AuthRepository {
   /// [googleIdToken] opens the Google account picker and returns the ID token
   /// of the chosen account, or null when the person closes it.
-  /// [googleSignOut] forgets that account. Both default to `google_sign_in`;
-  /// tests pass their own, so they run without the plugin.
+  /// [googleSilentIdToken] does the same without any UI, or returns null.
+  /// [googleSignOut] forgets that account. All default to `google_sign_in`;
+  /// tests pass their own, so they run without the plugin. [now] is the
+  /// clock, for tests.
   FirebaseAuthRepository(
     this._auth, {
     Future<String?> Function()? googleIdToken,
+    Future<String?> Function()? googleSilentIdToken,
     Future<void> Function()? googleSignOut,
+    DateTime Function()? now,
   }) : _googleIdToken = googleIdToken ?? _pluginGoogleIdToken,
-       _googleSignOut = googleSignOut ?? _pluginGoogleSignOut;
+       _googleSilentIdToken = googleSilentIdToken ?? _pluginGoogleSilentIdToken,
+       _googleSignOut = googleSignOut ?? _pluginGoogleSignOut,
+       _now = now ?? DateTime.now;
 
   final FirebaseAuth _auth;
   final Future<String?> Function() _googleIdToken;
+  final Future<String?> Function() _googleSilentIdToken;
   final Future<void> Function() _googleSignOut;
+  final DateTime Function() _now;
 
-  /// Apple's token can only be revoked with a code from a fresh Apple
-  /// authorization, which [reauthenticate] obtains just before the deletion.
-  String? _appleAuthorizationCode;
-
-  /// Fallback when the token does not say how the session signed in: Apple
-  /// first, since its sheet is native on iOS and its token must be revoked.
-  static const _reauthOrder = ['apple.com', 'google.com', 'password'];
+  /// Firebase refuses to delete an account after about five minutes without
+  /// a login; a margin keeps the check on the safe side.
+  static const _recentLogin = Duration(minutes: 4);
 
   @override
   Future<AppUser> ensureSignedIn() {
@@ -150,63 +154,32 @@ class FirebaseAuthRepository implements AuthRepository {
   }
 
   @override
-  Future<bool> reauthenticate({String? password}) => _guard(() async {
+  Future<bool> refreshLoginSilently() => _guard(() async {
     final user = _auth.currentUser;
     if (user == null) throw const UnexpectedFailure();
-    final linked = user.providerData.map((i) => i.providerId).toSet();
-    // An account can have several providers (same e-mail on Google and
-    // Apple); re-authenticate with the one this session signed in with.
-    final session = (await user.getIdTokenResult()).signInProvider;
-    final provider = linked.contains(session)
-        ? session
-        : _reauthOrder.where(linked.contains).firstOrNull;
-    try {
-      if (provider == 'password') {
-        final email = user.email;
-        if (password == null || password.isEmpty || email == null) {
-          throw const InvalidCredentialsFailure();
-        }
-        await user.reauthenticateWithCredential(
-          EmailAuthProvider.credential(email: email, password: password),
-        );
-      } else if (provider == 'google.com') {
-        final idToken = await _googleIdToken();
-        if (idToken == null) return false;
-        await user.reauthenticateWithCredential(
-          GoogleAuthProvider.credential(idToken: idToken),
-        );
-      } else if (provider == 'apple.com') {
-        final credential = await user.reauthenticateWithProvider(
-          AppleAuthProvider(),
-        );
-        _appleAuthorizationCode =
-            credential.additionalUserInfo?.authorizationCode;
-      } else {
-        throw const UnexpectedFailure();
-      }
-      return true;
-    } on FirebaseAuthException catch (error) {
-      if (_cancelled.contains(error.code)) return false;
-      rethrow;
+    final last = user.metadata.lastSignInTime;
+    if (last != null && _now().difference(last) < _recentLogin) return true;
+    // Only Google can refresh a login without showing anything; Apple and
+    // the password always ask the person.
+    if (!user.providerData.any((i) => i.providerId == 'google.com')) {
+      return false;
     }
+    final idToken = await _googleSilentIdToken();
+    if (idToken == null) return false;
+    await user.reauthenticateWithCredential(
+      GoogleAuthProvider.credential(idToken: idToken),
+    );
+    return true;
   });
 
   @override
   Future<AppUser> deleteAccount() async {
     final user = _auth.currentUser;
     if (user == null) throw const UnexpectedFailure();
-    final code = _appleAuthorizationCode;
-    if (code != null) {
-      try {
-        await _auth.revokeTokenWithAuthorizationCode(code);
-      } on Object catch (_) {
-        // Best effort: a failed revocation must not leave the person unable
-        // to delete the account; Apple lists the app in their settings until
-        // then.
-      }
-    }
+    // ponytail: the Apple token is not revoked; that needs a code from the
+    // Apple sheet, and deleting must not open it. Revoke from a server
+    // (Cloud Functions) if App Review asks for it.
     await _guard(user.delete);
-    _appleAuthorizationCode = null;
     try {
       await _googleSignOut();
     } on Object catch (_) {
@@ -350,6 +323,18 @@ Future<String?> _pluginGoogleIdToken() async {
     }
     // A misconfigured client id lands here, too: see `docs/auth.md`.
     throw const UnexpectedFailure();
+  }
+}
+
+Future<String?> _pluginGoogleSilentIdToken() async {
+  try {
+    await _initializeGoogle();
+    final account = await GoogleSignIn.instance
+        .attemptLightweightAuthentication();
+    return account?.authentication.idToken;
+  } on Exception {
+    // No silent login available: the caller asks for a new sign-in.
+    return null;
   }
 }
 
