@@ -34,6 +34,13 @@ abstract interface class AuthRepository {
   /// The same as [signInWithGoogle], with Apple (iOS only).
   Future<AppUser?> signInWithApple();
 
+  /// Sends the confirmation link to the current user's e-mail again.
+  Future<void> resendVerification();
+
+  /// Refreshes the current user from the server (the e-mail may have been
+  /// confirmed in the mail app, which Firebase does not announce).
+  Future<void> reload();
+
   /// Leaves the account and goes back to a guest session.
   Future<AppUser> signOut();
 }

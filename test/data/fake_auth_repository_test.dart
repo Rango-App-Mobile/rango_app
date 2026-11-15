@@ -80,4 +80,18 @@ void main() {
       expect(await changes, result);
     });
   }
+
+  test('a sign-up is an unverified password account', () async {
+    final repository = FakeAuthRepository();
+    final user = await repository.signUp(
+      name: 'Joana',
+      email: 'joana@email.com',
+      password: '12345678',
+    );
+
+    expect(user.usesPassword, isTrue);
+    expect(user.emailVerified, isFalse);
+    await repository.resendVerification();
+    await repository.reload();
+  });
 }

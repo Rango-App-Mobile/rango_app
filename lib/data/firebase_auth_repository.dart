@@ -69,6 +69,11 @@ class FirebaseAuthRepository implements AuthRepository {
     final user = credential.user;
     if (user == null) throw const UnexpectedFailure();
     await user.updateDisplayName(name);
+    try {
+      await user.sendEmailVerification();
+    } on Object catch (_) {
+      // The account exists already; the Profile Sheet offers "Reenviar".
+    }
     await user.reload();
     return _toAppUser(_auth.currentUser ?? user).copyWith(name: name);
   });
@@ -103,6 +108,16 @@ class FirebaseAuthRepository implements AuthRepository {
       link: (guest) => guest.linkWithProvider(provider),
       signIn: () => _auth.signInWithProvider(provider),
     );
+  });
+
+  @override
+  Future<void> resendVerification() => _guard(() async {
+    await _auth.currentUser?.sendEmailVerification();
+  });
+
+  @override
+  Future<void> reload() => _guard(() async {
+    await _auth.currentUser?.reload();
   });
 
   @override
@@ -199,6 +214,8 @@ class FirebaseAuthRepository implements AuthRepository {
     name: user.displayName,
     email: user.email,
     photoUrl: user.photoURL,
+    emailVerified: user.emailVerified,
+    usesPassword: user.providerData.any((i) => i.providerId == 'password'),
   );
 }
 

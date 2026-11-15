@@ -1,49 +1,157 @@
-import 'package:flutter/foundation.dart';
+import 'dart:async';
+
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:rango_app/core/error/failure.dart';
 import 'package:rango_app/core/widgets/inline_alert.dart';
 import 'package:rango_app/core/widgets/rango_button.dart';
+import 'package:rango_app/core/widgets/rango_loading_view.dart';
+import 'package:rango_app/core/widgets/rango_text_field.dart';
 import 'package:rango_app/data/auth_repository.dart';
+import 'package:rango_app/data/fake_account_repository.dart';
 import 'package:rango_app/data/fake_auth_repository.dart';
+import 'package:rango_app/models/app_user.dart';
 import 'package:rango_app/screens/sign_up/sign_up_screen.dart';
 
 import '../../helpers/auth_form.dart';
 
 class _MockAuthRepository extends Mock implements AuthRepository {}
 
-Future<void> _pump(WidgetTester tester, AuthRepository repository) =>
-    pumpAuthScreen(
-      tester,
-      route: '/signup',
-      repository: repository,
-      screens: {'/signup': (_) => const SignUpScreen()},
-    );
+Future<void> _pump(
+  WidgetTester tester,
+  AuthRepository repository, {
+  FakeAccountRepository? accounts,
+}) => pumpAuthScreen(
+  tester,
+  route: '/signup',
+  repository: repository,
+  accounts: accounts,
+  screens: {'/signup': (_) => const SignUpScreen()},
+);
 
 Future<void> _fill(
   WidgetTester tester, {
   String name = 'Joana',
   String email = 'joana@email.com',
   String password = '12345678',
+  String? confirmEmail,
+  String? confirmPassword,
+  bool terms = true,
 }) async {
   await typeIn(tester, 'Nome', name);
   await typeIn(tester, 'E-mail', email);
+  await typeIn(tester, 'Confirmar e-mail', confirmEmail ?? email);
   await typeIn(tester, 'Senha', password);
+  await typeIn(tester, 'Confirmar senha', confirmPassword ?? password);
+  if (terms) {
+    await tester.ensureVisible(find.byType(Switch));
+    await tester.tap(find.byType(Switch));
+    await tester.pump();
+  }
 }
 
 void main() {
-  testWidgets('fits the screen', (tester) async {
+  testWidgets('fields come in order: name, e-mails, passwords, terms', (
+    tester,
+  ) async {
     await _pump(tester, FakeAuthRepository());
 
-    expect(tester.takeException(), isNull);
-    expect(
-      tester
-          .getBottomLeft(
-            find.widgetWithText(RangoButton, 'Já tem conta? Entrar'),
-          )
-          .dy,
-      lessThanOrEqualTo(874),
+    double top(Finder finder) => tester.getTopLeft(finder).dy;
+    final tops = [
+      for (final label in [
+        'Nome',
+        'E-mail',
+        'Confirmar e-mail',
+        'Senha',
+        'Confirmar senha',
+      ])
+        top(find.widgetWithText(RangoTextField, label)),
+      top(find.byType(Switch)),
+      top(find.widgetWithText(RangoButton, 'Criar conta')),
+    ];
+    expect(tops, [...tops]..sort());
+  });
+
+  testWidgets('different confirmations and missing terms are asked for', (
+    tester,
+  ) async {
+    final repository = _MockAuthRepository();
+    await _pump(tester, repository);
+
+    await _fill(
+      tester,
+      confirmEmail: 'outro@email.com',
+      confirmPassword: '87654321',
+      terms: false,
     );
+    await tapButton(tester, 'Criar conta');
+
+    expect(find.text('Os e-mails não são iguais.'), findsOneWidget);
+    expect(find.text('As senhas não são iguais.'), findsOneWidget);
+    expect(find.text('Aceite os termos para criar a conta.'), findsOneWidget);
+    verifyNever(
+      () => repository.signUp(
+        name: any(named: 'name'),
+        email: any(named: 'email'),
+        password: any(named: 'password'),
+      ),
+    );
+  });
+
+  testWidgets('signing up records the terms for the new account', (
+    tester,
+  ) async {
+    final repository = FakeAuthRepository();
+    final accounts = FakeAccountRepository();
+    await _pump(tester, repository, accounts: accounts);
+
+    await _fill(tester);
+    await tapButton(tester, 'Criar conta');
+
+    final user = await repository.ensureSignedIn();
+    expect(await accounts.hasAcceptedTerms(user.uid), isTrue);
+  });
+
+  testWidgets('a full-screen loading covers the form while submitting', (
+    tester,
+  ) async {
+    final repository = _MockAuthRepository();
+    final pending = Completer<AppUser>();
+    when(
+      () => repository.signUp(
+        name: any(named: 'name'),
+        email: any(named: 'email'),
+        password: any(named: 'password'),
+      ),
+    ).thenAnswer((_) => pending.future);
+    await _pump(tester, repository);
+
+    await _fill(tester);
+    // The spinner never settles, so pump instead of pumpAndSettle.
+    await tester.tap(find.widgetWithText(RangoButton, 'Criar conta'));
+    await tester.pump();
+
+    expect(find.byType(RangoLoadingView), findsOneWidget);
+    expect(find.text('Criando sua conta…'), findsOneWidget);
+
+    pending.completeError(const UnexpectedFailure());
+    await tester.pumpAndSettle();
+    expect(find.byType(RangoLoadingView), findsNothing);
+    expect(find.byType(InlineAlert), findsOneWidget);
+  });
+
+  testWidgets('scrolls to the last button on a small screen', (tester) async {
+    await _pump(tester, FakeAuthRepository());
+
+    // Five fields plus the terms are taller than the screen: the form must
+    // scroll instead of overflowing.
+    final last = find.widgetWithText(RangoButton, 'Já tem conta? Entrar');
+    await tester.ensureVisible(last);
+    await tester.pump();
+
+    expect(tester.takeException(), isNull);
+    expect(tester.getBottomLeft(last).dy, lessThanOrEqualTo(874));
   });
 
   testWidgets('creating the account goes back to where the person was', (

@@ -18,6 +18,7 @@ quê.
 | 3 | Visitante: "Visitante", "Entrar ou criar conta" e o aviso de que nada fica salvo | `ProfileViewModel` segue o usuário em `AuthRepository.watchUser()`, e `ProfileState.fromUser` decide o que mostrar. O botão fecha a folha e abre o login (`docs/login.md`) |
 | 3' | Com conta: nome, e-mail e foto no cabeçalho | Sem foto, ou se ela falhar ao carregar, aparece o ícone de visitante. Sem nome, o e-mail ocupa o lugar dele |
 | 3'' | Com conta: "Sair da conta" | `ProfileViewModel.signOut`; a folha vira a de visitante sozinha |
+| 3''' | Conta de e-mail e senha com o e-mail ainda não confirmado: aviso "Confirme seu e-mail" e "Reenviar" | `ProfileState.needsVerification` (`usesPassword && !emailVerified`). "Reenviar" chama `ProfileViewModel.resendVerification`, que chama `AuthRepository.resendVerification`; o sucesso mostra o SnackBar "Link reenviado." |
 | 4 | Fecha pelo X, arrastando para baixo ou tocando no véu | O X dá `pop`; arrastar e tocar no véu são do próprio `showModalBottomSheet` |
 
 ## Onde cada regra mora
@@ -29,6 +30,12 @@ quê.
 | Nome, e-mail e foto vêm do provedor de login | `FirebaseAuthRepository._toAppUser` | É o único lugar que conhece o `User` do Firebase |
 | A folha cobre a Tab Bar | `useRootNavigator: true` | O shell das abas tem navigator próprio, e a Tab Bar ficaria por cima do véu |
 | O X sempre fica visível | O cabeçalho fica fora da rolagem; só o convite rola | Em tela pequena com texto grande, o conteúdo não pode empurrar a saída para fora |
+
+O Firebase não avisa quando o e-mail é confirmado no app de e-mail
+(`userChanges()` não emite). Por isso o `ProfileViewModel` chama
+`AuthRepository.reload()` assim que a folha abre; o aviso some se a conta já
+estiver confirmada. Contas Google e Apple chegam confirmadas e não mostram o
+aviso.
 
 A folha é aberta por uma função, e não por uma rota do `go_router`: ela não tem
 endereço próprio e abre por cima de qualquer tela raiz, sem mudar a rota atual.

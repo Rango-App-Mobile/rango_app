@@ -5,7 +5,9 @@ import 'package:go_router/go_router.dart';
 import 'package:rango_app/app/theme/app_theme.dart';
 import 'package:rango_app/core/widgets/rango_button.dart';
 import 'package:rango_app/core/widgets/rango_text_field.dart';
+import 'package:rango_app/data/account_repository.dart';
 import 'package:rango_app/data/auth_repository.dart';
+import 'package:rango_app/data/fake_account_repository.dart';
 
 /// Opens [route] over a HOME page, so the screen can pop back to it. The other
 /// account routes are text stubs, replaced by [screens].
@@ -14,6 +16,7 @@ Future<void> pumpAuthScreen(
   required String route,
   required AuthRepository repository,
   required Map<String, Widget Function(Object? extra)> screens,
+  AccountRepository? accounts,
 }) async {
   tester.view
     ..physicalSize = const Size(402, 874)
@@ -25,7 +28,12 @@ Future<void> pumpAuthScreen(
 
   await tester.pumpWidget(
     ProviderScope(
-      overrides: [authRepositoryProvider.overrideWithValue(repository)],
+      overrides: [
+        authRepositoryProvider.overrideWithValue(repository),
+        accountRepositoryProvider.overrideWithValue(
+          accounts ?? FakeAccountRepository(),
+        ),
+      ],
       child: MaterialApp.router(
         theme: AppTheme.light,
         routerConfig: GoRouter(
@@ -80,7 +88,10 @@ Future<void> tapText(
   bool settle = true,
 }) async {
   final target = find.text(text);
-  await tester.ensureVisible(target);
+  // Scrolling an already visible widget would slide it under the top bar.
+  if (tester.getCenter(target).dy > tester.view.physicalSize.height) {
+    await tester.ensureVisible(target);
+  }
   await tester.tap(target);
   if (settle) {
     await tester.pumpAndSettle();

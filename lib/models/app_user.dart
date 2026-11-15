@@ -12,5 +12,11 @@ abstract class AppUser with _$AppUser {
     String? name,
     String? email,
     String? photoUrl,
+
+    /// Whether the e-mail was confirmed. Only matters for [usesPassword].
+    @Default(false) bool emailVerified,
+
+    /// Signs in with e-mail and password (not Google or Apple).
+    @Default(false) bool usesPassword,
   }) = _AppUser;
 }
