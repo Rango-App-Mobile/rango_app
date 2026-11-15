@@ -39,6 +39,8 @@ Future<void> _pump(WidgetTester tester, AuthRepository repository) =>
     );
 
 void main() {
+  setUpAll(() => AppleSignInButton.debugNativeOnIOS = false);
+
   testWidgets('Criar conta pushes the sign-up, and back returns to login', (
     tester,
   ) async {

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:rango_app/core/error/failure.dart';
+import 'package:rango_app/core/widgets/apple_sign_in_button.dart';
 import 'package:rango_app/core/widgets/inline_alert.dart';
 import 'package:rango_app/core/widgets/rango_button.dart';
 import 'package:rango_app/core/widgets/rango_loading_view.dart';
@@ -52,6 +53,8 @@ Future<void> _fill(
 }
 
 void main() {
+  setUpAll(() => AppleSignInButton.debugNativeOnIOS = false);
+
   testWidgets('fields come in order: name, e-mails, passwords, terms', (
     tester,
   ) async {

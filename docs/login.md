@@ -121,7 +121,7 @@ No console e nas contas:
 
 Seguem as regras de marca, que a App Review da Apple e o Google exigem:
 
-- **Apple:** `AppleSignInButton` (`lib/core/widgets/apple_sign_in_button.dart`) usa o botão oficial do pacote `sign_in_with_apple`, estilo preto, 56 de altura e cantos de pílula como o `RangoButton`. Só o widget vem do pacote; o login continua no `AuthRepository`, via Firebase. O botão do pacote não tem estado desligado, então enquanto o login está em andamento ele ignora toques e fica com opacidade reduzida.
+- **Apple:** `AppleSignInButton` (`lib/core/widgets/apple_sign_in_button.dart`) mostra, no iOS, o botão nativo `ASAuthorizationAppleIDButton` (tipo `continue`, estilo preto), hospedado por uma `UiKitView` registrada em `ios/Runner/AppDelegate.swift`. Assim o título ("Continuar com a Apple" em pt-BR), o logo e as proporções são os que a Apple entrega, sem string nossa. A altura é 44, a padrão recomendada pela HIG (o título tem 43% da altura, então 56 daria texto de 24pt), e o `cornerRadius` é metade da altura (pílula, como o `RangoButton`). O toque nativo volta ao Dart por um `MethodChannel` (`rango/apple_sign_in_button_<id>`). Fora do iOS e nos testes de widget, cai no botão do pacote `sign_in_with_apple`, com a mesma altura. O login continua no `AuthRepository`, via Firebase. O botão não tem estado desligado, então enquanto o login está em andamento o widget ignora toques e fica com opacidade reduzida.
 - **Google:** `GoogleSignInButton` (`lib/core/widgets/google_sign_in_button.dart`) segue o tema claro do Google Identity: fundo branco, borda de 1 #747775, o "G" oficial (`assets/images/google_g.png`, 20 de lado), texto #1F1F1F e 12 de espaço entre os dois. Sem `onPressed`, fica desligado com opacidade reduzida.
 
 ## Componentes
