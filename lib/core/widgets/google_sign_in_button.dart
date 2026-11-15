@@ -10,7 +10,8 @@ class GoogleSignInButton extends StatelessWidget {
   final VoidCallback? onPressed;
 
   static const _label = 'Continuar com o Google';
-  static const _height = 56.0;
+  // Same height as the native Apple button (HIG default), so they pair.
+  static const _height = 44.0;
   static const _logo = 20.0;
   static const _gap = 12.0;
   static const _disabledOpacity = 0.4;
