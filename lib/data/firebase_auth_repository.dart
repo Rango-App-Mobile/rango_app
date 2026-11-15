@@ -22,6 +22,10 @@ class FirebaseAuthRepository implements AuthRepository {
   final Future<String?> Function() _googleIdToken;
   final Future<void> Function() _googleSignOut;
 
+  /// Apple's token can only be revoked with a code from a fresh Apple
+  /// authorization, which [reauthenticate] obtains just before the deletion.
+  String? _appleAuthorizationCode;
+
   @override
   Future<AppUser> ensureSignedIn() {
     // Firebase Auth keeps the user on the device; signing in again would
@@ -141,6 +145,66 @@ class FirebaseAuthRepository implements AuthRepository {
     return ensureSignedIn();
   }
 
+  @override
+  Future<bool> reauthenticate({String? password}) => _guard(() async {
+    final user = _auth.currentUser;
+    if (user == null) throw const UnexpectedFailure();
+    final providers = user.providerData.map((i) => i.providerId).toSet();
+    try {
+      if (providers.contains('password')) {
+        final email = user.email;
+        if (password == null || password.isEmpty || email == null) {
+          throw const InvalidCredentialsFailure();
+        }
+        await user.reauthenticateWithCredential(
+          EmailAuthProvider.credential(email: email, password: password),
+        );
+      } else if (providers.contains('google.com')) {
+        final idToken = await _googleIdToken();
+        if (idToken == null) return false;
+        await user.reauthenticateWithCredential(
+          GoogleAuthProvider.credential(idToken: idToken),
+        );
+      } else if (providers.contains('apple.com')) {
+        final credential = await user.reauthenticateWithProvider(
+          AppleAuthProvider(),
+        );
+        _appleAuthorizationCode =
+            credential.additionalUserInfo?.authorizationCode;
+      } else {
+        throw const UnexpectedFailure();
+      }
+      return true;
+    } on FirebaseAuthException catch (error) {
+      if (_cancelled.contains(error.code)) return false;
+      rethrow;
+    }
+  });
+
+  @override
+  Future<AppUser> deleteAccount() async {
+    final user = _auth.currentUser;
+    if (user == null) throw const UnexpectedFailure();
+    final code = _appleAuthorizationCode;
+    if (code != null) {
+      try {
+        await _auth.revokeTokenWithAuthorizationCode(code);
+      } on Object catch (_) {
+        // Best effort: a failed revocation must not leave the person unable
+        // to delete the account; Apple lists the app in their settings until
+        // then.
+      }
+    }
+    await _guard(user.delete);
+    _appleAuthorizationCode = null;
+    try {
+      await _googleSignOut();
+    } on Object catch (_) {
+      // Best effort, as in `signOut`: the account is already gone.
+    }
+    return ensureSignedIn();
+  }
+
   /// A guest links the account, keeping its uid. When the account already
   /// exists the guest is dropped and the person signs in to it instead: a
   /// guest has nothing saved (rule R1), so nothing is lost.
@@ -220,10 +284,12 @@ class FirebaseAuthRepository implements AuthRepository {
     'network-request-failed' => const NetworkFailure(),
     'invalid-credential' ||
     'wrong-password' ||
+    'user-mismatch' ||
     'user-not-found' ||
     'user-disabled' => const InvalidCredentialsFailure(),
     'email-already-in-use' ||
     'credential-already-in-use' => const EmailInUseFailure(),
+    'requires-recent-login' => const RequiresRecentLoginFailure(),
     'invalid-email' => const InvalidEmailFailure(),
     'weak-password' => const WeakPasswordFailure(),
     'account-exists-with-different-credential' =>

@@ -40,6 +40,41 @@ aviso.
 A folha é aberta por uma função, e não por uma rota do `go_router`: ela não tem
 endereço próprio e abre por cima de qualquer tela raiz, sem mudar a rota atual.
 
+## Excluir conta
+
+Exigida pela App Store (diretriz 5.1.1(v)): quem cria conta no app precisa
+poder apagá-la dentro dele. A linha "Excluir conta" (em vermelho, `textDanger`)
+aparece só no modo com conta, abaixo de "Sair da conta".
+
+| # | O que a pessoa vê | O que acontece |
+|---|---|---|
+| 1 | Toca em "Excluir conta" | `showAdaptiveDialog` (visual nativo no iOS): "Excluir sua conta?", "Seu histórico e seus dados serão apagados. Isso não pode ser desfeito.", "Cancelar" e "Excluir" (destrutivo). Conta de e-mail e senha vê também o campo "Senha" |
+| 2 | Confirma | `ProfileViewModel.deleteAccount({password})`. A folha vira a tela de carregamento "Excluindo sua conta…" e não fecha até terminar |
+| 3 | Sucesso | A folha fecha e aparece o SnackBar "Sua conta foi excluída."; o app volta ao modo visitante |
+| 3' | Erro | A conta continua. A folha mostra o aviso: senha errada ("E-mail ou senha incorretos."), sem rede ("Sem conexão.") ou "Não foi possível excluir sua conta. Tente de novo." |
+| 3'' | Fecha a janela do Google ou da Apple | Nada é apagado e nada é mostrado |
+
+**A ordem importa** (`ProfileViewModel.deleteAccount`), e qualquer `Failure`
+interrompe a sequência:
+
+1. `AuthRepository.reauthenticate`: o Firebase só apaga uma conta com login
+   recente. Conta de e-mail usa a senha digitada; Google reabre o seletor da
+   conta; Apple reabre a folha da Apple. `false` se a pessoa fechar a janela.
+2. `AccountRepository.deleteData(uid)`: apaga `users/{uid}/sessions` e
+   `users/{uid}`. Vem antes porque `firestore.rules` só deixa a própria conta
+   (não anônima) apagar os dados dela; sem a conta, os dados ficariam órfãos.
+3. `AuthRepository.deleteAccount`: revoga o token da Apple (se for conta Apple),
+   apaga o usuário no Firebase, sai do Google e cria um novo visitante anônimo.
+
+**Revogação da Apple.** O reautenticar com a Apple devolve
+`additionalUserInfo.authorizationCode`; o `FirebaseAuthRepository` guarda esse
+código e o entrega a `FirebaseAuth.revokeTokenWithAuthorizationCode` antes de
+apagar o usuário. Se a revogação falhar, a exclusão segue mesmo assim: a conta
+some do app, e a pessoa ainda pode remover o app nos ajustes da Apple.
+
+Se o Firebase ainda pedir login recente, o erro vira
+`RequiresRecentLoginFailure` ("Entre de novo para excluir sua conta.").
+
 ## Erros
 
 A sessão já existe quando a folha abre, porque o app inteiro espera por ela
@@ -52,6 +87,9 @@ mostra dado nenhum.
 | Arquivo | Cobre |
 |---|---|
 | `test/screens/profile/profile_view_model_test.dart` | Visitante; conta com nome, e-mail e foto; os casos sem nome; erro sem novas tentativas; seguir o usuário; sair da conta |
+| `test/screens/profile/profile_view_model_delete_test.dart` | Ordem da exclusão (reautenticar, dados, conta), cancelamento e falhas |
+| `test/screens/profile/profile_sheet_delete_test.dart` | A linha só com conta, o diálogo (campo de senha só para senha), SnackBar de sucesso e erros |
+| `test/data/firebase_auth_repository_delete_test.dart`, `test/data/fake_auth_repository_delete_test.dart` | Reautenticação por provedor, cancelamento, revogação da Apple, exclusão e mapeamento de erros |
 | `test/screens/profile/profile_sheet_test.dart` | Véu, raio e posição; 350 ms e reduzir movimento; os três jeitos de fechar; os dois modos; tela pequena e nome longo |
 | `test/data/firebase_auth_repository_test.dart` | Nome, e-mail e foto vindos do Firebase |
 | `test/screens/history/history_screen_test.dart`, `test/screens/swipe/swipe_screen_test.dart` | O Avatar Button abre a folha nas duas abas |
@@ -63,4 +101,4 @@ mostra dado nenhum.
 | Foto da pessoa no próprio Avatar Button da Top Bar | Junto com o login por Google e Apple (`docs/login.md`) |
 | Estatísticas com conta | E10-S2 |
 | Preferências com conta | E10-S3 |
-| "Sobre o Rango", Privacidade e "Apagar meus dados" | E10-S4 |
+| "Sobre o Rango" e Privacidade | E10-S4 |
