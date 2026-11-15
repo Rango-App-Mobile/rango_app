@@ -11,6 +11,8 @@ class _MockUser extends Mock implements User {}
 
 class _MockUserCredential extends Mock implements UserCredential {}
 
+class _MockUserInfo extends Mock implements UserInfo {}
+
 void main() {
   late _MockFirebaseAuth auth;
   late FirebaseAuthRepository repository;
@@ -21,6 +23,8 @@ void main() {
     final user = _MockUser();
     when(() => user.uid).thenReturn(uid);
     when(() => user.isAnonymous).thenReturn(true);
+    when(() => user.emailVerified).thenReturn(false);
+    when(() => user.providerData).thenReturn([]);
     return user;
   }
 
@@ -65,6 +69,8 @@ void main() {
     when(() => existing.displayName).thenReturn('Joana');
     when(() => existing.email).thenReturn('joana@email.com');
     when(() => existing.photoURL).thenReturn('https://example.com/joana.png');
+    when(() => existing.emailVerified).thenReturn(false);
+    when(() => existing.providerData).thenReturn([]);
     when(() => auth.currentUser).thenReturn(existing);
 
     final result = await repository.ensureSignedIn();
@@ -122,6 +128,9 @@ void main() {
       when(() => account.displayName).thenReturn('Joana');
       when(() => account.email).thenReturn('joana@email.com');
       when(() => account.photoURL).thenReturn(null);
+      when(() => account.emailVerified).thenReturn(false);
+      when(() => account.providerData).thenReturn([]);
+      when(account.sendEmailVerification).thenAnswer((_) async {});
       when(() => account.updateDisplayName(any())).thenAnswer((_) async {});
       when(account.reload).thenAnswer((_) async {});
       return account;
@@ -158,6 +167,80 @@ void main() {
         );
       },
     );
+
+    test('signing up sends the verification e-mail', () async {
+      final guest = user('guest-uid');
+      final linked = account();
+      final credential = _MockUserCredential();
+      when(() => credential.user).thenReturn(linked);
+      when(() => auth.currentUser).thenReturn(guest);
+      when(() => guest.linkWithCredential(any())).thenAnswer((_) async {
+        when(() => auth.currentUser).thenReturn(linked);
+        return credential;
+      });
+
+      await repository.signUp(
+        name: 'Joana',
+        email: 'joana@email.com',
+        password: '12345678',
+      );
+
+      verify(linked.sendEmailVerification).called(1);
+    });
+
+    test(
+      'a failure sending the verification does not fail the sign-up',
+      () async {
+        final guest = user('guest-uid');
+        final linked = account();
+        when(linked.sendEmailVerification).thenThrow(
+          FirebaseAuthException(code: 'too-many-requests'),
+        );
+        final credential = _MockUserCredential();
+        when(() => credential.user).thenReturn(linked);
+        when(() => auth.currentUser).thenReturn(guest);
+        when(() => guest.linkWithCredential(any())).thenAnswer((_) async {
+          when(() => auth.currentUser).thenReturn(linked);
+          return credential;
+        });
+
+        final result = await repository.signUp(
+          name: 'Joana',
+          email: 'joana@email.com',
+          password: '12345678',
+        );
+
+        expect(result.name, 'Joana');
+      },
+    );
+
+    test(
+      'maps emailVerified and whether the sign-in uses a password',
+      () async {
+        final existing = account();
+        final info = _MockUserInfo();
+        when(() => info.providerId).thenReturn('password');
+        when(() => existing.providerData).thenReturn([info]);
+        when(() => existing.emailVerified).thenReturn(true);
+        when(() => auth.currentUser).thenReturn(existing);
+
+        final result = await repository.ensureSignedIn();
+
+        expect(result.emailVerified, isTrue);
+        expect(result.usesPassword, isTrue);
+      },
+    );
+
+    test('resendVerification and reload go to the current user', () async {
+      final existing = account();
+      when(() => auth.currentUser).thenReturn(existing);
+
+      await repository.resendVerification();
+      await repository.reload();
+
+      verify(existing.sendEmailVerification).called(1);
+      verify(existing.reload).called(1);
+    });
 
     test('signing up with a used e-mail is EmailInUseFailure', () async {
       final guest = user('guest-uid');
@@ -295,6 +378,9 @@ void main() {
       when(() => account.displayName).thenReturn('Ana');
       when(() => account.email).thenReturn('ana@gmail.com');
       when(() => account.photoURL).thenReturn(null);
+      when(() => account.emailVerified).thenReturn(false);
+      when(() => account.providerData).thenReturn([]);
+      when(account.sendEmailVerification).thenAnswer((_) async {});
       final credential = _MockUserCredential();
       when(() => credential.user).thenReturn(account);
       return credential;

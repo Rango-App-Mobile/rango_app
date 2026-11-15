@@ -14,7 +14,9 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$AppUser {
 
- String get uid; bool get isAnonymous; String? get name; String? get email; String? get photoUrl;
+ String get uid; bool get isAnonymous; String? get name; String? get email; String? get photoUrl;/// Whether the e-mail was confirmed. Only matters for [usesPassword].
+ bool get emailVerified;/// Signs in with e-mail and password (not Google or Apple).
+ bool get usesPassword;
 /// Create a copy of AppUser
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -25,16 +27,16 @@ $AppUserCopyWith<AppUser> get copyWith => _$AppUserCopyWithImpl<AppUser>(this as
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is AppUser&&(identical(other.uid, uid) || other.uid == uid)&&(identical(other.isAnonymous, isAnonymous) || other.isAnonymous == isAnonymous)&&(identical(other.name, name) || other.name == name)&&(identical(other.email, email) || other.email == email)&&(identical(other.photoUrl, photoUrl) || other.photoUrl == photoUrl));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is AppUser&&(identical(other.uid, uid) || other.uid == uid)&&(identical(other.isAnonymous, isAnonymous) || other.isAnonymous == isAnonymous)&&(identical(other.name, name) || other.name == name)&&(identical(other.email, email) || other.email == email)&&(identical(other.photoUrl, photoUrl) || other.photoUrl == photoUrl)&&(identical(other.emailVerified, emailVerified) || other.emailVerified == emailVerified)&&(identical(other.usesPassword, usesPassword) || other.usesPassword == usesPassword));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,uid,isAnonymous,name,email,photoUrl);
+int get hashCode => Object.hash(runtimeType,uid,isAnonymous,name,email,photoUrl,emailVerified,usesPassword);
 
 @override
 String toString() {
-  return 'AppUser(uid: $uid, isAnonymous: $isAnonymous, name: $name, email: $email, photoUrl: $photoUrl)';
+  return 'AppUser(uid: $uid, isAnonymous: $isAnonymous, name: $name, email: $email, photoUrl: $photoUrl, emailVerified: $emailVerified, usesPassword: $usesPassword)';
 }
 
 
@@ -45,7 +47,7 @@ abstract mixin class $AppUserCopyWith<$Res>  {
   factory $AppUserCopyWith(AppUser value, $Res Function(AppUser) _then) = _$AppUserCopyWithImpl;
 @useResult
 $Res call({
- String uid, bool isAnonymous, String? name, String? email, String? photoUrl
+ String uid, bool isAnonymous, String? name, String? email, String? photoUrl, bool emailVerified, bool usesPassword
 });
 
 
@@ -62,14 +64,16 @@ class _$AppUserCopyWithImpl<$Res>
 
 /// Create a copy of AppUser
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? uid = null,Object? isAnonymous = null,Object? name = freezed,Object? email = freezed,Object? photoUrl = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? uid = null,Object? isAnonymous = null,Object? name = freezed,Object? email = freezed,Object? photoUrl = freezed,Object? emailVerified = null,Object? usesPassword = null,}) {
   return _then(_self.copyWith(
 uid: null == uid ? _self.uid : uid // ignore: cast_nullable_to_non_nullable
 as String,isAnonymous: null == isAnonymous ? _self.isAnonymous : isAnonymous // ignore: cast_nullable_to_non_nullable
 as bool,name: freezed == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String?,email: freezed == email ? _self.email : email // ignore: cast_nullable_to_non_nullable
 as String?,photoUrl: freezed == photoUrl ? _self.photoUrl : photoUrl // ignore: cast_nullable_to_non_nullable
-as String?,
+as String?,emailVerified: null == emailVerified ? _self.emailVerified : emailVerified // ignore: cast_nullable_to_non_nullable
+as bool,usesPassword: null == usesPassword ? _self.usesPassword : usesPassword // ignore: cast_nullable_to_non_nullable
+as bool,
   ));
 }
 
@@ -154,10 +158,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String uid,  bool isAnonymous,  String? name,  String? email,  String? photoUrl)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String uid,  bool isAnonymous,  String? name,  String? email,  String? photoUrl,  bool emailVerified,  bool usesPassword)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _AppUser() when $default != null:
-return $default(_that.uid,_that.isAnonymous,_that.name,_that.email,_that.photoUrl);case _:
+return $default(_that.uid,_that.isAnonymous,_that.name,_that.email,_that.photoUrl,_that.emailVerified,_that.usesPassword);case _:
   return orElse();
 
 }
@@ -175,10 +179,10 @@ return $default(_that.uid,_that.isAnonymous,_that.name,_that.email,_that.photoUr
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String uid,  bool isAnonymous,  String? name,  String? email,  String? photoUrl)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String uid,  bool isAnonymous,  String? name,  String? email,  String? photoUrl,  bool emailVerified,  bool usesPassword)  $default,) {final _that = this;
 switch (_that) {
 case _AppUser():
-return $default(_that.uid,_that.isAnonymous,_that.name,_that.email,_that.photoUrl);case _:
+return $default(_that.uid,_that.isAnonymous,_that.name,_that.email,_that.photoUrl,_that.emailVerified,_that.usesPassword);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -195,10 +199,10 @@ return $default(_that.uid,_that.isAnonymous,_that.name,_that.email,_that.photoUr
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String uid,  bool isAnonymous,  String? name,  String? email,  String? photoUrl)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String uid,  bool isAnonymous,  String? name,  String? email,  String? photoUrl,  bool emailVerified,  bool usesPassword)?  $default,) {final _that = this;
 switch (_that) {
 case _AppUser() when $default != null:
-return $default(_that.uid,_that.isAnonymous,_that.name,_that.email,_that.photoUrl);case _:
+return $default(_that.uid,_that.isAnonymous,_that.name,_that.email,_that.photoUrl,_that.emailVerified,_that.usesPassword);case _:
   return null;
 
 }
@@ -210,7 +214,7 @@ return $default(_that.uid,_that.isAnonymous,_that.name,_that.email,_that.photoUr
 
 
 class _AppUser implements AppUser {
-  const _AppUser({required this.uid, required this.isAnonymous, this.name, this.email, this.photoUrl});
+  const _AppUser({required this.uid, required this.isAnonymous, this.name, this.email, this.photoUrl, this.emailVerified = false, this.usesPassword = false});
   
 
 @override final  String uid;
@@ -218,6 +222,10 @@ class _AppUser implements AppUser {
 @override final  String? name;
 @override final  String? email;
 @override final  String? photoUrl;
+/// Whether the e-mail was confirmed. Only matters for [usesPassword].
+@override@JsonKey() final  bool emailVerified;
+/// Signs in with e-mail and password (not Google or Apple).
+@override@JsonKey() final  bool usesPassword;
 
 /// Create a copy of AppUser
 /// with the given fields replaced by the non-null parameter values.
@@ -229,16 +237,16 @@ _$AppUserCopyWith<_AppUser> get copyWith => __$AppUserCopyWithImpl<_AppUser>(thi
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _AppUser&&(identical(other.uid, uid) || other.uid == uid)&&(identical(other.isAnonymous, isAnonymous) || other.isAnonymous == isAnonymous)&&(identical(other.name, name) || other.name == name)&&(identical(other.email, email) || other.email == email)&&(identical(other.photoUrl, photoUrl) || other.photoUrl == photoUrl));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _AppUser&&(identical(other.uid, uid) || other.uid == uid)&&(identical(other.isAnonymous, isAnonymous) || other.isAnonymous == isAnonymous)&&(identical(other.name, name) || other.name == name)&&(identical(other.email, email) || other.email == email)&&(identical(other.photoUrl, photoUrl) || other.photoUrl == photoUrl)&&(identical(other.emailVerified, emailVerified) || other.emailVerified == emailVerified)&&(identical(other.usesPassword, usesPassword) || other.usesPassword == usesPassword));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,uid,isAnonymous,name,email,photoUrl);
+int get hashCode => Object.hash(runtimeType,uid,isAnonymous,name,email,photoUrl,emailVerified,usesPassword);
 
 @override
 String toString() {
-  return 'AppUser(uid: $uid, isAnonymous: $isAnonymous, name: $name, email: $email, photoUrl: $photoUrl)';
+  return 'AppUser(uid: $uid, isAnonymous: $isAnonymous, name: $name, email: $email, photoUrl: $photoUrl, emailVerified: $emailVerified, usesPassword: $usesPassword)';
 }
 
 
@@ -249,7 +257,7 @@ abstract mixin class _$AppUserCopyWith<$Res> implements $AppUserCopyWith<$Res> {
   factory _$AppUserCopyWith(_AppUser value, $Res Function(_AppUser) _then) = __$AppUserCopyWithImpl;
 @override @useResult
 $Res call({
- String uid, bool isAnonymous, String? name, String? email, String? photoUrl
+ String uid, bool isAnonymous, String? name, String? email, String? photoUrl, bool emailVerified, bool usesPassword
 });
 
 
@@ -266,14 +274,16 @@ class __$AppUserCopyWithImpl<$Res>
 
 /// Create a copy of AppUser
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? uid = null,Object? isAnonymous = null,Object? name = freezed,Object? email = freezed,Object? photoUrl = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? uid = null,Object? isAnonymous = null,Object? name = freezed,Object? email = freezed,Object? photoUrl = freezed,Object? emailVerified = null,Object? usesPassword = null,}) {
   return _then(_AppUser(
 uid: null == uid ? _self.uid : uid // ignore: cast_nullable_to_non_nullable
 as String,isAnonymous: null == isAnonymous ? _self.isAnonymous : isAnonymous // ignore: cast_nullable_to_non_nullable
 as bool,name: freezed == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String?,email: freezed == email ? _self.email : email // ignore: cast_nullable_to_non_nullable
 as String?,photoUrl: freezed == photoUrl ? _self.photoUrl : photoUrl // ignore: cast_nullable_to_non_nullable
-as String?,
+as String?,emailVerified: null == emailVerified ? _self.emailVerified : emailVerified // ignore: cast_nullable_to_non_nullable
+as bool,usesPassword: null == usesPassword ? _self.usesPassword : usesPassword // ignore: cast_nullable_to_non_nullable
+as bool,
   ));
 }
 

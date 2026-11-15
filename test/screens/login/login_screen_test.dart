@@ -8,6 +8,7 @@ import 'package:rango_app/core/widgets/apple_sign_in_button.dart';
 import 'package:rango_app/core/widgets/google_sign_in_button.dart';
 import 'package:rango_app/core/widgets/inline_alert.dart';
 import 'package:rango_app/core/widgets/rango_button.dart';
+import 'package:rango_app/core/widgets/rango_loading_view.dart';
 import 'package:rango_app/data/auth_repository.dart';
 import 'package:rango_app/data/fake_auth_repository.dart';
 import 'package:rango_app/models/app_user.dart';
@@ -38,6 +39,45 @@ Future<void> _pump(WidgetTester tester, AuthRepository repository) =>
     );
 
 void main() {
+  testWidgets('Criar conta pushes the sign-up, and back returns to login', (
+    tester,
+  ) async {
+    await _pump(tester, FakeAuthRepository());
+
+    await tapButton(tester, 'Ainda não tem conta? Criar conta');
+    expect(find.text('/signup'), findsOneWidget);
+
+    await goBack(tester);
+    expect(find.byType(LoginScreen), findsOneWidget);
+  });
+
+  testWidgets('a full-screen loading covers the form while signing in', (
+    tester,
+  ) async {
+    final repository = _MockAuthRepository();
+    final pending = Completer<AppUser>();
+    when(
+      () => repository.signIn(
+        email: any(named: 'email'),
+        password: any(named: 'password'),
+      ),
+    ).thenAnswer((_) => pending.future);
+    await _pump(tester, repository);
+
+    await typeIn(tester, 'E-mail', 'joana@email.com');
+    await typeIn(tester, 'Senha', '12345678');
+    await tester.tap(find.widgetWithText(RangoButton, 'Entrar'));
+    await tester.pump();
+
+    expect(find.byType(RangoLoadingView), findsOneWidget);
+    expect(find.text('Entrando…'), findsOneWidget);
+
+    pending.completeError(const UnexpectedFailure());
+    await tester.pumpAndSettle();
+    expect(find.byType(RangoLoadingView), findsNothing);
+    expect(find.byType(InlineAlert), findsOneWidget);
+  });
+
   testWidgets(
     'fits the screen on iOS, with Apple and Google',
     (tester) async {
@@ -214,9 +254,5 @@ void main() {
     await goBack(tester);
     await tapButton(tester, 'Ainda não tem conta? Criar conta');
     expect(find.text('/signup'), findsOneWidget);
-
-    // Sign up replaced the login: back leaves the flow.
-    await goBack(tester);
-    expect(find.text('HOME'), findsOneWidget);
   });
 }

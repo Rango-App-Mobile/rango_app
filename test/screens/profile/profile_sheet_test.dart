@@ -19,7 +19,12 @@ const _account = AppUser(
   email: 'joana@email.com',
 );
 
-class _MockAuthRepository extends Mock implements AuthRepository {}
+class _MockAuthRepository extends Mock implements AuthRepository {
+  _MockAuthRepository() {
+    when(reload).thenAnswer((_) async {});
+    when(resendVerification).thenAnswer((_) async {});
+  }
+}
 
 AuthRepository _stub(AppUser user) {
   final repository = _MockAuthRepository();
@@ -76,6 +81,39 @@ Future<void> _openGuest(WidgetTester tester, {Size? size}) => _open(
 );
 
 void main() {
+  group('e-mail verification', () {
+    testWidgets('an unverified password account sees the notice and resends', (
+      tester,
+    ) async {
+      final repository = _stub(
+        _account.copyWith(usesPassword: true, emailVerified: false),
+      );
+      await _open(tester, repository: repository);
+
+      expect(find.text('Confirme seu e-mail'), findsOneWidget);
+      expect(
+        find.text('Enviamos um link para joana@email.com.'),
+        findsOneWidget,
+      );
+
+      await tester.tap(find.text('Reenviar'));
+      await tester.pumpAndSettle();
+
+      verify(repository.resendVerification).called(1);
+      expect(find.text('Link reenviado.'), findsOneWidget);
+    });
+
+    testWidgets('a verified account sees no notice', (tester) async {
+      await _open(
+        tester,
+        repository: _stub(
+          _account.copyWith(usesPassword: true, emailVerified: true),
+        ),
+      );
+      expect(find.text('Confirme seu e-mail'), findsNothing);
+    });
+  });
+
   group('opening', () {
     testWidgets('slides up over a 45% veil, with sheet radius', (tester) async {
       await _openGuest(tester);

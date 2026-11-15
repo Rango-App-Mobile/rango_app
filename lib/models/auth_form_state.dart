@@ -13,6 +13,12 @@ abstract class AuthFormState with _$AuthFormState {
     String? nameError,
     String? emailError,
     String? passwordError,
+    String? confirmEmailError,
+    String? confirmPasswordError,
+    String? termsError,
+
+    /// The terms switch of the sign-up form.
+    @Default(false) bool termsAccepted,
 
     /// An error that is not about one field: no network, or unexpected.
     String? alert,

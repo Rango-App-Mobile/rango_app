@@ -16,16 +16,17 @@ perfil em `docs/perfil.md`.
 |---|---|---|
 | 1 | No Profile Sheet, toca em "Entrar ou criar conta" | A folha fecha e abre `/login` por cima das abas |
 | 2 | Entrar: e-mail, senha e "Entrar" | `LoginViewModel.submit` chama `AuthRepository.signIn` |
-| 2' | "Ainda não tem conta? Criar conta" | `/signup` **substitui** o login na pilha. O mesmo vale no caminho de volta |
-| 3 | Criar conta: nome, e-mail e senha | `SignUpViewModel.submit` valida e chama `AuthRepository.signUp` |
+| 2' | "Ainda não tem conta? Criar conta" | `push('/signup')`: o voltar da tela de criar conta devolve para o login |
+| 3 | Criar conta: nome, e-mail, confirmar e-mail, senha, confirmar senha, o interruptor dos termos e "Criar conta" | `SignUpViewModel.submit` valida e chama `AuthRepository.signUp`, que também envia o e-mail de confirmação. Depois, `AccountRepository.acceptTerms` registra o aceite |
 | 4 | Deu certo: volta para a tela de onde saiu, já com a conta | A tela dá `pop` quando o estado vira `done`. O Profile Sheet passa a mostrar a pessoa sozinho, porque segue `AuthRepository.watchUser()` |
 | 5 | "Esqueci minha senha" → Recuperar senha, com o e-mail já digitado | `/password-reset` recebe o e-mail pelo `extra` da rota |
 | 6 | "Enviar link" → "Confira seu e-mail" | `AuthRepository.sendPasswordReset`. A senha nova é criada na página do Firebase, fora do app |
 | 2'' | Em Entrar ou Criar conta, "Continuar com o Google" ou "Continuar com a Apple" | `continueWithGoogle` / `continueWithApple` do ViewModel chamam `AuthRepository.signInWithGoogle` / `signInWithApple`. Abre a folha do Google ou da Apple; deu certo, segue o passo 4 |
 | 7 | No Profile Sheet, "Sair da conta" | `ProfileViewModel.signOut`: sai da conta (e do Google) e cria uma sessão de visitante nova |
 
-O voltar de Entrar e de Criar conta sai do fluxo e a pessoa segue como
-visitante. Como uma tela substitui a outra, o voltar nunca passa pelas duas.
+O voltar de Entrar sai do fluxo e a pessoa segue como visitante. O voltar de
+Criar conta, aberta a partir do Entrar, volta para o Entrar. Enquanto um login
+ou cadastro está em andamento, o voltar fica bloqueado (veja "Carregando").
 
 ## Onde cada regra mora
 
@@ -36,6 +37,9 @@ visitante. Como uma tela substitui a outra, o voltar nunca passa pelas duas.
 | O botão da Apple aparece só no iOS | `offersApple` de cada ViewModel | Decisão de 2026-11-12 (§11); fora da tela, dá para testar com `debugDefaultTargetPlatformOverride` |
 | Enquanto um login está em andamento, os botões ficam desligados e um segundo toque não faz nada | `submitting` no `AuthFormState` | O mesmo cuidado do "Entrar" |
 | Nome obrigatório, e-mail com cara de e-mail, senha com 8 caracteres ou mais | `SignUpViewModel` e `AuthFormState` | Valida antes de gastar uma chamada, e é testável sem tela |
+| "Os e-mails não são iguais.", "As senhas não são iguais." e "Aceite os termos para criar a conta." | `SignUpViewModel.submit` (`confirmEmailError`, `confirmPasswordError`, `termsError`) | Mesma razão. O interruptor (`termsAccepted`) vive no estado e sobrevive à edição dos campos |
+| O aceite dos termos fica gravado na conta | `AccountRepository.acceptTerms`, chamado pelo `SignUpViewModel` depois do cadastro | Se a gravação falhar, o cadastro não é desfeito (a conta já existe e tentar de novo diria "e-mail em uso") |
+| O cadastro não falha se o e-mail de confirmação não sair | `FirebaseAuthRepository.signUp` | A conta já existe; o Profile Sheet oferece "Reenviar" (`docs/perfil.md`) |
 | Cada erro aparece junto do que o causou | `AuthFormState.failed` | Um lugar só para as três telas: credencial e senha fraca no campo Senha, e-mail em uso ou inválido no campo E-mail, rede e inesperado no aviso do topo |
 | "E-mail ou senha incorretos" serve para os dois casos | `FirebaseAuthRepository._toFailure` | O Firebase não diz qual dos dois errou, e dizer ajudaria a descobrir quem tem conta |
 | Recuperar senha confirma o envio mesmo sem conta naquele e-mail | `FirebaseAuthRepository.sendPasswordReset` | Mesma razão: a tela não revela quem está cadastrado |
@@ -49,6 +53,32 @@ Sem as chaves do Firebase no `env.json`, o app usa o `FakeAuthRepository`, que
 guarda as contas na memória: dá para criar uma conta, sair e entrar de novo
 até fechar o app. Google e Apple entram sempre na mesma conta de exemplo
 (Ana Souza).
+
+## Termos de Uso
+
+`TermsAcceptance` (`lib/core/widgets/terms_acceptance.dart`) é um
+`Switch.adaptive` (visual Cupertino no iOS) com o texto "Li e aceito os Termos
+de Uso e a Política de Privacidade". Tocar no texto abre uma folha arrastável e
+rolável com o conteúdo de `assets/legal/terms.txt`, lido com `rootBundle`. O
+texto atual é um **rascunho provisório**; o texto final substitui o arquivo e
+sobe o `currentTermsVersion`.
+
+O aceite fica em `users/{uid}`: `termsVersion` (`currentTermsVersion`, em
+`lib/data/account_repository.dart`) e `termsAcceptedAt` (horário do servidor).
+`AccountRepository` também tem `hasAcceptedTerms` (documento existe e versão
+atual ou maior) e `deleteData` (apaga `users/{uid}/sessions`, em lotes de 500,
+e depois `users/{uid}`). Sem Firebase, o app usa o `FakeAccountRepository`.
+
+O aceite é exigido no cadastro por e-mail. Google e Apple na tela de criar
+conta não pedem o interruptor ainda.
+
+## Carregando
+
+`RangoLoadingView` (`lib/core/widgets/rango_loading_view.dart`) cobre a tela
+inteira em Entrar e Criar conta enquanto `submitting` (e-mail, Google ou Apple),
+com "Entrando…" ou "Criando sua conta…". Um `PopScope` bloqueia o voltar. Se der
+erro, a camada some e o aviso aparece. O visual é provisório e será trocado pelo
+da splash do Figma.
 
 ## Google e Apple
 
@@ -99,6 +129,8 @@ Seguem as regras de marca, que a App Review da Apple e o Google exigem:
 | Componente | Arquivo | Figma |
 |---|---|---|
 | `RangoTextField` | `lib/core/widgets/rango_text_field.dart` | Text Field: rótulo fora do campo, 56 de altura, mensagem de apoio ou de erro embaixo. Senha ganha o olho para mostrar e esconder |
+| `TermsAcceptance` | `lib/core/widgets/terms_acceptance.dart` | Interruptor dos termos com a folha do texto |
+| `RangoLoadingView` | `lib/core/widgets/rango_loading_view.dart` | Carregando em tela cheia (provisório) |
 | `RangoDivider` | `lib/core/widgets/rango_divider.dart` | Divider: linha com "ou" no meio |
 | `InlineAlert` | `lib/core/widgets/inline_alert.dart` | Inline Alert: erro do formulário inteiro, acima dos campos |
 | `ListRow` | `lib/core/widgets/list_row.dart` | List Row, só a variante `Trailing=Chevron` sem valor. Usada em "Sair da conta" |
@@ -122,6 +154,9 @@ Seguem as regras de marca, que a App Review da Apple e o Google exigem:
 |---|---|
 | `test/data/firebase_auth_repository_test.dart` | Criar conta ligando o visitante; entrar; os códigos de erro; recuperar senha; sair (e sair do Google); `watchUser`; Google e Apple: ligar, conta que já existe, folha fechada, erros |
 | `test/data/fake_auth_repository_test.dart` | Criar, sair e entrar de novo; senha errada e e-mail repetido; Google e Apple |
+| `test/data/firestore_account_repository_test.dart`, `fake_account_repository_test.dart` | Aceite dos termos e apagar dados |
+| `test/screens/sign_up/sign_up_view_model_test.dart` | Confirmações, termos e registro do aceite |
+| `test/core/widgets/terms_acceptance_test.dart` | O interruptor, o erro e a folha |
 | `test/screens/login/login_view_model_test.dart` | Google e Apple: sucesso, folha fechada, rede, erro sempre no aviso, toque duplo; Apple só no iOS |
 | `test/models/auth_form_state_test.dart` | Onde cada erro aparece; formato de e-mail |
 | `test/screens/login/`, `sign_up/`, `password_reset/` | Cada tela: sucesso, validação, erros, links e o voltar |
@@ -145,8 +180,8 @@ Validação manual, não coberta por teste automatizado:
 | Fora desta entrega | Onde vai |
 |---|---|
 | Entrar com a Apple no Android | Fora do MVP (§11, 2026-11-12) |
-| Estado de carregando no Button: enquanto envia, o botão só fica desligado | Componente ainda não desenhado no Figma |
-| Termos de Uso e Política de Privacidade (a frase da tela 14 não entrou) | Os documentos ainda não existem |
+| O texto final dos Termos de Uso e da Política de Privacidade | Hoje é um rascunho em `assets/legal/terms.txt` |
+| Exigir o aceite dos termos também em Google e Apple | A definir |
 | Salvar os rangos de quem tem conta | E2-S4 |
 
 ## Pendências
