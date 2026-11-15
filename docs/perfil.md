@@ -52,7 +52,7 @@ Direto, sem pedir login de novo:
 |---|---|---|
 | 1 | Toca em "Excluir conta" | Alerta nativo (`showAdaptiveDialog`): "Excluir sua conta?", "Seu histórico e seus dados serão apagados. Isso não pode ser desfeito.", "Cancelar" e "Excluir" (destrutivo). Só isso, sem campo de senha |
 | 2 | Confirma | A animação de carregamento ("Excluindo sua conta…") cobre o app inteiro, por cima da folha, e nada pode ser tocado até terminar |
-| 3 | Sucesso | O carregamento e a folha fecham e aparece o SnackBar "Sua conta foi excluída."; o app volta ao modo visitante |
+| 3 | Sucesso | O carregamento e a folha fecham e o app volta ao modo visitante, sem SnackBar (ele ficaria por baixo do blur da Tab Bar) |
 | 3' | Erro | O carregamento fecha e um alerta "Não deu para excluir" explica: sem rede ("Sem conexão."), login antigo (abaixo) ou "Não foi possível excluir sua conta. Tente de novo." A conta continua |
 
 **A ordem importa** (`ProfileViewModel.deleteAccount`), e qualquer `Failure`

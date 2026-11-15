@@ -118,7 +118,6 @@ class ProfileSheet extends ConsumerWidget {
 Future<void> _delete(BuildContext context, WidgetRef ref) async {
   if (!await showDeleteAccountDialog(context)) return;
   if (!context.mounted) return;
-  final messenger = ScaffoldMessenger.of(context);
   final sheet = Navigator.of(context);
   final root = Navigator.of(context, rootNavigator: true);
   // The splash covers the whole app, not the sheet, and nothing can be
@@ -139,10 +138,9 @@ Future<void> _delete(BuildContext context, WidgetRef ref) async {
     if (root.mounted) await showDeleteAccountError(root.context, error);
     return;
   }
+  // No SnackBar: the splash and the guest mode already say it, and the
+  // SnackBar would sit under the Tab Bar's blur.
   sheet.pop();
-  messenger.showSnackBar(
-    const SnackBar(content: Text('Sua conta foi excluída.')),
-  );
 }
 
 Future<void> _resend(BuildContext context, WidgetRef ref) async {

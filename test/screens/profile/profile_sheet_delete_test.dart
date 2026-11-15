@@ -119,7 +119,7 @@ void main() {
     await tester.pumpAndSettle();
   });
 
-  testWidgets('success closes everything and shows the SnackBar', (
+  testWidgets('success closes everything and leaves nothing behind', (
     tester,
   ) async {
     await _open(tester, _social);
@@ -127,7 +127,7 @@ void main() {
 
     expect(find.byType(ProfileSheet), findsNothing);
     expect(find.byType(RangoLoadingView), findsNothing);
-    expect(find.text('Sua conta foi excluída.'), findsOneWidget);
+    expect(find.byType(SnackBar), findsNothing);
     verifyInOrder([
       () => _accounts.deleteData('u1'),
       _auth.deleteAccount,
