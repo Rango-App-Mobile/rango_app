@@ -11,6 +11,7 @@ import 'package:rango_app/core/widgets/rango_button.dart';
 import 'package:rango_app/core/widgets/rango_icon_button.dart';
 import 'package:rango_app/core/widgets/rango_loading_view.dart';
 import 'package:rango_app/core/widgets/scrim.dart';
+import 'package:rango_app/core/widgets/terms_acceptance.dart';
 import 'package:rango_app/screens/profile/profile_state.dart';
 import 'package:rango_app/screens/profile/profile_view_model.dart';
 import 'package:rango_app/screens/profile/widgets/delete_account_dialog.dart';
@@ -83,29 +84,36 @@ class ProfileSheet extends ConsumerWidget {
               ),
             Flexible(
               child: SingleChildScrollView(
-                child: state.isGuest
-                    ? const _GuestInvitation()
-                    : Column(
-                        children: [
-                          ListRow(
-                            icon: Icons.logout,
-                            label: 'Sair da conta',
-                            onTap: () => unawaited(
-                              ref
-                                  .read(profileViewModelProvider.notifier)
-                                  .signOut(),
-                            ),
-                          ),
-                          ListRow(
-                            icon: Icons.delete_outline,
-                            label: 'Excluir conta',
-                            destructive: true,
-                            onTap: () => unawaited(
-                              _delete(context, ref),
-                            ),
-                          ),
-                        ],
+                child: Column(
+                  children: [
+                    if (state.isGuest)
+                      const _GuestInvitation()
+                    else ...[
+                      ListRow(
+                        icon: Icons.logout,
+                        label: 'Sair da conta',
+                        onTap: () => unawaited(
+                          ref.read(profileViewModelProvider.notifier).signOut(),
+                        ),
                       ),
+                      ListRow(
+                        icon: Icons.delete_outline,
+                        label: 'Excluir conta',
+                        destructive: true,
+                        onTap: () => unawaited(
+                          _delete(context, ref),
+                        ),
+                      ),
+                    ],
+                    // Always readable, with or without an account (stores
+                    // require the privacy policy inside the app).
+                    ListRow(
+                      icon: Icons.description_outlined,
+                      label: 'Termos e Privacidade',
+                      onTap: () => unawaited(showTermsSheet(context)),
+                    ),
+                  ],
+                ),
               ),
             ),
           ],

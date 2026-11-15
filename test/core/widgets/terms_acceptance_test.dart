@@ -52,10 +52,10 @@ void main() {
       find.text('Termos de Uso e Política de Privacidade'),
       findsOneWidget,
     );
-    expect(find.textContaining('Rascunho'), findsOneWidget);
+    expect(find.text('1. Quem somos'), findsOneWidget);
 
     await tester.tap(find.byIcon(Icons.close));
     await tester.pumpAndSettle();
-    expect(find.textContaining('Rascunho'), findsNothing);
+    expect(find.text('1. Quem somos'), findsNothing);
   });
 }

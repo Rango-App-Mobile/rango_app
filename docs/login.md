@@ -59,9 +59,13 @@ até fechar o app. Google e Apple entram sempre na mesma conta de exemplo
 `TermsAcceptance` (`lib/core/widgets/terms_acceptance.dart`) é um
 `Switch.adaptive` (visual Cupertino no iOS) com o texto "Li e aceito os Termos
 de Uso e a Política de Privacidade". Tocar no texto abre uma folha arrastável e
-rolável com o conteúdo de `assets/legal/terms.txt`, lido com `rootBundle`. O
-texto atual é um **rascunho provisório**; o texto final substitui o arquivo e
-sobe o `currentTermsVersion`.
+rolável com o conteúdo de `assets/legal/terms.txt`, lido com `rootBundle`; os
+títulos numerados ("1. Quem somos") aparecem em destaque. O texto vem de
+`docs/termos-e-privacidade.md` (versão 2; a 1 era um rascunho). Mudou o texto?
+Atualize os dois arquivos, gere de novo o PDF
+(`tools/legal/make_terms_pdf.py`) e suba o `currentTermsVersion`, para que todas
+as contas aceitem a nova versão pela tela "Quase lá". A mesma folha abre pela
+linha "Termos e Privacidade" do Profile Sheet.
 
 O aceite fica em `users/{uid}`: `termsVersion` (`currentTermsVersion`, em
 `lib/data/account_repository.dart`) e `termsAcceptedAt` (horário do servidor).
@@ -208,8 +212,6 @@ Validação manual, não coberta por teste automatizado:
 | Fora desta entrega | Onde vai |
 |---|---|
 | Entrar com a Apple no Android | Fora do MVP (§11, 2026-11-12) |
-| O texto final dos Termos de Uso e da Política de Privacidade | Hoje é um rascunho em `assets/legal/terms.txt` |
-| Exigir o aceite dos termos também em Google e Apple | A definir |
 | Salvar os rangos de quem tem conta | E2-S4 |
 
 ## Pendências

@@ -4,7 +4,8 @@ import 'package:rango_app/data/firestore_account_repository.dart';
 
 /// The version of the Terms of Use and Privacy Policy the app asks for.
 /// Raising it makes `hasAcceptedTerms` false for everyone again.
-const currentTermsVersion = 1;
+// 1 was the draft; 2 is the first real text (docs/termos-e-privacidade.md).
+const currentTermsVersion = 2;
 
 /// The person's own `users/{uid}` document. Every method throws a `Failure`
 /// when it cannot do its job.

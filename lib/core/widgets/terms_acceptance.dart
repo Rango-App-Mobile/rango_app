@@ -48,7 +48,7 @@ class _TermsAcceptanceState extends State<TermsAcceptance> {
               // The whole label opens the text, not only the link words.
               child: GestureDetector(
                 behavior: HitTestBehavior.opaque,
-                onTap: () => unawaited(_showTerms(context)),
+                onTap: () => unawaited(showTermsSheet(context)),
                 child: Text.rich(
                   TextSpan(
                     style: style,
@@ -84,7 +84,9 @@ class _TermsAcceptanceState extends State<TermsAcceptance> {
   }
 }
 
-Future<void> _showTerms(BuildContext context) {
+/// Opens the Termos de Uso e Política de Privacidade over the app. Also
+/// reachable from the Profile Sheet at any time.
+Future<void> showTermsSheet(BuildContext context) {
   return showModalBottomSheet<void>(
     context: context,
     isScrollControlled: true,
@@ -147,14 +149,25 @@ class _TermsSheet extends StatelessWidget {
               future: rootBundle.loadString('assets/legal/terms.txt'),
               builder: (context, snapshot) => SingleChildScrollView(
                 controller: controller,
-                child: Text(
-                  snapshot.data ??
-                      (snapshot.hasError
-                          ? 'Não foi possível abrir o texto.'
-                          : ''),
-                  style: context.textStyles.body.copyWith(
-                    color: colors.textPrimary,
-                  ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  spacing: AppSpace.md,
+                  children: [
+                    for (final block in _blocks(
+                      snapshot.data ??
+                          (snapshot.hasError
+                              ? 'Não foi possível abrir o texto.'
+                              : ''),
+                    ))
+                      Text(
+                        block,
+                        style:
+                            (_isSectionTitle(block)
+                                    ? context.textStyles.bodyStrong
+                                    : context.textStyles.body)
+                                .copyWith(color: colors.textPrimary),
+                      ),
+                  ],
                 ),
               ),
             ),
@@ -164,3 +177,13 @@ class _TermsSheet extends StatelessWidget {
     );
   }
 }
+
+/// The text is paragraphs separated by a blank line.
+List<String> _blocks(String text) => [
+  for (final block in text.split('\n\n'))
+    if (block.trim().isNotEmpty) block.trim(),
+];
+
+/// Section titles are numbered: "1. Quem somos".
+bool _isSectionTitle(String block) =>
+    !block.contains('\n') && RegExp(r'^\d+\. ').hasMatch(block);

@@ -81,6 +81,29 @@ Future<void> _openGuest(WidgetTester tester, {Size? size}) => _open(
 );
 
 void main() {
+  group('terms and privacy', () {
+    Future<void> opensTheTerms(WidgetTester tester) async {
+      await tester.ensureVisible(find.text('Termos e Privacidade'));
+      await tester.tap(find.text('Termos e Privacidade'));
+      await tester.pumpAndSettle();
+
+      expect(
+        find.text('Termos de Uso e Política de Privacidade'),
+        findsOneWidget,
+      );
+    }
+
+    testWidgets('a guest can read them', (tester) async {
+      await _openGuest(tester);
+      await opensTheTerms(tester);
+    });
+
+    testWidgets('an account can read them', (tester) async {
+      await _open(tester);
+      await opensTheTerms(tester);
+    });
+  });
+
   group('e-mail verification', () {
     testWidgets('an unverified password account sees the notice and resends', (
       tester,
