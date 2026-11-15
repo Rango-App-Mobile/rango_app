@@ -41,6 +41,9 @@ abstract interface class AuthRepository {
   /// confirmed in the mail app, which Firebase does not announce).
   Future<void> reload();
 
+  /// Sets the current user's display name.
+  Future<void> updateName(String name);
+
   /// Leaves the account and goes back to a guest session.
   Future<AppUser> signOut();
 }

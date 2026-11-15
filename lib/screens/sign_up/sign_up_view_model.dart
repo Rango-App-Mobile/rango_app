@@ -63,9 +63,7 @@ class SignUpViewModel extends Notifier<AuthFormState> {
           .read(authRepositoryProvider)
           .signUp(name: person, email: address, password: password);
       await _recordTerms(user.uid);
-      if (ref.mounted) {
-        state = AuthFormState(done: true, termsAccepted: accepted);
-      }
+      await _finish(user);
     } on Failure catch (failure) {
       if (ref.mounted) {
         state = AuthFormState.failed(
@@ -101,8 +99,10 @@ class SignUpViewModel extends Notifier<AuthFormState> {
     state = AuthFormState(submitting: true, termsAccepted: accepted);
     try {
       final user = await signIn();
-      if (ref.mounted) {
-        state = AuthFormState(done: user != null, termsAccepted: accepted);
+      if (user == null) {
+        if (ref.mounted) state = AuthFormState(termsAccepted: accepted);
+      } else {
+        await _finish(user);
       }
     } on Failure catch (failure) {
       // No field caused it, so only the network and a taken e-mail keep their
@@ -115,6 +115,26 @@ class SignUpViewModel extends Notifier<AuthFormState> {
               : const UnexpectedFailure(),
         ).copyWith(termsAccepted: accepted);
       }
+    }
+  }
+
+  /// Every account must have accepted the terms. A failed check counts as not
+  /// accepted: the acceptance screen retries the write.
+  Future<void> _finish(AppUser user) async {
+    var accepted = false;
+    try {
+      accepted = await ref
+          .read(accountRepositoryProvider)
+          .hasAcceptedTerms(user.uid);
+    } on Failure {
+      // Treated as not accepted; see above.
+    }
+    if (ref.mounted) {
+      state = AuthFormState(
+        done: accepted,
+        needsTerms: !accepted,
+        termsAccepted: state.termsAccepted,
+      );
     }
   }
 }

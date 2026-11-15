@@ -66,6 +66,10 @@ class FakeAuthRepository implements AuthRepository {
   Future<void> reload() async {}
 
   @override
+  Future<void> updateName(String name) async =>
+      _set(_current.copyWith(name: name));
+
+  @override
   Future<AppUser> signOut() async => _set(user);
 
   AppUser _account({

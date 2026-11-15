@@ -5,7 +5,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:rango_app/core/error/failure.dart';
+import 'package:rango_app/data/account_repository.dart';
 import 'package:rango_app/data/auth_repository.dart';
+import 'package:rango_app/data/fake_account_repository.dart';
 import 'package:rango_app/data/fake_auth_repository.dart';
 import 'package:rango_app/models/app_user.dart';
 import 'package:rango_app/models/auth_form_state.dart';
@@ -15,10 +17,26 @@ class _MockAuthRepository extends Mock implements AuthRepository {}
 
 const _account = AppUser(uid: 'u1', isAnonymous: false, name: 'Ana');
 
-ProviderContainer _container(AuthRepository repository) {
+class _Throwing extends FakeAccountRepository {
+  @override
+  Future<bool> hasAcceptedTerms(String uid) async =>
+      throw const NetworkFailure();
+}
+
+ProviderContainer _container(
+  AuthRepository repository, [
+  AccountRepository? accounts,
+]) {
+  final defaultAccounts = FakeAccountRepository();
+  unawaited(defaultAccounts.acceptTerms('u1'));
   // Listening keeps the autoDispose ViewModel alive between reads.
   return ProviderContainer.test(
-    overrides: [authRepositoryProvider.overrideWithValue(repository)],
+    overrides: [
+      authRepositoryProvider.overrideWithValue(repository),
+      accountRepositoryProvider.overrideWithValue(
+        accounts ?? defaultAccounts,
+      ),
+    ],
   )..listen(loginViewModelProvider, (_, _) {});
 }
 
@@ -115,6 +133,37 @@ void main() {
     });
   }
 
+  test('an account that did not accept the terms needs them', () async {
+    when(() => repository.signInWithGoogle()).thenAnswer((_) async => _account);
+    container = _container(repository, FakeAccountRepository());
+
+    await viewModel().continueWithGoogle();
+
+    expect(state(), const AuthFormState(needsTerms: true));
+  });
+
+  test('a failed terms check counts as not accepted', () async {
+    when(() => repository.signInWithApple()).thenAnswer((_) async => _account);
+    container = _container(repository, _Throwing());
+
+    await viewModel().continueWithApple();
+
+    expect(state(), const AuthFormState(needsTerms: true));
+  });
+
+  test('e-mail sign-in is done when accepted, needs terms otherwise', () async {
+    when(
+      () => repository.signIn(email: 'a@b.c', password: 'x'),
+    ).thenAnswer((_) async => _account);
+
+    await viewModel().submit(email: 'a@b.c', password: 'x');
+    expect(state(), const AuthFormState(done: true));
+
+    container = _container(repository, FakeAccountRepository());
+    await viewModel().submit(email: 'a@b.c', password: 'x');
+    expect(state(), const AuthFormState(needsTerms: true));
+  });
+
   test('offers Apple only on iOS', () {
     debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
     expect(viewModel().offersApple, isTrue);
@@ -124,7 +173,9 @@ void main() {
   });
 
   test('works with the fake repository', () async {
-    container = _container(FakeAuthRepository());
+    final accounts = FakeAccountRepository();
+    await accounts.acceptTerms(FakeAuthRepository.user.uid);
+    container = _container(FakeAuthRepository(), accounts);
 
     await viewModel().continueWithGoogle();
 

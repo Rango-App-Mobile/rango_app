@@ -95,8 +95,27 @@ void main() {
     viewModel().termsAccepted(accepted: true);
     await submit();
 
-    expect(state().done, isTrue);
+    expect(state().done, isFalse);
+    expect(state().needsTerms, isTrue);
   });
+
+  for (final (name, run) in [
+    ('Google', (SignUpViewModel v) => v.continueWithGoogle()),
+    ('Apple', (SignUpViewModel v) => v.continueWithApple()),
+  ]) {
+    test('$name sign-up needs the terms when not accepted', () async {
+      await run(viewModel());
+      expect(state().needsTerms, isTrue);
+      expect(state().done, isFalse);
+    });
+
+    test('$name sign-up is done when the terms were accepted', () async {
+      await account.acceptTerms((await auth.ensureSignedIn()).uid);
+      await run(viewModel());
+      expect(state().done, isTrue);
+      expect(state().needsTerms, isFalse);
+    });
+  }
 
   test('an e-mail in use shows on the e-mail field', () async {
     await auth.signUp(

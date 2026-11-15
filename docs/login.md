@@ -72,6 +72,34 @@ e depois `users/{uid}`). Sem Firebase, o app usa o `FakeAccountRepository`.
 O aceite é exigido no cadastro por e-mail. Google e Apple na tela de criar
 conta não pedem o interruptor ainda.
 
+## Quase lá: nome e termos depois do login
+
+Toda conta precisa ter aceitado os termos e ter um nome. Depois de qualquer
+login ou cadastro (e-mail, Google, Apple), os ViewModels de `login` e
+`sign_up` chamam `AccountRepository.hasAcceptedTerms(uid)`:
+
+- aceitou: `done`, a tela fecha como antes;
+- não aceitou (ou a consulta falhou, que conta como não aceitou):
+  `needsTerms` em `AuthFormState`, e a View faz
+  `context.pushReplacement('/accept-terms')` em vez de fechar. O cadastro por
+  e-mail grava o aceite sozinho e roda a mesma checagem depois, então uma
+  gravação que falhou cai nesta tela.
+
+A tela `lib/screens/accept_terms/` (rota `/accept-terms`, navegador raiz) mostra
+"Quase lá", o campo "Nome" já preenchido com o nome atual, o switch dos termos e
+"Continuar". Valida o nome ('Digite seu nome.') e os termos ('Aceite os termos
+para continuar.'). "Continuar" chama `AuthRepository.updateName` (só se o nome
+mudou) e depois `acceptTerms`, e volta para onde o login foi aberto. "Agora não"
+e o voltar do sistema fazem `signOut()` (volta a visitante) e fecham. Erros
+aparecem num `InlineAlert`; durante o envio, `RangoLoadingView` cobre a tela.
+
+### Token depois de vincular
+
+Logo após `linkWithCredential`/`linkWithProvider` (login social e cadastro por
+e-mail), o repositório chama `user.getIdToken(true)`: sem isso o próximo acesso
+ao Firestore ainda levaria `sign_in_provider = anonymous`, que as regras negam.
+Se a renovação falhar, o login não falha (o token se renova sozinho depois).
+
 ## Carregando
 
 `RangoLoadingView` (`lib/core/widgets/rango_loading_view.dart`) cobre a tela

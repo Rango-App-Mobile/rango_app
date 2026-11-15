@@ -87,6 +87,51 @@ void main() {
     );
   });
 
+  test('falls back to the provider name when the user has none', () async {
+    final existing = user('u');
+    final info = _MockUserInfo();
+    when(() => info.displayName).thenReturn('Ana Souza');
+    when(() => info.providerId).thenReturn('google.com');
+    when(() => existing.displayName).thenReturn('');
+    when(() => existing.providerData).thenReturn([info]);
+    when(() => existing.email).thenReturn(null);
+    when(() => existing.photoURL).thenReturn(null);
+    when(() => auth.currentUser).thenReturn(existing);
+
+    expect((await repository.ensureSignedIn()).name, 'Ana Souza');
+  });
+
+  test('updateName sets the display name and reloads', () async {
+    final existing = user('u');
+    when(() => existing.updateDisplayName(any())).thenAnswer((_) async {});
+    when(existing.reload).thenAnswer((_) async {});
+    when(() => auth.currentUser).thenReturn(existing);
+
+    await repository.updateName('Ana');
+
+    verify(() => existing.updateDisplayName('Ana')).called(1);
+    verify(existing.reload).called(1);
+  });
+
+  test('a failing token refresh does not fail the sign-in', () async {
+    final guest = user('guest-uid');
+    final linked = user('guest-uid');
+    when(() => linked.isAnonymous).thenReturn(false);
+    when(() => linked.displayName).thenReturn('Ana');
+    when(() => linked.email).thenReturn('a@b.c');
+    when(() => linked.photoURL).thenReturn(null);
+    when(() => linked.getIdToken(true)).thenThrow(Exception('offline'));
+    final credential = _MockUserCredential();
+    when(() => credential.user).thenReturn(linked);
+    registerFallbackValue(GoogleAuthProvider.credential(idToken: 'x'));
+    when(() => auth.currentUser).thenReturn(guest);
+    when(
+      () => guest.linkWithCredential(any()),
+    ).thenAnswer((_) async => credential);
+
+    expect((await repository.signInWithGoogle())?.uid, 'guest-uid');
+  });
+
   test('maps network-request-failed to NetworkFailure', () async {
     when(() => auth.currentUser).thenReturn(null);
     when(auth.signInAnonymously).thenThrow(
@@ -381,6 +426,7 @@ void main() {
       when(() => account.emailVerified).thenReturn(false);
       when(() => account.providerData).thenReturn([]);
       when(account.sendEmailVerification).thenAnswer((_) async {});
+      when(() => account.getIdToken(true)).thenAnswer((_) async => 'token');
       final credential = _MockUserCredential();
       when(() => credential.user).thenReturn(account);
       return credential;
@@ -389,14 +435,17 @@ void main() {
     test('Google links the guest, keeping the uid', () async {
       final guest = user('guest-uid');
       when(() => auth.currentUser).thenReturn(guest);
+      final linkedCredential = credentialOf('guest-uid');
       when(
         () => guest.linkWithCredential(any()),
-      ).thenAnswer((_) async => credentialOf('guest-uid'));
+      ).thenAnswer((_) async => linkedCredential);
+      final linkedUser = linkedCredential.user!;
 
       final result = await repository.signInWithGoogle();
 
       expect(result?.uid, 'guest-uid');
       expect(result?.isAnonymous, isFalse);
+      verify(() => linkedUser.getIdToken(true)).called(1);
       final linked =
           verify(() => guest.linkWithCredential(captureAny())).captured.single
               as AuthCredential;

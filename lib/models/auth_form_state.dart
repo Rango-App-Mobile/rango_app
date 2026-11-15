@@ -10,6 +10,10 @@ abstract class AuthFormState with _$AuthFormState {
   const factory AuthFormState({
     @Default(false) bool submitting,
     @Default(false) bool done,
+
+    /// Signed in, but the terms were not accepted yet: the View goes to the
+    /// acceptance screen instead of closing.
+    @Default(false) bool needsTerms,
     String? nameError,
     String? emailError,
     String? passwordError,
