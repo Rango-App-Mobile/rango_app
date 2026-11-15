@@ -145,7 +145,7 @@ void main() {
     await _pump(tester, repository);
     expect(find.text('Continuar com a Apple'), findsNothing);
 
-    await tapButton(tester, 'Continuar com o Google');
+    await tapText(tester, 'Continuar com o Google');
 
     expect(find.text('HOME'), findsOneWidget);
     expect((await repository.ensureSignedIn()).isAnonymous, isFalse);
@@ -157,7 +157,7 @@ void main() {
       final repository = FakeAuthRepository();
       await _pump(tester, repository);
 
-      await tapButton(tester, 'Continuar com a Apple');
+      await tapText(tester, 'Continuar com a Apple');
 
       expect(find.text('HOME'), findsOneWidget);
       expect((await repository.ensureSignedIn()).email, contains('icloud'));

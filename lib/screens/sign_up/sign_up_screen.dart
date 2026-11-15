@@ -5,6 +5,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:rango_app/core/theme/app_space.dart';
 import 'package:rango_app/core/theme/theme_context.dart';
+import 'package:rango_app/core/widgets/apple_sign_in_button.dart';
+import 'package:rango_app/core/widgets/google_sign_in_button.dart';
 import 'package:rango_app/core/widgets/inline_alert.dart';
 import 'package:rango_app/core/widgets/page_header.dart';
 import 'package:rango_app/core/widgets/rango_button.dart';
@@ -86,18 +88,12 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                 spacing: AppSpace.sm,
                 children: [
                   if (viewModel.offersApple)
-                    RangoButton(
-                      label: 'Continuar com a Apple',
-                      style: RangoButtonStyle.secondary,
-                      expand: true,
+                    AppleSignInButton(
                       onPressed: state.submitting
                           ? null
                           : () => unawaited(viewModel.continueWithApple()),
                     ),
-                  RangoButton(
-                    label: 'Continuar com o Google',
-                    style: RangoButtonStyle.secondary,
-                    expand: true,
+                  GoogleSignInButton(
                     onPressed: state.submitting
                         ? null
                         : () => unawaited(viewModel.continueWithGoogle()),

@@ -153,8 +153,6 @@ class FirebaseAuthRepository implements AuthRepository {
         try {
           return await body();
         } on FirebaseAuthException catch (error) {
-          // TEMP(debug): remove before any commit.
-          debugPrint('RANGO_AUTH ${error.code}: ${error.message}');
           if (_cancelled.contains(error.code)) return null;
           rethrow;
         }
@@ -190,6 +188,8 @@ class FirebaseAuthRepository implements AuthRepository {
     'credential-already-in-use' => const EmailInUseFailure(),
     'invalid-email' => const InvalidEmailFailure(),
     'weak-password' => const WeakPasswordFailure(),
+    'account-exists-with-different-credential' =>
+      const AccountExistsWithOtherMethodFailure(),
     _ => const UnexpectedFailure(),
   };
 

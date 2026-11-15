@@ -27,6 +27,9 @@ abstract class AuthFormState with _$AuthFormState {
     NetworkFailure() => const AuthFormState(
       alert: 'Sem conexão. Confira sua internet e tente de novo.',
     ),
+    AccountExistsWithOtherMethodFailure() => AuthFormState(
+      alert: failure.message,
+    ),
     _ => const AuthFormState(alert: 'Algo deu errado. Tente de novo.'),
   };
 

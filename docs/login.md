@@ -87,6 +87,13 @@ No console e nas contas:
    **Sign in with Apple**. O `ios/Runner/Runner.entitlements` já pede essa
    capacidade, e o target Runner aponta para ele (`CODE_SIGN_ENTITLEMENTS`).
 
+## Botões do Google e da Apple
+
+Seguem as regras de marca, que a App Review da Apple e o Google exigem:
+
+- **Apple:** `AppleSignInButton` (`lib/core/widgets/apple_sign_in_button.dart`) usa o botão oficial do pacote `sign_in_with_apple`, estilo preto, 56 de altura e cantos de pílula como o `RangoButton`. Só o widget vem do pacote; o login continua no `AuthRepository`, via Firebase. O botão do pacote não tem estado desligado, então enquanto o login está em andamento ele ignora toques e fica com opacidade reduzida.
+- **Google:** `GoogleSignInButton` (`lib/core/widgets/google_sign_in_button.dart`) segue o tema claro do Google Identity: fundo branco, borda de 1 #747775, o "G" oficial (`assets/images/google_g.png`, 20 de lado), texto #1F1F1F e 12 de espaço entre os dois. Sem `onPressed`, fica desligado com opacidade reduzida.
+
 ## Componentes
 
 | Componente | Arquivo | Figma |
@@ -105,6 +112,7 @@ No console e nas contas:
 | E-mail recusado pelo Firebase | `InvalidEmailFailure` | "Confira o e-mail." no campo E-mail |
 | Senha recusada pelo Firebase | `WeakPasswordFailure` | "Pelo menos 8 caracteres." no campo Senha |
 | Sem rede | `NetworkFailure` | Aviso "Sem conexão. Confira sua internet e tente de novo." |
+| Google ou Apple com um e-mail que já tem conta por outro jeito de entrar e o Firebase não resolve sozinho (`account-exists-with-different-credential`) | `AccountExistsWithOtherMethodFailure` | Aviso "Este e-mail já tem conta com outro jeito de entrar. Use o mesmo de antes." |
 | Qualquer outro, inclusive e-mail e senha desligado no console | `UnexpectedFailure` | Aviso "Algo deu errado. Tente de novo." |
 | Sair da conta sem rede | `NetworkFailure` | O Profile Sheet mostra o visitante: a conta já saiu, e a sessão nova é criada na próxima abertura |
 
@@ -136,9 +144,7 @@ Validação manual, não coberta por teste automatizado:
 
 | Fora desta entrega | Onde vai |
 |---|---|
-| Ícone da marca nos botões do Google e da Apple | Componente ainda não desenhado no Figma |
 | Entrar com a Apple no Android | Fora do MVP (§11, 2026-11-12) |
-| Quando a Apple ou o Google usam um e-mail que já tem conta por senha, o Firebase pode recusar (`account-exists-with-different-credential` ao entrar) e a tela mostra "Algo deu errado" | Issue nova, se aparecer na prática |
 | Estado de carregando no Button: enquanto envia, o botão só fica desligado | Componente ainda não desenhado no Figma |
 | Termos de Uso e Política de Privacidade (a frase da tela 14 não entrou) | Os documentos ainda não existem |
 | Salvar os rangos de quem tem conta | E2-S4 |
