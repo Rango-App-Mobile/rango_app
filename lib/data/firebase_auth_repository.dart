@@ -68,6 +68,7 @@ class FirebaseAuthRepository implements AuthRepository {
           );
     final user = credential.user;
     if (user == null) throw const UnexpectedFailure();
+    await _refreshToken(user);
     await user.updateDisplayName(name);
     try {
       await user.sendEmailVerification();
@@ -121,6 +122,14 @@ class FirebaseAuthRepository implements AuthRepository {
   });
 
   @override
+  Future<void> updateName(String name) => _guard(() async {
+    final user = _auth.currentUser;
+    if (user == null) throw const UnexpectedFailure();
+    await user.updateDisplayName(name);
+    await user.reload();
+  });
+
+  @override
   Future<AppUser> signOut() async {
     try {
       // So the next "Continuar com o Google" shows the account picker again.
@@ -142,7 +151,10 @@ class FirebaseAuthRepository implements AuthRepository {
     final guest = _auth.currentUser;
     if (guest == null || !guest.isAnonymous) return _user(await signIn());
     try {
-      return _user(await link(guest));
+      final credential = await link(guest);
+      final user = credential.user;
+      if (user != null) await _refreshToken(user);
+      return _user(credential);
     } on FirebaseAuthException catch (error) {
       if (!_accountExists.contains(error.code)) rethrow;
       // Reusing the credential Firebase hands back avoids opening the
@@ -153,6 +165,17 @@ class FirebaseAuthRepository implements AuthRepository {
             ? await signIn()
             : await _auth.signInWithCredential(credential),
       );
+    }
+  }
+
+  /// After linking, the ID token still says `anonymous`, and the Firestore
+  /// rules deny anonymous users: force a new one. A failure here must not fail
+  /// the login, the token is refreshed on its own within the hour.
+  Future<void> _refreshToken(User user) async {
+    try {
+      await user.getIdToken(true);
+    } on Object catch (_) {
+      // Best effort; see above.
     }
   }
 
@@ -208,10 +231,19 @@ class FirebaseAuthRepository implements AuthRepository {
     _ => const UnexpectedFailure(),
   };
 
+  /// Apple and Google keep the name on the provider, not always on the user.
+  String? _nameOf(User user) {
+    if (user.displayName?.isNotEmpty ?? false) return user.displayName;
+    for (final info in user.providerData) {
+      if (info.displayName?.isNotEmpty ?? false) return info.displayName;
+    }
+    return null;
+  }
+
   AppUser _toAppUser(User user) => AppUser(
     uid: user.uid,
     isAnonymous: user.isAnonymous,
-    name: user.displayName,
+    name: _nameOf(user),
     email: user.email,
     photoUrl: user.photoURL,
     emailVerified: user.emailVerified,

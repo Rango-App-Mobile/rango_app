@@ -53,6 +53,9 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
     ref.listen(signUpViewModelProvider.select((s) => s.done), (_, done) {
       if (done) context.pop();
     });
+    ref.listen(signUpViewModelProvider.select((s) => s.needsTerms), (_, needs) {
+      if (needs) context.pushReplacement('/accept-terms');
+    });
 
     void submit() => unawaited(
       viewModel.submit(

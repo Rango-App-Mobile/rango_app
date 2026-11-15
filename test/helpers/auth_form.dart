@@ -8,6 +8,7 @@ import 'package:rango_app/core/widgets/rango_text_field.dart';
 import 'package:rango_app/data/account_repository.dart';
 import 'package:rango_app/data/auth_repository.dart';
 import 'package:rango_app/data/fake_account_repository.dart';
+import 'package:rango_app/data/fake_auth_repository.dart';
 
 /// Opens [route] over a HOME page, so the screen can pop back to it. The other
 /// account routes are text stubs, replaced by [screens].
@@ -22,6 +23,9 @@ Future<void> pumpAuthScreen(
     ..physicalSize = const Size(402, 874)
     ..devicePixelRatio = 1;
   addTearDown(tester.view.reset);
+  // Signing in leads back to HOME, unless the test brings its own accounts.
+  final acceptedAccounts = FakeAccountRepository();
+  await acceptedAccounts.acceptTerms(FakeAuthRepository.user.uid);
 
   Widget stub(String name, Object? extra) =>
       Scaffold(body: Text(extra == null ? name : '$name $extra'));
@@ -31,7 +35,7 @@ Future<void> pumpAuthScreen(
       overrides: [
         authRepositoryProvider.overrideWithValue(repository),
         accountRepositoryProvider.overrideWithValue(
-          accounts ?? FakeAccountRepository(),
+          accounts ?? acceptedAccounts,
         ),
       ],
       child: MaterialApp.router(
@@ -50,7 +54,12 @@ Future<void> pumpAuthScreen(
                 ),
               ),
             ),
-            for (final path in ['/login', '/signup', '/password-reset'])
+            for (final path in [
+              '/login',
+              '/signup',
+              '/password-reset',
+              '/accept-terms',
+            ])
               GoRoute(
                 path: path,
                 builder: (_, state) =>

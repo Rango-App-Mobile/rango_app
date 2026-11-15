@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:rango_app/core/error/failure.dart';
+import 'package:rango_app/data/account_repository.dart';
 import 'package:rango_app/data/auth_repository.dart';
 import 'package:rango_app/models/app_user.dart';
 import 'package:rango_app/models/auth_form_state.dart';
@@ -32,10 +33,10 @@ class LoginViewModel extends Notifier<AuthFormState> {
 
     state = const AuthFormState(submitting: true);
     try {
-      await ref
+      final user = await ref
           .read(authRepositoryProvider)
           .signIn(email: address, password: password);
-      if (ref.mounted) state = const AuthFormState(done: true);
+      await _finish(user);
     } on Failure catch (failure) {
       if (ref.mounted) state = AuthFormState.failed(failure);
     }
@@ -56,7 +57,11 @@ class LoginViewModel extends Notifier<AuthFormState> {
     state = const AuthFormState(submitting: true);
     try {
       final user = await signIn();
-      if (ref.mounted) state = AuthFormState(done: user != null);
+      if (user == null) {
+        if (ref.mounted) state = const AuthFormState();
+      } else {
+        await _finish(user);
+      }
     } on Failure catch (failure) {
       // No field caused it, so only the network and a taken e-mail keep their
       // own message; the rest is a generic alert.
@@ -68,6 +73,22 @@ class LoginViewModel extends Notifier<AuthFormState> {
               : const UnexpectedFailure(),
         );
       }
+    }
+  }
+
+  /// Every account must have accepted the terms. A failed check counts as not
+  /// accepted: the acceptance screen retries the write.
+  Future<void> _finish(AppUser user) async {
+    var accepted = false;
+    try {
+      accepted = await ref
+          .read(accountRepositoryProvider)
+          .hasAcceptedTerms(user.uid);
+    } on Failure {
+      // Treated as not accepted; see above.
+    }
+    if (ref.mounted) {
+      state = AuthFormState(done: accepted, needsTerms: !accepted);
     }
   }
 }

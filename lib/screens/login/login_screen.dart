@@ -47,6 +47,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     ref.listen(loginViewModelProvider.select((s) => s.done), (_, done) {
       if (done) context.pop();
     });
+    ref.listen(loginViewModelProvider.select((s) => s.needsTerms), (_, needs) {
+      if (needs) context.pushReplacement('/accept-terms');
+    });
 
     void submit() => unawaited(
       viewModel.submit(email: _email.text, password: _password.text),

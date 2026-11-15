@@ -10,6 +10,7 @@ import 'package:rango_app/core/widgets/inline_alert.dart';
 import 'package:rango_app/core/widgets/rango_button.dart';
 import 'package:rango_app/core/widgets/rango_loading_view.dart';
 import 'package:rango_app/data/auth_repository.dart';
+import 'package:rango_app/data/fake_account_repository.dart';
 import 'package:rango_app/data/fake_auth_repository.dart';
 import 'package:rango_app/models/app_user.dart';
 import 'package:rango_app/screens/login/login_screen.dart';
@@ -39,6 +40,26 @@ Future<void> _pump(WidgetTester tester, AuthRepository repository) =>
     );
 
 void main() {
+  testWidgets('an account without the terms goes to the acceptance screen', (
+    tester,
+  ) async {
+    final repository = await _withJoana();
+    await pumpAuthScreen(
+      tester,
+      route: '/login',
+      repository: repository,
+      accounts: FakeAccountRepository(),
+      screens: {'/login': (_) => const LoginScreen()},
+    );
+
+    await typeIn(tester, 'E-mail', 'joana@email.com');
+    await typeIn(tester, 'Senha', '12345678');
+    await tapButton(tester, 'Entrar');
+
+    expect(find.text('/accept-terms'), findsOneWidget);
+    expect(find.byType(LoginScreen), findsNothing);
+  });
+
   testWidgets('Criar conta pushes the sign-up, and back returns to login', (
     tester,
   ) async {
