@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart' as firestore;
+import 'package:flutter/foundation.dart';
 import 'package:rango_app/core/error/failure.dart';
 import 'package:rango_app/data/restaurant_repository.dart';
 import 'package:rango_app/models/geo_point.dart';
@@ -61,6 +62,8 @@ class FirestoreRestaurantRepository implements RestaurantRepository {
     } on TimeoutException {
       throw const NetworkFailure();
     } on firestore.FirebaseException catch (error) {
+      // TEMP(debug): remove after the device check.
+      debugPrint('RANGO_FIRESTORE ${error.code}: ${error.message}');
       throw error.code == 'unavailable'
           ? const NetworkFailure()
           : const UnexpectedFailure();

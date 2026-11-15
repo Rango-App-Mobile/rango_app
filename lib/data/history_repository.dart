@@ -24,6 +24,8 @@ final historyRepositoryProvider = Provider<HistoryRepository>(
 /// The decisions, loaded once and kept, so the detail of one of them is
 /// ready on the first frame after the Histórico opens it. Reloads when the
 /// account changes (sign-in, sign-up, sign-out); a guest has none (R1).
+// Riverpod's automatic retry is off: it would keep this in loading for
+// ~40s and hide the error state.
 final historyEntriesProvider = FutureProvider<List<HistoryEntry>>((ref) async {
   final repository = ref.watch(historyRepositoryProvider);
   final uid = await ref.watch(
@@ -33,4 +35,4 @@ final historyEntriesProvider = FutureProvider<List<HistoryEntry>>((ref) async {
   );
   if (uid == null) return const [];
   return repository.fetchAll(uid);
-});
+}, retry: (_, _) => null);
