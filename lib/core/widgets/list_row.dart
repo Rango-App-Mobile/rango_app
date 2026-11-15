@@ -10,12 +10,16 @@ class ListRow extends StatelessWidget {
     required this.icon,
     required this.label,
     required this.onTap,
+    this.destructive = false,
     super.key,
   });
 
   final IconData icon;
   final String label;
   final VoidCallback? onTap;
+
+  /// Paints the row in the danger color (deleting something for good).
+  final bool destructive;
 
   static const double height = 60;
   static const double _lead = 40;
@@ -25,6 +29,7 @@ class ListRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
+    final tint = destructive ? colors.textDanger : null;
 
     return Semantics(
       button: true,
@@ -51,7 +56,11 @@ class ListRow extends StatelessWidget {
                   color: colors.bgMuted,
                   shape: BoxShape.circle,
                 ),
-                child: Icon(icon, size: _iconSize, color: colors.iconDefault),
+                child: Icon(
+                  icon,
+                  size: _iconSize,
+                  color: tint ?? colors.iconDefault,
+                ),
               ),
               Expanded(
                 child: Text(
@@ -59,7 +68,7 @@ class ListRow extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: context.textStyles.bodyStrong.copyWith(
-                    color: colors.textPrimary,
+                    color: tint ?? colors.textPrimary,
                   ),
                 ),
               ),

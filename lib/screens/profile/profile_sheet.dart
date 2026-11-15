@@ -6,12 +6,15 @@ import 'package:go_router/go_router.dart';
 import 'package:rango_app/core/theme/app_radius.dart';
 import 'package:rango_app/core/theme/app_space.dart';
 import 'package:rango_app/core/theme/theme_context.dart';
+import 'package:rango_app/core/widgets/inline_alert.dart';
 import 'package:rango_app/core/widgets/list_row.dart';
 import 'package:rango_app/core/widgets/rango_button.dart';
 import 'package:rango_app/core/widgets/rango_icon_button.dart';
+import 'package:rango_app/core/widgets/rango_loading_view.dart';
 import 'package:rango_app/core/widgets/scrim.dart';
 import 'package:rango_app/screens/profile/profile_state.dart';
 import 'package:rango_app/screens/profile/profile_view_model.dart';
+import 'package:rango_app/screens/profile/widgets/delete_account_dialog.dart';
 import 'package:rango_app/screens/profile/widgets/profile_avatar.dart';
 import 'package:rango_app/screens/profile/widgets/verification_notice.dart';
 
@@ -51,6 +54,7 @@ class ProfileSheet extends ConsumerWidget {
 
   static const double _handleTop = 10;
   static const double _gap = 20;
+  static const double _deletingHeight = 360;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -58,6 +62,17 @@ class ProfileSheet extends ConsumerWidget {
     // once. Guest is also the honest answer if it ever fails: nothing is saved.
     final state =
         ref.watch(profileViewModelProvider).value ?? ProfileState.guest;
+
+    // Nothing to tap or dismiss while the account is being deleted.
+    if (state.deleting) {
+      return const PopScope(
+        canPop: false,
+        child: SizedBox(
+          height: _deletingHeight,
+          child: RangoLoadingView(message: 'Excluindo sua conta…'),
+        ),
+      );
+    }
 
     return SafeArea(
       top: false,
@@ -83,12 +98,33 @@ class ProfileSheet extends ConsumerWidget {
               child: SingleChildScrollView(
                 child: state.isGuest
                     ? const _GuestInvitation()
-                    : ListRow(
-                        icon: Icons.logout,
-                        label: 'Sair da conta',
-                        onTap: () => unawaited(
-                          ref.read(profileViewModelProvider.notifier).signOut(),
-                        ),
+                    : Column(
+                        children: [
+                          if (state.deleteError case final error?)
+                            Padding(
+                              padding: const EdgeInsets.only(
+                                bottom: AppSpace.sm,
+                              ),
+                              child: InlineAlert(message: error),
+                            ),
+                          ListRow(
+                            icon: Icons.logout,
+                            label: 'Sair da conta',
+                            onTap: () => unawaited(
+                              ref
+                                  .read(profileViewModelProvider.notifier)
+                                  .signOut(),
+                            ),
+                          ),
+                          ListRow(
+                            icon: Icons.delete_outline,
+                            label: 'Excluir conta',
+                            destructive: true,
+                            onTap: () => unawaited(
+                              _delete(context, ref, state.usesPassword),
+                            ),
+                          ),
+                        ],
                       ),
               ),
             ),
@@ -97,6 +133,28 @@ class ProfileSheet extends ConsumerWidget {
       ),
     );
   }
+}
+
+Future<void> _delete(
+  BuildContext context,
+  WidgetRef ref,
+  bool askPassword,
+) async {
+  final messenger = ScaffoldMessenger.of(context);
+  final navigator = Navigator.of(context);
+  final answer = await showDeleteAccountDialog(
+    context,
+    askPassword: askPassword,
+  );
+  if (answer == null) return;
+  final deleted = await ref
+      .read(profileViewModelProvider.notifier)
+      .deleteAccount(password: answer.password);
+  if (!deleted) return;
+  navigator.pop();
+  messenger.showSnackBar(
+    const SnackBar(content: Text('Sua conta foi excluída.')),
+  );
 }
 
 Future<void> _resend(BuildContext context, WidgetRef ref) async {
