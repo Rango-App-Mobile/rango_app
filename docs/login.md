@@ -67,6 +67,13 @@ Atualize os dois arquivos, gere de novo o PDF
 as contas aceitem a nova versão pela tela "Quase lá". A mesma folha abre pela
 linha "Termos e Privacidade" do Profile Sheet.
 
+**Versão pública (URL das lojas):** o PDF está no Google Drive, aberto para
+qualquer pessoa com o link:
+<https://drive.google.com/file/d/1dNlfodd_PxRohvGi4EWC2K89rtoK3OpT/view?usp=sharing>.
+É a URL da Política de Privacidade na App Store Connect e no Google Play
+Console. Gerou um PDF novo? Substitua o arquivo no Drive ("Gerenciar versões")
+para o link continuar o mesmo.
+
 O aceite fica em `users/{uid}`: `termsVersion` (`currentTermsVersion`, em
 `lib/data/account_repository.dart`) e `termsAcceptedAt` (horário do servidor).
 `AccountRepository` também tem `hasAcceptedTerms` (documento existe e versão
