@@ -32,7 +32,7 @@ class FakeAuthRepository implements AuthRepository {
     if (account == null || account.password != password) {
       throw const InvalidCredentialsFailure();
     }
-    return _set(_account(name: account.name, email: email));
+    return _set(_account(name: account.name, email: email, usesPassword: true));
   }
 
   @override
@@ -43,17 +43,57 @@ class FakeAuthRepository implements AuthRepository {
   }) async {
     if (_accounts.containsKey(email)) throw const EmailInUseFailure();
     _accounts[email] = (name: name, password: password);
-    return _set(_account(name: name, email: email));
+    return _set(_account(name: name, email: email, usesPassword: true));
   }
 
   @override
   Future<void> sendPasswordReset(String email) async {}
 
+  /// Always picks the same sample account, so the app without Firebase can
+  /// show the flow.
+  @override
+  Future<AppUser?> signInWithGoogle() async =>
+      _set(_account(name: 'Ana Souza', email: 'ana.souza@gmail.com'));
+
+  @override
+  Future<AppUser?> signInWithApple() async =>
+      _set(_account(name: 'Ana Souza', email: 'ana.souza@icloud.com'));
+
+  @override
+  Future<void> resendVerification() async {}
+
+  @override
+  Future<void> reload() async {}
+
+  @override
+  Future<void> updateName(String name) async =>
+      _set(_current.copyWith(name: name));
+
   @override
   Future<AppUser> signOut() async => _set(user);
 
-  AppUser _account({required String name, required String email}) =>
-      AppUser(uid: user.uid, isAnonymous: false, name: name, email: email);
+  @override
+  Future<bool> refreshLoginSilently() async => true;
+
+  @override
+  Future<AppUser> deleteAccount() async {
+    _accounts.remove(_current.email);
+    return _set(user);
+  }
+
+  AppUser _account({
+    required String name,
+    required String email,
+    bool usesPassword = false,
+  }) => AppUser(
+    uid: user.uid,
+    isAnonymous: false,
+    name: name,
+    email: email,
+    // Social accounts arrive verified; a fresh password account does not.
+    emailVerified: !usesPassword,
+    usesPassword: usesPassword,
+  );
 
   AppUser _set(AppUser next) {
     _current = next;

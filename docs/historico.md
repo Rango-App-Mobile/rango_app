@@ -1,16 +1,37 @@
 # Histórico
 
 **Escopo:** a aba Histórico (`HistoryScreen`), o `historyViewModelProvider`, o
-modelo `HistoryEntry` e o `HistoryRepository` com o `FakeHistoryRepository`.
+modelo `HistoryEntry` e o `HistoryRepository` (`FirestoreHistoryRepository` e
+`FakeHistoryRepository`).
 Mostra as decisões da pessoa como uma pilha de cards, como uma carteira: o mais
 recente embaixo, inteiro e na frente; os antigos acima, cada um mostrando só a
 faixa do título, menos o último de cada mês, que aparece inteiro. Tocar num card abre o detalhe da decisão (`HistoryDetailScreen`, em
 `/history/<id>`). Figma: "07d Histórico", "10 Histórico vazio" e "12 Detalhe
 do histórico".
 
-Ainda não há dado real: salvar a sessão é a E2-S4 (#13, #60). Até lá o
-`FakeHistoryRepository` é o padrão do provider e traz 9 decisões de exemplo
-(setembro a novembro de 2026), para dar para ver a pilha funcionando.
+## De onde vêm as decisões (E2-S4, #13)
+
+Uma decisão é salva quando uma pessoa **com conta** toca em "Pedir no
+delivery" ou "Ligar" na tela "Opções de contato" (06). Visitante não salva nada
+e vê o estado vazio (R1).
+
+| O quê | Como |
+| --- | --- |
+| Onde fica | `users/{uid}/sessions/{id automático}` no Firestore (`docs/contexto.md` §8) |
+| Campos | `foodId`, `restaurantId`, `restaurantName`, `cuisine`, `channel` (`delivery` ou `call`) e `decidedAt` (hora do servidor) |
+| Quantas vezes | Uma por abertura da tela 06: o segundo toque, ou "Ligar" depois de "Pedir", não duplica |
+| Se falhar | O pedido segue: o app não espera o servidor confirmar (offline o Firestore guarda e envia depois) e um erro na gravação é ignorado |
+| Leitura | As 100 mais recentes (`orderBy('decidedAt', descending: true).limit(100)`); paginação fica para depois. Documento com campo faltando ou errado é pulado |
+| Quando recarrega | Ao entrar, criar conta ou sair (`currentUserProvider`) e logo depois de salvar |
+
+Quem decide se a pessoa é visitante é o `historyEntriesProvider` (leitura) e o
+`RestaurantContactViewModel` (gravação); o repositório só recebe o `uid`. As
+regras do Firestore (`firestore.rules`) só deixam o próprio usuário com conta
+ler e gravar as suas sessões.
+
+Sem as chaves do Firebase, o `main.dart` usa o `FakeHistoryRepository`, em
+memória: 9 decisões de exemplo (setembro a novembro de 2026) mais o que for
+salvo enquanto o app estiver aberto, para quem criar uma conta fake.
 
 ## O que a pessoa vê
 
@@ -121,7 +142,9 @@ for aberto direto, sem passar pelo Histórico (deep link), ele passa pelo
 
 | Arquivo | O que cobre |
 | --- | --- |
-| `test/screens/history/history_view_model_test.dart` | Ordem, comida fora do cardápio, vazio, meses (plural, singular e outro ano), data curta, o histórico de exemplo, erro |
+| `test/screens/history/history_view_model_test.dart` | Ordem, comida fora do cardápio, vazio, meses (plural, singular e outro ano), data curta, o histórico de exemplo, erro; visitante vê vazio; recarrega ao criar conta e ao sair |
+| `test/data/firestore_history_repository_test.dart` | Caminho, ordem e limite da leitura; campos; documento malformado pulado; erros viram `NetworkFailure`/`UnexpectedFailure`; gravação com hora do servidor, sem esperar o servidor e sem quebrar com erro |
+| `test/screens/restaurant_contact/restaurant_contact_view_model_test.dart` | Conta salva com o canal certo (delivery e ligar); segundo toque não duplica; visitante não salva mas pede; o Histórico recarrega com a decisão nova |
 | `test/screens/history_detail/history_detail_view_model_test.dart` | Pronto na hora quando o Histórico já carregou; decisão, comida e grupo; data com hora e minutos com dois dígitos; aberto direto carrega e depois mostra; id desconhecido; histórico com erro |
 | `test/screens/history_detail/history_detail_screen_test.dart` | Comida, data, caminho e restaurante, sem adesivo; botões levam aos restaurantes; "Voltar"; id desconhecido; 375x667 |
 | `test/core/widgets/history_card_hero_test.dart` | A trajetória: começa e termina nos cards, primeiro sobe reto para fora da pilha, só depois cresce; na volta passa pelo ponto acima da pilha |
@@ -135,7 +158,8 @@ simulador, e a aparência contra as telas "07d" e "12" do Figma.
 
 | Fora desta entrega | Onde vai |
 | --- | --- |
-| Salvar as decisões de verdade | E2-S4 (#13, #60) |
-| Separar por mês ("Setembro", "12 min") como no Figma | Junto com a E2-S4, quando houver dado real |
+| As escolhas de cada swipe (`choices`) na sessão salva | Quando houver estatísticas que precisem delas |
+| Paginação além das 100 mais recentes | Quando alguém passar disso |
 | "Pedir de novo" abrindo as opções de contato (06) | E3 |
 | Foto do restaurante e as métricas (distância, tempo) do bloco "Onde você pediu" | Junto com os dados reais dos restaurantes (E3-S7) |
+- O retry automático do Riverpod está desligado nos providers do histórico: o estado de erro aparece na hora.

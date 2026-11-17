@@ -4,8 +4,10 @@
 permissão (Figma 09), restaurantes no mapa (Figma 08 e 05) e opções de contato
 (Figma 06), com "Pedir no delivery" e "Ligar" (issues #15, #16, #17, #18 e #19).
 
-**Os restaurantes ainda são fictícios.** O mapa é real, mas os lugares vêm do
-`FakeRestaurantRepository`. Os restaurantes do time entram com a E3-S7.
+**Os restaurantes são os do time.** Vêm da planilha, sincronizada com a coleção
+`restaurants` do Firestore, e o app lê só os que servem a comida do match
+(`FirestoreRestaurantRepository`). Sem o Firebase configurado (CI, clone novo),
+entram os fictícios do `FakeRestaurantRepository`.
 
 As regras de produto vêm do §7 (R4 e R5), do §8 (coleção `restaurants`) e das
 decisões de 2026-11-05 no §11 de `docs/contexto.md`. Este documento explica o
@@ -17,11 +19,11 @@ porquê das escolhas de implementação; não repete o contexto.
 |---|---|---|
 | 1 | Toca "Ver restaurantes perto" no Deu match | `push('/restaurants?category=<id>')`. O `RestaurantsViewModel` acha a comida no `CategoryRepository` e mostra o mapa com o chip "Procurando <comida> perto de você" (Figma 08) |
 | 2 | — | `LocationRepository.currentPosition()` confere se a localização do celular está ligada e pede a permissão **só agora**, ao chegar na busca. Negada, o mapa dá lugar à tela 09 |
-| 3 | — | `RestaurantRepository.search()` monta os restaurantes fictícios ao redor da pessoa e passa o resultado por `RestaurantRanking.rank` (R4: até 3 km, mais perto primeiro, no máximo 20) |
+| 3 | — | `RestaurantRepository.search(foodId:)` lê do Firestore os restaurantes ativos cujo campo `foods` contém o id da comida e passa o resultado por `RestaurantRanking.rank` (R4: até 3 km, mais perto primeiro, no máximo 20) |
 | 4 | Vê os pins (Figma 05) | O mais perto já vem selecionado: pin maior com balão "Nome ★ nota" e a prévia (Restaurant Card Row) na base. Os chips mostram a comida e "N lugares em até 3 km" |
 | 5 | Toca outro pin | Ele vira o selecionado (só um por vez), a prévia troca e o mapa centraliza nele. A prévia usa a foto da comida |
 | 6 | Toca a prévia | `push('/restaurants/contact', extra: RestaurantContactArgs)`. O mapa continua na pilha |
-| 7 | Vê "Como você quer pedir?" (Figma 06) | O `RestaurantContactViewModel` busca, em paralelo, o telefone (fictício, só em parte dos lugares) e os links de delivery (`restaurants/{placeId}` no Firestore) |
+| 7 | Vê "Como você quer pedir?" (Figma 06) | O `RestaurantContactViewModel` busca, em paralelo, o telefone (campo `phone` do restaurante) e os links de delivery (`restaurants/{placeId}` no Firestore) |
 | 8 | Toca "Pedir no delivery" | R5: link do iFood → primeiro outro link → busca "<nome> delivery" no Google. Abre fora do app |
 | 9 | Toca "Ligar" | Abre o discador. Sem telefone, o botão não aparece |
 | 10 | Volta | Do contato, `pop()` ao mapa com o mesmo pin selecionado. Do mapa, `go('/home')` |
@@ -50,12 +52,12 @@ por cima: ele aparece acima da prévia, ao lado do botão de centralizar.
 
 | Regra | Onde é garantida | Por quê ali |
 |---|---|---|
-| R4: até 3 km, mais perto primeiro, no máximo 20 | `RestaurantRanking.rank` (`lib/models/`) | Teste unitário instantâneo; vale para o Places e para o fake |
+| R4: até 3 km, mais perto primeiro, no máximo 20 | `RestaurantRanking.rank` (`lib/models/`) | Teste unitário instantâneo; vale para o Firestore e para o fake |
 | O mais perto abre selecionado | `RestaurantsViewModel` | Estado da tela |
 | R5: iFood → outros → Google, só `https` | `deliveryUriFor` (`lib/models/delivery_links.dart`) | Regra pura; a tela só abre a `Uri` pronta |
 | Só `https` e `tel` saem do app | `ExternalLinkLauncher` (`lib/data/`) | Última barreira antes do `url_launcher`, mesmo que a regra acima mude |
 | Permissão pedida só na busca, posição nunca salva | `GeolocatorLocationRepository` | A posição vira `GeoPoint` e só vai para a busca |
-| Telefone e foto só do restaurante escolhido | `RestaurantRepository.fetchPhone` / `fetchPhotoUri`, chamados pelos ViewModels | Contrato mantido para a E3-S7; hoje o fake não devolve foto |
+| Telefone e foto só do restaurante escolhido | `RestaurantRepository.fetchPhone` / `fetchPhotoUri`, chamados pelos ViewModels | A planilha não tem foto: `fetchPhotoUri` devolve `null` e o card usa a foto da comida |
 
 ## Erros
 
@@ -87,7 +89,9 @@ chama o `pod install` sozinho.
 ### Links de delivery no Firestore
 
 Cadastrados à mão no console, um documento por restaurante, com o `placeId` do
-restaurante como id. Com os lugares fictícios, os ids são `fake-0`, `fake-1` etc.:
+restaurante como id. Os restaurantes da planilha já trazem esse campo, gravado pela
+sincronização (abaixo); o cadastro à mão serve para testar com os fictícios
+(`fake-0`, `fake-1` etc.):
 
 ```
 restaurants/{placeId}
@@ -107,8 +111,21 @@ A planilha [restaurantes](https://docs.google.com/spreadsheets/d/1Wct3C90S9gJr21
 aba principal em `restaurants`, uma vez por dia de madrugada ou na hora, pelo
 menu **Rango > Sincronizar agora**. O resultado aparece na aba **Sincronização**.
 Uma alteração feita hoje só chega ao app na próxima rodada, se ninguém usar o
-botão. O app ainda não lê esses dados: a troca do `FakeRestaurantRepository` faz
-parte da E3-S7.
+botão.
+
+### Como o app lê
+
+- Consulta `restaurants` com `foods` contendo o id da comida (o mesmo id do
+  cardápio, `LocalCategoryRepository`), até 500 documentos, com timeout de 10 s.
+- Descarta no celular os inativos (`active` diferente de `true`) e os sem nome
+  ou posição, e passa o resto por `RestaurantRanking.rank` (R4).
+- Lê tudo da comida e corta os 3 km no celular: serve para uma região com
+  algumas dezenas de lugares. Se a base crescer, a troca é uma consulta por
+  geohash.
+- Sem rede ou com o Firestore fora (`unavailable`, timeout): `NetworkFailure`,
+  a tela de erro com "Tentar de novo". Outro erro: `UnexpectedFailure`.
+- Fora da região cadastrada, a lista vem vazia e a tela mostra "Nenhum lugar
+  perto".
 
 O código fica em `tools/restaurant_sync/`, que é a fonte: uma mudança passa por
 PR e depois é copiada para o editor do Apps Script.
@@ -169,6 +186,7 @@ leitores. Se a chave vazar, apague-a no console e crie outra.
 |---|---|
 | `test/models/geo_point_test.dart`, `restaurant_ranking_test.dart`, `delivery_links_test.dart` | Distância, R4 (corte em 3 km, ordem, limite de 20) e R5 (ordem e só `https`) |
 | `test/data/geolocator_location_repository_test.dart` | Serviço desligado, permissão concedida, negada, negada para sempre, timeout do GPS, ajustes |
+| `test/data/firestore_restaurant_repository_test.dart` | Consulta por comida, conversão do documento, corte dos inativos e incompletos, R4, nota inteira ou nula, telefone, erros e timeout viram `Failure` |
 | `test/data/firestore_delivery_link_repository_test.dart` | Leitura de `restaurants/{id}`, campos parciais, formatos inválidos, erro e timeout viram `null` |
 | `test/data/external_link_launcher_test.dart` | Só `https` e `tel` saem do app |
 | `test/data/fake_*_repository_test.dart` | Os fakes que rodam sem chave |
@@ -194,7 +212,6 @@ tela 09.
 | Lista de restaurantes como alternativa ao mapa | E3-S6 (#47) |
 | App de delivery preferido nas preferências | E10-S3 (#66) |
 | "Abrir no mapa" na tela 06 | Removido (decisão de 2026-10-29) |
-| Restaurantes reais, com posição e comidas | E3-S7 |
 | Tempo de entrega no card | Não temos esse dado; o chip fica oculto |
 | Ícones do Figma (hoje Material Icons) | #52 |
 

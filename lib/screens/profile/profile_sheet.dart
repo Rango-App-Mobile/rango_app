@@ -9,10 +9,14 @@ import 'package:rango_app/core/theme/theme_context.dart';
 import 'package:rango_app/core/widgets/list_row.dart';
 import 'package:rango_app/core/widgets/rango_button.dart';
 import 'package:rango_app/core/widgets/rango_icon_button.dart';
+import 'package:rango_app/core/widgets/rango_loading_view.dart';
 import 'package:rango_app/core/widgets/scrim.dart';
+import 'package:rango_app/core/widgets/terms_acceptance.dart';
 import 'package:rango_app/screens/profile/profile_state.dart';
 import 'package:rango_app/screens/profile/profile_view_model.dart';
+import 'package:rango_app/screens/profile/widgets/delete_account_dialog.dart';
 import 'package:rango_app/screens/profile/widgets/profile_avatar.dart';
+import 'package:rango_app/screens/profile/widgets/verification_notice.dart';
 
 /// Opens the Profile Sheet over the whole app, Tab Bar included. It closes
 /// through the X, by dragging it down or by tapping the veil.
@@ -73,17 +77,43 @@ class ProfileSheet extends ConsumerWidget {
           children: [
             const _Handle(),
             _Header(state: state),
+            if (state.needsVerification)
+              VerificationNotice(
+                email: state.subtitle ?? state.name,
+                onResend: () => unawaited(_resend(context, ref)),
+              ),
             Flexible(
               child: SingleChildScrollView(
-                child: state.isGuest
-                    ? const _GuestInvitation()
-                    : ListRow(
+                child: Column(
+                  children: [
+                    if (state.isGuest)
+                      const _GuestInvitation()
+                    else ...[
+                      ListRow(
                         icon: Icons.logout,
                         label: 'Sair da conta',
                         onTap: () => unawaited(
                           ref.read(profileViewModelProvider.notifier).signOut(),
                         ),
                       ),
+                      ListRow(
+                        icon: Icons.delete_outline,
+                        label: 'Excluir conta',
+                        destructive: true,
+                        onTap: () => unawaited(
+                          _delete(context, ref),
+                        ),
+                      ),
+                    ],
+                    // Always readable, with or without an account (stores
+                    // require the privacy policy inside the app).
+                    ListRow(
+                      icon: Icons.description_outlined,
+                      label: 'Termos e Privacidade',
+                      onTap: () => unawaited(showTermsSheet(context)),
+                    ),
+                  ],
+                ),
               ),
             ),
           ],
@@ -91,6 +121,48 @@ class ProfileSheet extends ConsumerWidget {
       ),
     );
   }
+}
+
+Future<void> _delete(BuildContext context, WidgetRef ref) async {
+  if (!await showDeleteAccountDialog(context)) return;
+  if (!context.mounted) return;
+  final sheet = Navigator.of(context);
+  final root = Navigator.of(context, rootNavigator: true);
+  // The splash covers the whole app, not the sheet, and nothing can be
+  // tapped or dismissed until the account is gone.
+  showGeneralDialog<void>(
+    context: context,
+    transitionDuration: Duration.zero,
+    pageBuilder: (_, _, _) => const PopScope(
+      canPop: false,
+      child: RangoLoadingView(message: 'Excluindo sua conta…'),
+    ),
+  );
+  final error = await ref
+      .read(profileViewModelProvider.notifier)
+      .deleteAccount();
+  root.pop();
+  if (error != null) {
+    if (root.mounted) await showDeleteAccountError(root.context, error);
+    return;
+  }
+  // No SnackBar: the splash and the guest mode already say it, and the
+  // SnackBar would sit under the Tab Bar's blur.
+  sheet.pop();
+}
+
+Future<void> _resend(BuildContext context, WidgetRef ref) async {
+  final messenger = ScaffoldMessenger.of(context);
+  final sent = await ref
+      .read(profileViewModelProvider.notifier)
+      .resendVerification();
+  messenger.showSnackBar(
+    SnackBar(
+      content: Text(
+        sent ? 'Link reenviado.' : 'Não foi possível reenviar. Tente de novo.',
+      ),
+    ),
+  );
 }
 
 class _Handle extends StatelessWidget {

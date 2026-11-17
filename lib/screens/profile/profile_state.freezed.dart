@@ -14,7 +14,8 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$ProfileState {
 
- bool get isGuest; String get name; String? get subtitle; String? get photoUrl;
+ bool get isGuest; String get name; String? get subtitle; String? get photoUrl;/// A password account whose e-mail is not confirmed yet.
+ bool get needsVerification;
 /// Create a copy of ProfileState
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -25,16 +26,16 @@ $ProfileStateCopyWith<ProfileState> get copyWith => _$ProfileStateCopyWithImpl<P
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is ProfileState&&(identical(other.isGuest, isGuest) || other.isGuest == isGuest)&&(identical(other.name, name) || other.name == name)&&(identical(other.subtitle, subtitle) || other.subtitle == subtitle)&&(identical(other.photoUrl, photoUrl) || other.photoUrl == photoUrl));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ProfileState&&(identical(other.isGuest, isGuest) || other.isGuest == isGuest)&&(identical(other.name, name) || other.name == name)&&(identical(other.subtitle, subtitle) || other.subtitle == subtitle)&&(identical(other.photoUrl, photoUrl) || other.photoUrl == photoUrl)&&(identical(other.needsVerification, needsVerification) || other.needsVerification == needsVerification));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,isGuest,name,subtitle,photoUrl);
+int get hashCode => Object.hash(runtimeType,isGuest,name,subtitle,photoUrl,needsVerification);
 
 @override
 String toString() {
-  return 'ProfileState(isGuest: $isGuest, name: $name, subtitle: $subtitle, photoUrl: $photoUrl)';
+  return 'ProfileState(isGuest: $isGuest, name: $name, subtitle: $subtitle, photoUrl: $photoUrl, needsVerification: $needsVerification)';
 }
 
 
@@ -45,7 +46,7 @@ abstract mixin class $ProfileStateCopyWith<$Res>  {
   factory $ProfileStateCopyWith(ProfileState value, $Res Function(ProfileState) _then) = _$ProfileStateCopyWithImpl;
 @useResult
 $Res call({
- bool isGuest, String name, String? subtitle, String? photoUrl
+ bool isGuest, String name, String? subtitle, String? photoUrl, bool needsVerification
 });
 
 
@@ -62,13 +63,14 @@ class _$ProfileStateCopyWithImpl<$Res>
 
 /// Create a copy of ProfileState
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? isGuest = null,Object? name = null,Object? subtitle = freezed,Object? photoUrl = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? isGuest = null,Object? name = null,Object? subtitle = freezed,Object? photoUrl = freezed,Object? needsVerification = null,}) {
   return _then(_self.copyWith(
 isGuest: null == isGuest ? _self.isGuest : isGuest // ignore: cast_nullable_to_non_nullable
 as bool,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,subtitle: freezed == subtitle ? _self.subtitle : subtitle // ignore: cast_nullable_to_non_nullable
 as String?,photoUrl: freezed == photoUrl ? _self.photoUrl : photoUrl // ignore: cast_nullable_to_non_nullable
-as String?,
+as String?,needsVerification: null == needsVerification ? _self.needsVerification : needsVerification // ignore: cast_nullable_to_non_nullable
+as bool,
   ));
 }
 
@@ -153,10 +155,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( bool isGuest,  String name,  String? subtitle,  String? photoUrl)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( bool isGuest,  String name,  String? subtitle,  String? photoUrl,  bool needsVerification)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _ProfileState() when $default != null:
-return $default(_that.isGuest,_that.name,_that.subtitle,_that.photoUrl);case _:
+return $default(_that.isGuest,_that.name,_that.subtitle,_that.photoUrl,_that.needsVerification);case _:
   return orElse();
 
 }
@@ -174,10 +176,10 @@ return $default(_that.isGuest,_that.name,_that.subtitle,_that.photoUrl);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( bool isGuest,  String name,  String? subtitle,  String? photoUrl)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( bool isGuest,  String name,  String? subtitle,  String? photoUrl,  bool needsVerification)  $default,) {final _that = this;
 switch (_that) {
 case _ProfileState():
-return $default(_that.isGuest,_that.name,_that.subtitle,_that.photoUrl);case _:
+return $default(_that.isGuest,_that.name,_that.subtitle,_that.photoUrl,_that.needsVerification);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -194,10 +196,10 @@ return $default(_that.isGuest,_that.name,_that.subtitle,_that.photoUrl);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( bool isGuest,  String name,  String? subtitle,  String? photoUrl)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( bool isGuest,  String name,  String? subtitle,  String? photoUrl,  bool needsVerification)?  $default,) {final _that = this;
 switch (_that) {
 case _ProfileState() when $default != null:
-return $default(_that.isGuest,_that.name,_that.subtitle,_that.photoUrl);case _:
+return $default(_that.isGuest,_that.name,_that.subtitle,_that.photoUrl,_that.needsVerification);case _:
   return null;
 
 }
@@ -209,13 +211,15 @@ return $default(_that.isGuest,_that.name,_that.subtitle,_that.photoUrl);case _:
 
 
 class _ProfileState implements ProfileState {
-  const _ProfileState({required this.isGuest, required this.name, this.subtitle, this.photoUrl});
+  const _ProfileState({required this.isGuest, required this.name, this.subtitle, this.photoUrl, this.needsVerification = false});
   
 
 @override final  bool isGuest;
 @override final  String name;
 @override final  String? subtitle;
 @override final  String? photoUrl;
+/// A password account whose e-mail is not confirmed yet.
+@override@JsonKey() final  bool needsVerification;
 
 /// Create a copy of ProfileState
 /// with the given fields replaced by the non-null parameter values.
@@ -227,16 +231,16 @@ _$ProfileStateCopyWith<_ProfileState> get copyWith => __$ProfileStateCopyWithImp
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ProfileState&&(identical(other.isGuest, isGuest) || other.isGuest == isGuest)&&(identical(other.name, name) || other.name == name)&&(identical(other.subtitle, subtitle) || other.subtitle == subtitle)&&(identical(other.photoUrl, photoUrl) || other.photoUrl == photoUrl));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ProfileState&&(identical(other.isGuest, isGuest) || other.isGuest == isGuest)&&(identical(other.name, name) || other.name == name)&&(identical(other.subtitle, subtitle) || other.subtitle == subtitle)&&(identical(other.photoUrl, photoUrl) || other.photoUrl == photoUrl)&&(identical(other.needsVerification, needsVerification) || other.needsVerification == needsVerification));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,isGuest,name,subtitle,photoUrl);
+int get hashCode => Object.hash(runtimeType,isGuest,name,subtitle,photoUrl,needsVerification);
 
 @override
 String toString() {
-  return 'ProfileState(isGuest: $isGuest, name: $name, subtitle: $subtitle, photoUrl: $photoUrl)';
+  return 'ProfileState(isGuest: $isGuest, name: $name, subtitle: $subtitle, photoUrl: $photoUrl, needsVerification: $needsVerification)';
 }
 
 
@@ -247,7 +251,7 @@ abstract mixin class _$ProfileStateCopyWith<$Res> implements $ProfileStateCopyWi
   factory _$ProfileStateCopyWith(_ProfileState value, $Res Function(_ProfileState) _then) = __$ProfileStateCopyWithImpl;
 @override @useResult
 $Res call({
- bool isGuest, String name, String? subtitle, String? photoUrl
+ bool isGuest, String name, String? subtitle, String? photoUrl, bool needsVerification
 });
 
 
@@ -264,13 +268,14 @@ class __$ProfileStateCopyWithImpl<$Res>
 
 /// Create a copy of ProfileState
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? isGuest = null,Object? name = null,Object? subtitle = freezed,Object? photoUrl = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? isGuest = null,Object? name = null,Object? subtitle = freezed,Object? photoUrl = freezed,Object? needsVerification = null,}) {
   return _then(_ProfileState(
 isGuest: null == isGuest ? _self.isGuest : isGuest // ignore: cast_nullable_to_non_nullable
 as bool,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,subtitle: freezed == subtitle ? _self.subtitle : subtitle // ignore: cast_nullable_to_non_nullable
 as String?,photoUrl: freezed == photoUrl ? _self.photoUrl : photoUrl // ignore: cast_nullable_to_non_nullable
-as String?,
+as String?,needsVerification: null == needsVerification ? _self.needsVerification : needsVerification // ignore: cast_nullable_to_non_nullable
+as bool,
   ));
 }
 

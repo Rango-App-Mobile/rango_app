@@ -1,8 +1,11 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:rango_app/core/error/failure.dart';
+import 'package:rango_app/core/widgets/rango_loading_view.dart';
 import 'package:rango_app/data/auth_repository.dart';
 import 'package:rango_app/models/app_user.dart';
 import 'package:rango_app/screens/startup/startup_screen.dart';
@@ -10,6 +13,25 @@ import 'package:rango_app/screens/startup/startup_screen.dart';
 class _MockAuthRepository extends Mock implements AuthRepository {}
 
 void main() {
+  testWidgets('shows the animated loading while the session is created', (
+    tester,
+  ) async {
+    final repository = _MockAuthRepository();
+    final pending = Completer<AppUser>();
+    when(repository.ensureSignedIn).thenAnswer((_) => pending.future);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [authRepositoryProvider.overrideWithValue(repository)],
+        child: const MaterialApp(home: StartupScreen()),
+      ),
+    );
+    await tester.pump();
+
+    expect(find.byType(RangoLoadingView), findsOneWidget);
+    expect(find.text('Tentar novamente'), findsNothing);
+  });
+
   testWidgets('shows the error with a retry button that tries again', (
     tester,
   ) async {

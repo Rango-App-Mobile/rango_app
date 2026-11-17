@@ -8,7 +8,12 @@ import 'package:rango_app/models/app_user.dart';
 import 'package:rango_app/screens/profile/profile_state.dart';
 import 'package:rango_app/screens/profile/profile_view_model.dart';
 
-class _MockAuthRepository extends Mock implements AuthRepository {}
+class _MockAuthRepository extends Mock implements AuthRepository {
+  _MockAuthRepository() {
+    when(reload).thenAnswer((_) async {});
+    when(resendVerification).thenAnswer((_) async {});
+  }
+}
 
 Future<ProfileState> _load(AppUser user) {
   final repository = _MockAuthRepository();
@@ -24,6 +29,7 @@ Future<ProfileState> _load(AppUser user) {
 }
 
 void main() {
+  verificationTests();
   test('an anonymous user is a guest named Visitante', () async {
     final state = await _load(FakeAuthRepository.user);
 
@@ -141,5 +147,79 @@ void main() {
     await container.read(profileViewModelProvider.notifier).signOut();
 
     expect(container.read(profileViewModelProvider).value?.isGuest, isTrue);
+  });
+}
+
+const _unverified = AppUser(
+  uid: 'u1',
+  isAnonymous: false,
+  name: 'Joana',
+  email: 'joana@email.com',
+  usesPassword: true,
+);
+
+void verificationTests() {
+  test(
+    'a password account without a verified e-mail needs verification',
+    () async {
+      final state = await _load(_unverified);
+      expect(state.needsVerification, isTrue);
+    },
+  );
+
+  test('verified, social and guest accounts do not', () async {
+    expect(
+      (await _load(
+        _unverified.copyWith(emailVerified: true),
+      )).needsVerification,
+      isFalse,
+    );
+    expect(
+      (await _load(
+        _unverified.copyWith(usesPassword: false),
+      )).needsVerification,
+      isFalse,
+    );
+    expect((await _load(FakeAuthRepository.user)).needsVerification, isFalse);
+  });
+
+  test('opening reloads the user; resending goes to the repository', () async {
+    final repository = _MockAuthRepository();
+    when(repository.watchUser).thenAnswer((_) => Stream.value(_unverified));
+    final container = ProviderContainer(
+      overrides: [authRepositoryProvider.overrideWithValue(repository)],
+    );
+    addTearDown(container.dispose);
+    final subscription = container.listen(profileViewModelProvider, (_, _) {});
+    addTearDown(subscription.close);
+    await container.read(profileViewModelProvider.future);
+
+    final sent = await container
+        .read(profileViewModelProvider.notifier)
+        .resendVerification();
+
+    expect(sent, isTrue);
+    verify(repository.reload).called(1);
+    verify(repository.resendVerification).called(1);
+  });
+
+  test('a failed resend reports false', () async {
+    final repository = _MockAuthRepository();
+    when(repository.watchUser).thenAnswer((_) => Stream.value(_unverified));
+    when(repository.resendVerification).thenThrow(const NetworkFailure());
+    final container = ProviderContainer(
+      overrides: [authRepositoryProvider.overrideWithValue(repository)],
+    );
+    addTearDown(container.dispose);
+    final subscription = container.listen(profileViewModelProvider, (_, _) {});
+    addTearDown(subscription.close);
+    await container.read(profileViewModelProvider.future);
+
+    expect(
+      await container
+          .read(profileViewModelProvider.notifier)
+          .resendVerification(),
+      isFalse,
+    );
   });
 }

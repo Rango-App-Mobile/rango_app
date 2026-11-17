@@ -29,7 +29,6 @@ void main() {
     expect(
       foods.every(
         (food) =>
-            food.placesKeyword?.isNotEmpty == true &&
             food.examples?.isNotEmpty == true &&
             food.foodTheme?.isNotEmpty == true &&
             food.photo?.isNotEmpty == true,

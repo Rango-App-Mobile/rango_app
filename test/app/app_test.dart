@@ -51,6 +51,9 @@ Future<void> pumpApp(WidgetTester tester) async {
         authRepositoryProvider.overrideWithValue(FakeAuthRepository()),
         categoryRepositoryProvider.overrideWithValue(LocalCategoryRepository()),
         deckRandomProvider.overrideWithValue(InOrderRandom()),
+        currentUserProvider.overrideWithValue(
+          const AsyncData(AppUser(uid: 'u1', isAnonymous: false)),
+        ),
         historyRepositoryProvider.overrideWithValue(FakeHistoryRepository()),
         locationRepositoryProvider.overrideWithValue(
           const FakeLocationRepository(),

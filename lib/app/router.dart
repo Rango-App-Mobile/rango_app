@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:rango_app/app/app_shell.dart';
 import 'package:rango_app/models/restaurant_contact_args.dart';
+import 'package:rango_app/screens/accept_terms/accept_terms_screen.dart';
 import 'package:rango_app/screens/history/history_screen.dart';
 import 'package:rango_app/screens/history_detail/history_detail_screen.dart';
 import 'package:rango_app/screens/login/login_screen.dart';
@@ -51,6 +52,11 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/login',
         parentNavigatorKey: rootKey,
         builder: (context, state) => const LoginScreen(),
+      ),
+      GoRoute(
+        path: '/accept-terms',
+        parentNavigatorKey: rootKey,
+        builder: (context, state) => const AcceptTermsScreen(),
       ),
       GoRoute(
         path: '/signup',

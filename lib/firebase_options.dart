@@ -39,4 +39,18 @@ abstract final class DefaultFirebaseOptions {
     storageBucket: 'rango-f0485.firebasestorage.app',
     iosBundleId: 'br.senac.rangoApp',
   );
+
+  /// OAuth client ids for Google sign-in, created in the Firebase console
+  /// (`docs/auth.md`). Public like `appId`, so they are committed.
+  ///
+  /// The Web client id: Android needs it to get an ID token Firebase accepts.
+  static const googleWebClientId =
+      '186996793800-b6sgk5in24e1pl52lr1kmi9mr3m0ku76'
+      '.apps.googleusercontent.com';
+
+  /// The iOS client id (`CLIENT_ID` in `GoogleService-Info.plist`). Its
+  /// reversed form also goes in `ios/Runner/Info.plist`, `CFBundleURLSchemes`.
+  static const googleIosClientId =
+      '186996793800-els14t96mssqslhmv3q39fq65d6c2dvu'
+      '.apps.googleusercontent.com';
 }

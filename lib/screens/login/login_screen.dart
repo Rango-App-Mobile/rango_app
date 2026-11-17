@@ -5,10 +5,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:rango_app/core/theme/app_space.dart';
 import 'package:rango_app/core/theme/theme_context.dart';
+import 'package:rango_app/core/widgets/apple_sign_in_button.dart';
+import 'package:rango_app/core/widgets/google_sign_in_button.dart';
 import 'package:rango_app/core/widgets/inline_alert.dart';
 import 'package:rango_app/core/widgets/page_header.dart';
 import 'package:rango_app/core/widgets/rango_button.dart';
 import 'package:rango_app/core/widgets/rango_divider.dart';
+import 'package:rango_app/core/widgets/rango_loading_view.dart';
 import 'package:rango_app/core/widgets/rango_text_field.dart';
 import 'package:rango_app/core/widgets/top_bar.dart';
 import 'package:rango_app/core/widgets/top_bar_layout.dart';
@@ -44,12 +47,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     ref.listen(loginViewModelProvider.select((s) => s.done), (_, done) {
       if (done) context.pop();
     });
+    ref.listen(loginViewModelProvider.select((s) => s.needsTerms), (_, needs) {
+      if (needs) context.pushReplacement('/accept-terms');
+    });
 
     void submit() => unawaited(
       viewModel.submit(email: _email.text, password: _password.text),
     );
 
-    return Scaffold(
+    final form = Scaffold(
       body: TopBarLayout(
         topBar: Stack(
           alignment: Alignment.center,
@@ -82,22 +88,20 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 size: PageHeaderSize.medium,
               ),
               if (alert != null) InlineAlert(message: alert),
-              // Apple and Google arrive with their own story.
-              const Column(
+              Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 spacing: AppSpace.sm,
                 children: [
-                  RangoButton(
-                    label: 'Continuar com a Apple',
-                    style: RangoButtonStyle.secondary,
-                    expand: true,
-                    onPressed: null,
-                  ),
-                  RangoButton(
-                    label: 'Continuar com o Google',
-                    style: RangoButtonStyle.secondary,
-                    expand: true,
-                    onPressed: null,
+                  if (viewModel.offersApple)
+                    AppleSignInButton(
+                      onPressed: state.submitting
+                          ? null
+                          : () => unawaited(viewModel.continueWithApple()),
+                    ),
+                  GoogleSignInButton(
+                    onPressed: state.submitting
+                        ? null
+                        : () => unawaited(viewModel.continueWithGoogle()),
                   ),
                 ],
               ),
@@ -159,14 +163,28 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     style: RangoButtonStyle.ghost,
                     size: RangoButtonSize.medium,
                     expand: true,
-                    // Replaces this screen, so back always leaves the flow.
-                    onPressed: () => context.pushReplacement('/signup'),
+                    onPressed: () => unawaited(context.push('/signup')),
                   ),
                 ],
               ),
             ],
           ),
         ),
+      ),
+    );
+
+    // Covers the whole screen while a sign-in is running; back is blocked so
+    // the request cannot be abandoned half-way.
+    return PopScope(
+      canPop: !state.submitting,
+      child: Stack(
+        children: [
+          form,
+          if (state.submitting)
+            const Positioned.fill(
+              child: RangoLoadingView(message: 'Entrando…'),
+            ),
+        ],
       ),
     );
   }

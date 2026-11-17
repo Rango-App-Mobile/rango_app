@@ -10,9 +10,19 @@ abstract class AuthFormState with _$AuthFormState {
   const factory AuthFormState({
     @Default(false) bool submitting,
     @Default(false) bool done,
+
+    /// Signed in, but the terms were not accepted yet: the View goes to the
+    /// acceptance screen instead of closing.
+    @Default(false) bool needsTerms,
     String? nameError,
     String? emailError,
     String? passwordError,
+    String? confirmEmailError,
+    String? confirmPasswordError,
+    String? termsError,
+
+    /// The terms switch of the sign-up form.
+    @Default(false) bool termsAccepted,
 
     /// An error that is not about one field: no network, or unexpected.
     String? alert,
@@ -26,6 +36,9 @@ abstract class AuthFormState with _$AuthFormState {
     InvalidEmailFailure() => AuthFormState(emailError: failure.message),
     NetworkFailure() => const AuthFormState(
       alert: 'Sem conexão. Confira sua internet e tente de novo.',
+    ),
+    AccountExistsWithOtherMethodFailure() => AuthFormState(
+      alert: failure.message,
     ),
     _ => const AuthFormState(alert: 'Algo deu errado. Tente de novo.'),
   };

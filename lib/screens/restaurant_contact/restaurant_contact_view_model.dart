@@ -2,9 +2,14 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:rango_app/core/error/failure.dart';
+import 'package:rango_app/data/auth_repository.dart';
 import 'package:rango_app/data/delivery_link_repository.dart';
 import 'package:rango_app/data/external_link_launcher.dart';
+import 'package:rango_app/data/history_repository.dart';
 import 'package:rango_app/data/restaurant_repository.dart';
+import 'package:rango_app/models/app_user.dart';
+import 'package:rango_app/models/history_entry.dart';
+import 'package:rango_app/models/order_channel.dart';
 import 'package:rango_app/models/restaurant_contact_args.dart';
 import 'package:rango_app/screens/restaurant_contact/restaurant_contact_state.dart';
 
@@ -59,16 +64,52 @@ class RestaurantContactViewModel extends Notifier<RestaurantContactState> {
     }
   }
 
-  Future<void> orderDelivery() => _open(state.deliveryUri);
+  Future<void> orderDelivery() =>
+      _open(state.deliveryUri, OrderChannel.delivery);
 
   Future<void> callRestaurant() async {
     final uri = state.phoneUri;
-    if (uri != null) await _open(uri);
+    if (uri != null) await _open(uri, OrderChannel.call);
   }
 
-  Future<void> _open(Uri uri) async {
+  Future<void> _open(Uri uri, OrderChannel channel) async {
+    await _saveDecision(channel);
+    if (!ref.mounted) return;
     final opened = await ref.read(externalLinkLauncherProvider).open(uri);
     if (!opened && ref.mounted) state = state.copyWith(openFailed: true);
+  }
+
+  bool _saved = false;
+
+  /// The first order or call of this screen goes to the Histórico, only for
+  /// an account user (R1). The repository never throws and does not wait
+  /// for the server, so this does not hold the order up.
+  Future<void> _saveDecision(OrderChannel channel) async {
+    final foodId = args.foodId;
+    if (_saved || foodId == null) return;
+    _saved = true;
+    final history = ref.read(historyRepositoryProvider);
+    final AppUser user;
+    try {
+      user = await ref.read(authRepositoryProvider).ensureSignedIn();
+    } on Failure {
+      return; // Without a user there is no Histórico to save to.
+    }
+    if (user.isAnonymous) return;
+    final restaurant = args.restaurant;
+    await history.save(
+      user.uid,
+      HistoryEntry(
+        id: '',
+        foodId: foodId,
+        restaurantId: restaurant.placeId,
+        restaurantName: restaurant.name,
+        cuisine: restaurant.cuisine,
+        channel: channel,
+        decidedAt: DateTime.now(),
+      ),
+    );
+    if (ref.mounted) ref.invalidate(historyEntriesProvider);
   }
 
   void acknowledgeOpenFailed() {

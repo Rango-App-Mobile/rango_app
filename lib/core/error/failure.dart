@@ -51,3 +51,18 @@ final class InvalidEmailFailure extends Failure {
 final class WeakPasswordFailure extends Failure {
   const WeakPasswordFailure([super.message = 'Pelo menos 8 caracteres.']);
 }
+
+final class AccountExistsWithOtherMethodFailure extends Failure {
+  const AccountExistsWithOtherMethodFailure([
+    super.message =
+        'Este e-mail já tem conta com outro jeito de entrar. '
+        'Use o mesmo de antes.',
+  ]);
+}
+
+final class RequiresRecentLoginFailure extends Failure {
+  const RequiresRecentLoginFailure([
+    super.message =
+        'Por segurança, saia e entre de novo na sua conta para excluí-la.',
+  ]);
+}

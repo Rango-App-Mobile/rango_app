@@ -11,20 +11,32 @@ class _MockUser extends Mock implements User {}
 
 class _MockUserCredential extends Mock implements UserCredential {}
 
+class _MockUserInfo extends Mock implements UserInfo {}
+
 void main() {
   late _MockFirebaseAuth auth;
   late FirebaseAuthRepository repository;
+  String? googleIdToken;
+  var googleSignOuts = 0;
 
   _MockUser user(String uid) {
     final user = _MockUser();
     when(() => user.uid).thenReturn(uid);
     when(() => user.isAnonymous).thenReturn(true);
+    when(() => user.emailVerified).thenReturn(false);
+    when(() => user.providerData).thenReturn([]);
     return user;
   }
 
   setUp(() {
     auth = _MockFirebaseAuth();
-    repository = FirebaseAuthRepository(auth);
+    googleIdToken = 'google-id-token';
+    googleSignOuts = 0;
+    repository = FirebaseAuthRepository(
+      auth,
+      googleIdToken: () async => googleIdToken,
+      googleSignOut: () async => googleSignOuts++,
+    );
   });
 
   test('signs in anonymously when there is no current user', () async {
@@ -57,6 +69,8 @@ void main() {
     when(() => existing.displayName).thenReturn('Joana');
     when(() => existing.email).thenReturn('joana@email.com');
     when(() => existing.photoURL).thenReturn('https://example.com/joana.png');
+    when(() => existing.emailVerified).thenReturn(false);
+    when(() => existing.providerData).thenReturn([]);
     when(() => auth.currentUser).thenReturn(existing);
 
     final result = await repository.ensureSignedIn();
@@ -71,6 +85,51 @@ void main() {
         photoUrl: 'https://example.com/joana.png',
       ),
     );
+  });
+
+  test('falls back to the provider name when the user has none', () async {
+    final existing = user('u');
+    final info = _MockUserInfo();
+    when(() => info.displayName).thenReturn('Ana Souza');
+    when(() => info.providerId).thenReturn('google.com');
+    when(() => existing.displayName).thenReturn('');
+    when(() => existing.providerData).thenReturn([info]);
+    when(() => existing.email).thenReturn(null);
+    when(() => existing.photoURL).thenReturn(null);
+    when(() => auth.currentUser).thenReturn(existing);
+
+    expect((await repository.ensureSignedIn()).name, 'Ana Souza');
+  });
+
+  test('updateName sets the display name and reloads', () async {
+    final existing = user('u');
+    when(() => existing.updateDisplayName(any())).thenAnswer((_) async {});
+    when(existing.reload).thenAnswer((_) async {});
+    when(() => auth.currentUser).thenReturn(existing);
+
+    await repository.updateName('Ana');
+
+    verify(() => existing.updateDisplayName('Ana')).called(1);
+    verify(existing.reload).called(1);
+  });
+
+  test('a failing token refresh does not fail the sign-in', () async {
+    final guest = user('guest-uid');
+    final linked = user('guest-uid');
+    when(() => linked.isAnonymous).thenReturn(false);
+    when(() => linked.displayName).thenReturn('Ana');
+    when(() => linked.email).thenReturn('a@b.c');
+    when(() => linked.photoURL).thenReturn(null);
+    when(() => linked.getIdToken(true)).thenThrow(Exception('offline'));
+    final credential = _MockUserCredential();
+    when(() => credential.user).thenReturn(linked);
+    registerFallbackValue(GoogleAuthProvider.credential(idToken: 'x'));
+    when(() => auth.currentUser).thenReturn(guest);
+    when(
+      () => guest.linkWithCredential(any()),
+    ).thenAnswer((_) async => credential);
+
+    expect((await repository.signInWithGoogle())?.uid, 'guest-uid');
   });
 
   test('maps network-request-failed to NetworkFailure', () async {
@@ -114,6 +173,9 @@ void main() {
       when(() => account.displayName).thenReturn('Joana');
       when(() => account.email).thenReturn('joana@email.com');
       when(() => account.photoURL).thenReturn(null);
+      when(() => account.emailVerified).thenReturn(false);
+      when(() => account.providerData).thenReturn([]);
+      when(account.sendEmailVerification).thenAnswer((_) async {});
       when(() => account.updateDisplayName(any())).thenAnswer((_) async {});
       when(account.reload).thenAnswer((_) async {});
       return account;
@@ -150,6 +212,80 @@ void main() {
         );
       },
     );
+
+    test('signing up sends the verification e-mail', () async {
+      final guest = user('guest-uid');
+      final linked = account();
+      final credential = _MockUserCredential();
+      when(() => credential.user).thenReturn(linked);
+      when(() => auth.currentUser).thenReturn(guest);
+      when(() => guest.linkWithCredential(any())).thenAnswer((_) async {
+        when(() => auth.currentUser).thenReturn(linked);
+        return credential;
+      });
+
+      await repository.signUp(
+        name: 'Joana',
+        email: 'joana@email.com',
+        password: '12345678',
+      );
+
+      verify(linked.sendEmailVerification).called(1);
+    });
+
+    test(
+      'a failure sending the verification does not fail the sign-up',
+      () async {
+        final guest = user('guest-uid');
+        final linked = account();
+        when(linked.sendEmailVerification).thenThrow(
+          FirebaseAuthException(code: 'too-many-requests'),
+        );
+        final credential = _MockUserCredential();
+        when(() => credential.user).thenReturn(linked);
+        when(() => auth.currentUser).thenReturn(guest);
+        when(() => guest.linkWithCredential(any())).thenAnswer((_) async {
+          when(() => auth.currentUser).thenReturn(linked);
+          return credential;
+        });
+
+        final result = await repository.signUp(
+          name: 'Joana',
+          email: 'joana@email.com',
+          password: '12345678',
+        );
+
+        expect(result.name, 'Joana');
+      },
+    );
+
+    test(
+      'maps emailVerified and whether the sign-in uses a password',
+      () async {
+        final existing = account();
+        final info = _MockUserInfo();
+        when(() => info.providerId).thenReturn('password');
+        when(() => existing.providerData).thenReturn([info]);
+        when(() => existing.emailVerified).thenReturn(true);
+        when(() => auth.currentUser).thenReturn(existing);
+
+        final result = await repository.ensureSignedIn();
+
+        expect(result.emailVerified, isTrue);
+        expect(result.usesPassword, isTrue);
+      },
+    );
+
+    test('resendVerification and reload go to the current user', () async {
+      final existing = account();
+      when(() => auth.currentUser).thenReturn(existing);
+
+      await repository.resendVerification();
+      await repository.reload();
+
+      verify(existing.sendEmailVerification).called(1);
+      verify(existing.reload).called(1);
+    });
 
     test('signing up with a used e-mail is EmailInUseFailure', () async {
       final guest = user('guest-uid');
@@ -191,6 +327,10 @@ void main() {
       ('invalid-email', isA<InvalidEmailFailure>()),
       ('network-request-failed', isA<NetworkFailure>()),
       ('too-many-requests', isA<UnexpectedFailure>()),
+      (
+        'account-exists-with-different-credential',
+        isA<AccountExistsWithOtherMethodFailure>(),
+      ),
     ]) {
       test('signing in maps $code', () {
         when(
@@ -237,7 +377,24 @@ void main() {
       final result = await repository.signOut();
 
       expect(result.isAnonymous, isTrue);
+      expect(googleSignOuts, 1);
       verifyInOrder([auth.signOut, auth.signInAnonymously]);
+    });
+
+    test('signing out still works when Google cannot sign out', () async {
+      final guest = user('new-guest');
+      final credential = _MockUserCredential();
+      when(() => credential.user).thenReturn(guest);
+      when(auth.signOut).thenAnswer((_) async {});
+      when(() => auth.currentUser).thenReturn(null);
+      when(auth.signInAnonymously).thenAnswer((_) async => credential);
+      repository = FirebaseAuthRepository(
+        auth,
+        googleIdToken: () async => null,
+        googleSignOut: () => throw Exception('no plugin'),
+      );
+
+      expect((await repository.signOut()).isAnonymous, isTrue);
     });
 
     test('watches the user, skipping the signed-out gap', () {
@@ -250,6 +407,174 @@ void main() {
         repository.watchUser().map((user) => user.isAnonymous),
         emitsInOrder([true, false, emitsDone]),
       );
+    });
+  });
+
+  group('Google and Apple', () {
+    setUpAll(() {
+      registerFallbackValue(GoogleAuthProvider.credential(idToken: 'x'));
+      registerFallbackValue(AppleAuthProvider());
+    });
+
+    _MockUserCredential credentialOf(String uid) {
+      final account = _MockUser();
+      when(() => account.uid).thenReturn(uid);
+      when(() => account.isAnonymous).thenReturn(false);
+      when(() => account.displayName).thenReturn('Ana');
+      when(() => account.email).thenReturn('ana@gmail.com');
+      when(() => account.photoURL).thenReturn(null);
+      when(() => account.emailVerified).thenReturn(false);
+      when(() => account.providerData).thenReturn([]);
+      when(account.sendEmailVerification).thenAnswer((_) async {});
+      when(() => account.getIdToken(true)).thenAnswer((_) async => 'token');
+      final credential = _MockUserCredential();
+      when(() => credential.user).thenReturn(account);
+      return credential;
+    }
+
+    test('Google links the guest, keeping the uid', () async {
+      final guest = user('guest-uid');
+      when(() => auth.currentUser).thenReturn(guest);
+      final linkedCredential = credentialOf('guest-uid');
+      when(
+        () => guest.linkWithCredential(any()),
+      ).thenAnswer((_) async => linkedCredential);
+      final linkedUser = linkedCredential.user!;
+
+      final result = await repository.signInWithGoogle();
+
+      expect(result?.uid, 'guest-uid');
+      expect(result?.isAnonymous, isFalse);
+      verify(() => linkedUser.getIdToken(true)).called(1);
+      final linked =
+          verify(() => guest.linkWithCredential(captureAny())).captured.single
+              as AuthCredential;
+      expect(linked.providerId, 'google.com');
+      verifyNever(() => auth.signInWithCredential(any()));
+    });
+
+    for (final code in [
+      'credential-already-in-use',
+      'email-already-in-use',
+      'account-exists-with-different-credential',
+    ]) {
+      test('Google signs in to the existing account on $code', () async {
+        final guest = user('guest-uid');
+        when(() => auth.currentUser).thenReturn(guest);
+        when(
+          () => guest.linkWithCredential(any()),
+        ).thenThrow(FirebaseAuthException(code: code));
+        when(
+          () => auth.signInWithCredential(any()),
+        ).thenAnswer((_) async => credentialOf('account-uid'));
+
+        final result = await repository.signInWithGoogle();
+
+        expect(result?.uid, 'account-uid');
+      });
+    }
+
+    test('Google signs in directly when nobody is a guest', () async {
+      when(() => auth.currentUser).thenReturn(null);
+      when(
+        () => auth.signInWithCredential(any()),
+      ).thenAnswer((_) async => credentialOf('account-uid'));
+
+      expect((await repository.signInWithGoogle())?.uid, 'account-uid');
+    });
+
+    test(
+      'closing the Google picker returns null and touches nothing',
+      () async {
+        googleIdToken = null;
+
+        expect(await repository.signInWithGoogle(), isNull);
+        verifyNever(() => auth.currentUser);
+      },
+    );
+
+    test('Google without network is NetworkFailure', () {
+      final guest = user('guest-uid');
+      when(() => auth.currentUser).thenReturn(guest);
+      when(
+        () => guest.linkWithCredential(any()),
+      ).thenThrow(FirebaseAuthException(code: 'network-request-failed'));
+
+      expect(repository.signInWithGoogle(), throwsA(isA<NetworkFailure>()));
+    });
+
+    test('Apple links the guest with the Apple provider', () async {
+      final guest = user('guest-uid');
+      when(() => auth.currentUser).thenReturn(guest);
+      when(
+        () => guest.linkWithProvider(any()),
+      ).thenAnswer((_) async => credentialOf('guest-uid'));
+
+      final result = await repository.signInWithApple();
+
+      expect(result?.uid, 'guest-uid');
+      final provider =
+          verify(() => guest.linkWithProvider(captureAny())).captured.single
+              as AuthProvider;
+      expect(provider.providerId, 'apple.com');
+    });
+
+    test(
+      'Apple reuses the credential Firebase hands back for an existing account',
+      () async {
+        final guest = user('guest-uid');
+        final appleCredential = OAuthProvider(
+          'apple.com',
+        ).credential(idToken: 'apple-token');
+        when(() => auth.currentUser).thenReturn(guest);
+        when(() => guest.linkWithProvider(any())).thenThrow(
+          FirebaseAuthException(
+            code: 'credential-already-in-use',
+            credential: appleCredential,
+          ),
+        );
+        when(
+          () => auth.signInWithCredential(appleCredential),
+        ).thenAnswer((_) async => credentialOf('account-uid'));
+
+        expect((await repository.signInWithApple())?.uid, 'account-uid');
+        verifyNever(() => auth.signInWithProvider(any()));
+      },
+    );
+
+    test('Apple opens the sheet again when there is no credential', () async {
+      final guest = user('guest-uid');
+      when(() => auth.currentUser).thenReturn(guest);
+      when(
+        () => guest.linkWithProvider(any()),
+      ).thenThrow(FirebaseAuthException(code: 'credential-already-in-use'));
+      when(
+        () => auth.signInWithProvider(any()),
+      ).thenAnswer((_) async => credentialOf('account-uid'));
+
+      expect((await repository.signInWithApple())?.uid, 'account-uid');
+    });
+
+    for (final code in ['canceled', 'web-context-canceled']) {
+      test('closing the Apple sheet ($code) returns null', () async {
+        final guest = user('guest-uid');
+        when(() => auth.currentUser).thenReturn(guest);
+        when(
+          () => guest.linkWithProvider(any()),
+        ).thenThrow(FirebaseAuthException(code: code));
+
+        expect(await repository.signInWithApple(), isNull);
+      });
+    }
+
+    test('other Apple errors are UnexpectedFailure', () {
+      final guest = user('guest-uid');
+      when(() => auth.currentUser).thenReturn(guest);
+      when(
+        () => guest.linkWithProvider(any()),
+      ).thenThrow(FirebaseAuthException(code: 'operation-not-allowed'));
+
+      expect(repository.signInWithApple(), throwsA(isA<UnexpectedFailure>()));
     });
   });
 }

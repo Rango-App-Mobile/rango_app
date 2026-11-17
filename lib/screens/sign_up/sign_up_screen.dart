@@ -5,11 +5,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:rango_app/core/theme/app_space.dart';
 import 'package:rango_app/core/theme/theme_context.dart';
+import 'package:rango_app/core/widgets/apple_sign_in_button.dart';
+import 'package:rango_app/core/widgets/google_sign_in_button.dart';
 import 'package:rango_app/core/widgets/inline_alert.dart';
 import 'package:rango_app/core/widgets/page_header.dart';
 import 'package:rango_app/core/widgets/rango_button.dart';
 import 'package:rango_app/core/widgets/rango_divider.dart';
+import 'package:rango_app/core/widgets/rango_loading_view.dart';
 import 'package:rango_app/core/widgets/rango_text_field.dart';
+import 'package:rango_app/core/widgets/terms_acceptance.dart';
 import 'package:rango_app/core/widgets/top_bar.dart';
 import 'package:rango_app/core/widgets/top_bar_layout.dart';
 import 'package:rango_app/core/widgets/top_bar_scroll_view.dart';
@@ -26,13 +30,17 @@ class SignUpScreen extends ConsumerStatefulWidget {
 class _SignUpScreenState extends ConsumerState<SignUpScreen> {
   final _name = TextEditingController();
   final _email = TextEditingController();
+  final _confirmEmail = TextEditingController();
   final _password = TextEditingController();
+  final _confirmPassword = TextEditingController();
 
   @override
   void dispose() {
     _name.dispose();
     _email.dispose();
+    _confirmEmail.dispose();
     _password.dispose();
+    _confirmPassword.dispose();
     super.dispose();
   }
 
@@ -45,16 +53,21 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
     ref.listen(signUpViewModelProvider.select((s) => s.done), (_, done) {
       if (done) context.pop();
     });
+    ref.listen(signUpViewModelProvider.select((s) => s.needsTerms), (_, needs) {
+      if (needs) context.pushReplacement('/accept-terms');
+    });
 
     void submit() => unawaited(
       viewModel.submit(
         name: _name.text,
         email: _email.text,
+        confirmEmail: _confirmEmail.text,
         password: _password.text,
+        confirmPassword: _confirmPassword.text,
       ),
     );
 
-    return Scaffold(
+    final form = Scaffold(
       body: TopBarLayout(
         topBar: Stack(
           alignment: Alignment.center,
@@ -81,22 +94,20 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                 size: PageHeaderSize.medium,
               ),
               if (alert != null) InlineAlert(message: alert),
-              // Apple and Google arrive with their own story.
-              const Column(
+              Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 spacing: AppSpace.sm,
                 children: [
-                  RangoButton(
-                    label: 'Continuar com a Apple',
-                    style: RangoButtonStyle.secondary,
-                    expand: true,
-                    onPressed: null,
-                  ),
-                  RangoButton(
-                    label: 'Continuar com o Google',
-                    style: RangoButtonStyle.secondary,
-                    expand: true,
-                    onPressed: null,
+                  if (viewModel.offersApple)
+                    AppleSignInButton(
+                      onPressed: state.submitting
+                          ? null
+                          : () => unawaited(viewModel.continueWithApple()),
+                    ),
+                  GoogleSignInButton(
+                    onPressed: state.submitting
+                        ? null
+                        : () => unawaited(viewModel.continueWithGoogle()),
                   ),
                 ],
               ),
@@ -128,19 +139,43 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                       onChanged: (_) => viewModel.edited(),
                     ),
                     RangoTextField(
+                      label: 'Confirmar e-mail',
+                      hint: 'Digite o e-mail de novo',
+                      controller: _confirmEmail,
+                      error: state.confirmEmailError,
+                      keyboardType: TextInputType.emailAddress,
+                      textInputAction: TextInputAction.next,
+                      onChanged: (_) => viewModel.edited(),
+                    ),
+                    RangoTextField(
                       label: 'Senha',
                       hint: 'Crie uma senha',
                       helper: 'Pelo menos 8 caracteres.',
                       controller: _password,
                       error: state.passwordError,
                       isPassword: true,
-                      textInputAction: TextInputAction.done,
+                      textInputAction: TextInputAction.next,
                       autofillHints: const [AutofillHints.newPassword],
+                      onChanged: (_) => viewModel.edited(),
+                    ),
+                    RangoTextField(
+                      label: 'Confirmar senha',
+                      hint: 'Digite a senha de novo',
+                      controller: _confirmPassword,
+                      error: state.confirmPasswordError,
+                      isPassword: true,
+                      textInputAction: TextInputAction.done,
                       onChanged: (_) => viewModel.edited(),
                       onSubmitted: (_) => submit(),
                     ),
                   ],
                 ),
+              ),
+              TermsAcceptance(
+                value: state.termsAccepted,
+                error: state.termsError,
+                onChanged: (accepted) =>
+                    viewModel.termsAccepted(accepted: accepted),
               ),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -164,6 +199,21 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
             ],
           ),
         ),
+      ),
+    );
+
+    // Covers the whole screen while a sign-in is running; back is blocked so
+    // the request cannot be abandoned half-way.
+    return PopScope(
+      canPop: !state.submitting,
+      child: Stack(
+        children: [
+          form,
+          if (state.submitting)
+            const Positioned.fill(
+              child: RangoLoadingView(message: 'Criando sua conta…'),
+            ),
+        ],
       ),
     );
   }

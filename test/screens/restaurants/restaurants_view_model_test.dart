@@ -42,7 +42,7 @@ void main() {
     when(location.currentPosition).thenAnswer((_) async => _origin);
     when(
       () => restaurants.search(
-        keyword: any(named: 'keyword'),
+        foodId: any(named: 'foodId'),
         near: any(named: 'near'),
       ),
     ).thenAnswer((_) async => [_place('a'), _place('b'), _place('c')]);
@@ -89,7 +89,7 @@ void main() {
     expect(state.selectedId, 'a');
     expect(state.selected?.name, 'Lugar a');
     verify(
-      () => restaurants.search(keyword: 'restaurante italiano', near: _origin),
+      () => restaurants.search(foodId: 'spaghetti', near: _origin),
     ).called(1);
   });
 
@@ -97,7 +97,7 @@ void main() {
     final pending = Completer<List<Restaurant>>();
     when(
       () => restaurants.search(
-        keyword: any(named: 'keyword'),
+        foodId: any(named: 'foodId'),
         near: any(named: 'near'),
       ),
     ).thenAnswer((_) => pending.future);
@@ -116,7 +116,7 @@ void main() {
   test('is empty when nothing is in the radius', () async {
     when(
       () => restaurants.search(
-        keyword: any(named: 'keyword'),
+        foodId: any(named: 'foodId'),
         near: any(named: 'near'),
       ),
     ).thenAnswer((_) async => []);
@@ -145,7 +145,7 @@ void main() {
       expect(read(container).status, status);
       verifyNever(
         () => restaurants.search(
-          keyword: any(named: 'keyword'),
+          foodId: any(named: 'foodId'),
           near: any(named: 'near'),
         ),
       );
@@ -155,7 +155,7 @@ void main() {
   test('a failed search is an error with the failure message', () async {
     when(
       () => restaurants.search(
-        keyword: any(named: 'keyword'),
+        foodId: any(named: 'foodId'),
         near: any(named: 'near'),
       ),
     ).thenThrow(const NetworkFailure());
@@ -195,7 +195,7 @@ void main() {
   test('select changes the selection and fetches its photo', () async {
     when(
       () => restaurants.search(
-        keyword: any(named: 'keyword'),
+        foodId: any(named: 'foodId'),
         near: any(named: 'near'),
       ),
     ).thenAnswer(
@@ -220,7 +220,7 @@ void main() {
     final slow = Completer<String?>();
     when(
       () => restaurants.search(
-        keyword: any(named: 'keyword'),
+        foodId: any(named: 'foodId'),
         near: any(named: 'near'),
       ),
     ).thenAnswer(

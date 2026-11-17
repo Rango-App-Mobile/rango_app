@@ -66,7 +66,7 @@ O detalhamento completo está no [acordo](acordo-projeto.md#2-benchmark-de-conco
 | Dados | Cloud Firestore | Sessões, histórico de escolhas, preferências |
 | Auth | Firebase Authentication (anônima) | Identifica a sessão sem cadastro |
 | Mapa | `flutter_map` + OpenStreetMap | Mapa real, sem chave e sem cartão |
-| Restaurantes | `FakeRestaurantRepository`; depois, Cloud Firestore | Hoje, restaurantes fictícios ao redor da pessoa; depois, os do time, por comida e distância |
+| Restaurantes | Cloud Firestore (`FirestoreRestaurantRepository`); `FakeRestaurantRepository` sem Firebase | Os do time, vindos da planilha, por comida e distância |
 | Futuro | Cloud Functions | Orquestração do modo grupo em tempo real |
 
 ## 5. Arquitetura
@@ -107,7 +107,7 @@ Telas em alta fidelidade e protótipo: [Figma do Rango](https://www.figma.com/de
 
 1. O usuário abre o app como **visitante**: a sessão anônima é criada automaticamente, sem cadastro.
 2. A primeira escolha é ampla (salgado vs. doce). Depois as comidas da lista escolhida aparecem uma por vez, num card único no centro, como no Tinder: arrastar para a direita (ou o botão de coração) curte, para a esquerda (ou o botão X) passa. A primeira comida a somar três curtidas é a escolhida (ex.: Salgado → Pizza).
-3. Ao convergir num tipo específico ("Deu match!"), o app busca restaurantes próximos que servem esse tipo. Por enquanto eles são fictícios; depois virão do Firestore (decisão de 2026-11-05 no §11).
+3. Ao convergir num tipo específico ("Deu match!"), o app busca restaurantes próximos que servem esse tipo. Eles vêm do Firestore, cadastrados pelo time (decisão de 2026-11-05 no §11).
 4. O usuário vê os restaurantes **no mapa** (nome, nota, distância), escolhe um e decide como pedir: delivery, mapa ou ligação.
 5. Quem **entra com conta** (pelo perfil) tem as decisões salvas no **Histórico**, estatísticas e preferências. O visitante usa o fluxo inteiro, mas nada dele é salvo.
 
@@ -117,7 +117,7 @@ Telas em alta fidelidade e protótipo: [Figma do Rango](https://www.figma.com/de
 
 - **R1:** toda sessão pertence a um usuário do Firebase Auth: anônimo (visitante) ou com conta. Só sessões de usuário com conta são salvas no Firestore; do visitante não se grava histórico, estatística nem preferência. *(E1, decisão de 2026-09-30)*
 - **R2:** a primeira escolha é Salgado vs. Doce; depois, um card por vez com as comidas da lista escolhida (16 em cada), em ordem aleatória. Curtir soma 1 curtida à comida, e as curtidas não zeram; a primeira a chegar em 3 curtidas encerra a sessão nessa comida, sem limite de cards. Passar tira a comida da sessão. Quando o baralho acaba, as comidas que sobraram são embaralhadas de novo (a última mostrada não abre a nova rodada); se todas foram passadas, as 16 voltam. *(E2-S1, decisão de 2026-11-04; substitui o duelo de 2026-10-24)*
-- **R3:** cada comida das listas tem um termo de busca. Sem o Google Places, ele ainda é repassado à busca, mas os restaurantes fictícios o ignoram; sai quando a busca passar para o Firestore. *(E2-S1, decisão de 2026-11-05)*
+- **R3:** a busca usa o id da comida do match: aparecem os restaurantes cuja lista `foods` contém esse id. Não há termo de busca por texto. *(E3-S7, decisão de 2026-11-12)*
 - **R4:** a recomendação considera só restaurantes a até **3 km** da localização atual (até 20 resultados), ordenados do mais perto ao mais longe; o mais perto abre selecionado no mapa. A posição é usada só na busca e não é salva. *(E3-S3, decisão de 2026-10-29)*
 - **R5:** "Pedir no delivery" abre o link do iFood cadastrado para o restaurante; sem ele, o primeiro outro link cadastrado; sem nenhum, uma busca "<nome> delivery" no Google. Só links `https` saem do app. *(E3-S5, decisão de 2026-10-29)*
 
@@ -129,19 +129,19 @@ Telas em alta fidelidade e protótipo: [Figma do Rango](https://www.figma.com/de
 users/{uid}                       # só usuário com conta (visitante não grava)
   createdAt
   preferences: { deliveryApp, notifications }
-users/{uid}/sessions/{sessionId}
-  startedAt, finishedAt
-  choices: [{ level, optionA, optionB, chosen, at }]
-  result: { categoryId, label, placesQuery }
-  restaurant: { placeId, name, cuisine, rating }   # escolhido na tela de contato
-  channel: delivery | call                         # alimenta o "Pedir de novo"
+  termsVersion, termsAcceptedAt                   # aceite dos termos (cadastro ou tela "Quase lá")
+users/{uid}/sessions/{autoId}     # uma por "Pedir no delivery"/"Ligar" na tela 06 (E2-S4)
+  foodId                                          # id da comida do match
+  restaurantId, restaurantName, cuisine?          # escolhido na tela de contato
+  channel: delivery | call                        # alimenta o "Pedir de novo"
+  decidedAt                                       # hora do servidor; leitura: 100 mais recentes
 restaurants/{placeId}             # vem da planilha do time (ou à mão); o app só lê
   name, location (geopoint), foods: [id da comida], cuisine, address, rating?, phone?
   deliveryLinks: { ifood?, others: [url] }        # R5: iFood → outros → busca no Google
   active, source: sheet, updatedAt                # active falso: saiu da planilha
 ```
 
-Os restaurantes reais entram pela sincronização da planilha (`docs/restaurantes.md`). Até o fim da E3-S7, o app segue mostrando os fictícios.
+Os restaurantes reais entram pela sincronização da planilha (`docs/restaurantes.md`). Sem o Firebase configurado, o app mostra os fictícios.
 
 Cardápio (raiz, Salgado e Doce, e 16 comidas em cada): dado local versionado no app, no `LocalCategoryRepository` (`lib/data/`). Mover para o Firestore é decisão futura (§12).
 
@@ -232,6 +232,15 @@ Rituais e frentes: [time-e-rituais.md](time-e-rituais.md).
 | 2026-11-06 | O login opcional é por e-mail e senha, Google e Apple. As telas estão no Figma, no fluxo 06 (13 Entrar, 14 Criar conta, 15 Recuperar senha) | Apple e Google entram com um toque, e o e-mail atende quem não quer usar nenhum dos dois. Já existe uma conta Apple Developer, e a App Store pede uma opção como a da Apple de quem oferece o login do Google |
 | 2026-11-06 | No Profile Sheet, o visitante vê só o convite para entrar e o Sobre, sem estatísticas nem preferências. O desenho antigo mostrava números e dizia que o histórico ficava salvo no aparelho | Segue R1: sem conta nada é salvo, então não há número para mostrar |
 | 2026-11-10 | O login entra em duas partes: e-mail e senha primeiro (E1-S3); Google e Apple depois, numa story própria. Até lá, os dois botões aparecem desligados | Google e Apple pedem dois pacotes novos e configuração no console do Firebase e na conta da Apple. O e-mail já entrega a conta sem depender disso |
+| 2026-11-12 | O app passa a ler os restaurantes do Firestore (E3-S7): consulta por `foods` contendo o id da comida, até 500 documentos, e o corte de 3 km é feito no celular. Sai o termo de busca das comidas (`placesKeyword`) | Uma região tem poucas dezenas de lugares; ler os da comida e filtrar no celular evita índice geográfico. Se a base crescer, a troca é uma consulta por geohash |
+| 2026-11-12 | A decisão de quem tem conta é salva em `users/{uid}/sessions` quando a pessoa toca em "Pedir no delivery" ou "Ligar" na tela 06, uma vez por abertura da tela, com comida, restaurante, canal e hora. As escolhas de cada swipe (`choices`) não são salvas por enquanto, e o Histórico lê as 100 decisões mais recentes | Tocar em pedir ou ligar é o momento em que a decisão de fato aconteceu. Sem uso para as escolhas intermediárias, gravá-las só gastaria leituras e escrita; o limite segura o custo por leitura até haver paginação |
+| 2026-11-12 | Google e Apple (E1-S4) entram com um pacote novo só, o `google_sign_in`. A Apple usa o próprio `firebase_auth` (`AppleAuthProvider`), sem `sign_in_with_apple`, e o botão dela aparece só no iOS. O visitante liga a conta ao seu `uid`; se a conta já existe, entra nela e o visitante fica para trás | Um pacote a menos para manter: o `firebase_auth` já abre a folha da Apple no iOS. No Android, entrar com a Apple pediria configuração extra e quase ninguém usa. O visitante não tem nada salvo (R1), então trocar de `uid` não perde nada |
+| 2026-11-12 | O Flutter do projeto e do CI sobe de 3.44.4 para 3.47.9 (substitui a versão fixada no #95) | O `google_sign_in_ios` compatível com o Firebase iOS SDK 13 (o 6.4.0, com GoogleSignIn 10) exige o Flutter 3.47; com o 6.3.8 o build do iOS não resolve as dependências (`gtm-session-fetcher` 3 contra 4). Quem roda o app precisa atualizar o Flutter local |
+| 2026-11-14 | O botão da Apple passa a ser o nativo do iOS (`ASAuthorizationAppleIDButton`, por platform view), e o do Google segue o guia de marca com o "G" oficial; os dois com 44 de altura. Entra o `sign_in_with_apple`, só como botão de reserva fora do iOS. O login continua pelo `AppleAuthProvider` (substitui em parte a decisão de 2026-11-12) | A App Store exige o botão aprovado pela Apple, e o desenhado pelo pacote saía com a fonte grande demais. 44 é a altura recomendada pela HIG |
+| 2026-11-14 | Splash nativa (`flutter_native_splash`) e tela de carregamento animada do Figma (00 Loading: o xis montado em loop, no verde pistache), na abertura e durante qualquer login. Entra o `flutter_svg` para as camadas. A splash fica no verde, não no creme previsto na E8-S6 | Segue o Figma; a splash e a animação usam o mesmo fundo e o mesmo xis, sem salto visual |
+| 2026-11-14 | Criar conta pede Nome, e-mail e senha confirmados e o aceite dos Termos de Uso e da Política de Privacidade (switch, texto num modal). Qualquer login de conta sem aceite passa pela tela "Quase lá" (nome + termos); recusar volta a visitante. O aceite fica em `users/{uid}` (`termsVersion`, `termsAcceptedAt`). O e-mail de verificação é enviado, mas não bloqueia o uso | A App Store e a Play Store pedem termos e política aceitos; Google e Apple nem sempre mandam o nome, que aparecia como e-mail. O texto está em `docs/termos-e-privacidade.md` (e em PDF para as lojas) e pode ser lido a qualquer momento no Profile Sheet |
+| 2026-11-14 | "Excluir conta" no Profile Sheet, direto: confirmação, carregamento em tela cheia, apaga `users/{uid}` e o histórico e apaga a conta, voltando a visitante. Não pede login de novo: se o último login tem mais de uns 5 minutos, só o Google renova em silêncio; Apple e senha pedem para sair e entrar de novo. O token da Apple não é revogado | Exigência da App Store (5.1.1(v)) e pedido de um fluxo sem etapas. O Firebase só apaga conta com login recente, e revogar a Apple precisa da folha dela; contornar os dois exige servidor (Cloud Functions, plano Blaze com cartão) |
+| 2026-11-14 | As leituras do Firestore do Histórico desligam o retry automático do Riverpod, e as regras de `firestore.rules` são publicadas pelo `firebase deploy --only firestore:rules` (`.firebaserc` aponta para o `rango-f0485`) | O retry deixava o Histórico carregando por minutos e escondia o erro; as regras do console não eram as do repositório e recusavam tudo |
 
 ## 12. Em aberto
 

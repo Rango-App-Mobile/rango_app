@@ -26,12 +26,46 @@ abstract interface class AuthRepository {
   /// find out who is registered.
   Future<void> sendPasswordReset(String email);
 
+  /// Opens the Google account picker and signs in to the chosen account,
+  /// keeping the guest's uid when the account is new. Null when the person
+  /// closes the picker.
+  Future<AppUser?> signInWithGoogle();
+
+  /// The same as [signInWithGoogle], with Apple (iOS only).
+  Future<AppUser?> signInWithApple();
+
+  /// Sends the confirmation link to the current user's e-mail again.
+  Future<void> resendVerification();
+
+  /// Refreshes the current user from the server (the e-mail may have been
+  /// confirmed in the mail app, which Firebase does not announce).
+  Future<void> reload();
+
+  /// Sets the current user's display name.
+  Future<void> updateName(String name);
+
   /// Leaves the account and goes back to a guest session.
   Future<AppUser> signOut();
+
+  /// Firebase only deletes an account with a recent login. True when the
+  /// last one is recent enough, or after refreshing a Google login without
+  /// showing anything. Never opens a sheet or asks for a password; false
+  /// means the person has to sign in again first.
+  Future<bool> refreshLoginSilently();
+
+  /// Deletes the current account and returns the new guest session. Call
+  /// [refreshLoginSilently] first, and delete the Firestore data before
+  /// this: its rules need the account.
+  Future<AppUser> deleteAccount();
 }
 
 /// Tests override this provider with `FakeAuthRepository` or a mock: the
 /// default talks to the real Firebase Auth.
 final authRepositoryProvider = Provider<AuthRepository>(
   (ref) => FirebaseAuthRepository(FirebaseAuth.instance),
+);
+
+/// The signed-in user, following every change to it.
+final currentUserProvider = StreamProvider<AppUser>(
+  (ref) => ref.watch(authRepositoryProvider).watchUser(),
 );
