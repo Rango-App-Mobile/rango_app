@@ -15,7 +15,8 @@ widget, e os arquivos que orientam humanos e agentes (`AGENTS.md`,
 **O que fica de fora de propósito:** Firebase, Google Places e permissão de
 localização. Cada um tem a sua história (ver [Próximos passos](#próximos-passos)).
 
-> Validado em 24/09/2026 com **Flutter 3.44.4 (stable) / Dart 3.12.2**. As
+> Validado em 24/09/2026 com **Flutter 3.44.4 (stable) / Dart 3.12.2**. Desde
+> 12/11/2026 o projeto usa o **Flutter 3.47.9 / Dart 3.13** (o mesmo do CI). As
 > versões de pacote citadas são as que o `flutter pub add` resolveu nesse dia;
 > as suas podem ser mais novas. Não copie versão deste guia para o
 > `pubspec.yaml`: deixe o `pub add` escolher.
@@ -1538,36 +1539,6 @@ Um clone limpo de `dev` passa nos testes sem `env.json` e sem rodar
 `build_runner`. É isso que prova que o setup funciona para o resto do time.
 
 ---
-
-## APK de demonstração Android
-
-O CI gera um APK de release a cada pull request e push para `dev` ou `main`.
-A assinatura usa a chave de debug do Android já configurada em
-`android/app/build.gradle.kts`; serve para instalar e apresentar o app, não
-para publicar na loja.
-
-Para gerar o APK localmente:
-
-```bash
-flutter pub get
-flutter build apk --release
-```
-
-O arquivo fica em
-`build/app/outputs/flutter-apk/app-release.apk`. Para baixar o mesmo build do
-CI, abra uma execução verde de **CI** em GitHub Actions e baixe o artefato
-`rango-demo-apk`.
-
-No aparelho Android, transfira o APK, permita a instalação de apps pela fonte
-usada para abrir o arquivo e confirme a instalação. Sem `env.json`, o app usa
-o `FakeAuthRepository` e abre sem conectar ao Firebase.
-
-Cada execução do CI usa uma máquina nova e pode gerar uma chave de debug
-diferente. Para instalar um APK de outra execução sobre uma versão já
-instalada, desinstale a versão anterior primeiro.
-
-Para distribuição na Play Store, é necessário configurar uma chave de assinatura
-própria.
 
 ## Próximos passos
 

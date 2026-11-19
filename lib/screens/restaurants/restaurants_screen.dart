@@ -50,6 +50,7 @@ class _RestaurantsScreenState extends ConsumerState<RestaurantsScreen> {
         '/restaurants/contact',
         extra: RestaurantContactArgs(
           restaurant: selected,
+          foodId: widget.categoryId,
           foodTheme: state.foodTheme,
           photoUri: state.photoUri,
         ),

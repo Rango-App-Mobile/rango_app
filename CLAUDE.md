@@ -36,6 +36,7 @@ dart run build_runner watch --delete-conflicting-outputs   # while developing
 flutter run --dart-define-from-file=env.json   # env.json is local, never committed
 flutter test                                   # everything
 flutter test test/screens/swipe                # one screen
+node --test test/restaurant_sync_test.mjs      # sheet sync (Apps Script), no network
 
 dart format .
 flutter analyze
@@ -64,6 +65,7 @@ lib/screens/<screen>/         one folder per screen, View + ViewModel side by si
   <screen>_state.dart         screen state (freezed), when more than a value
   widgets/                    widgets used only by this screen
 test/                         mirrors lib/
+tools/restaurant_sync/        Apps Script that syncs the team's sheet to Firestore
 docs/                         canonical context, process, feature docs, marketing
 .github/backlog/backlog.yml   source of the backlog (epics, stories, sprints)
 .github/workflows/            CI, backlog sync, board automation, sprint report
@@ -153,7 +155,8 @@ English. Docs (`docs/`) and UI strings in Portuguese. Agent-facing files
   `dev` at each sprint review.
 - Conventional Commits in English with the issue at the end:
   `feat(swipe): add session notifier (#14)`.
-- Before opening a PR run `dart format .`, `flutter analyze` and `flutter test` locally. CI also builds the Android release APK and uploads the demo artifact. PR to `dev`, template filled in, `Closes #<issue>`,
+- Before opening a PR run `dart format .`, `flutter analyze` and `flutter test`:
+  they are the three CI jobs. PR to `dev`, template filled in, `Closes #<issue>`,
   1 approval.
 - **No specs.** Do not write spec/plan/tasks files before implementing. Start
   from the story's acceptance criteria, write the test first and do not widen

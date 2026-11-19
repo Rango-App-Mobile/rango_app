@@ -65,10 +65,7 @@ class RestaurantsViewModel extends Notifier<RestaurantsState> {
 
       final found = await ref
           .read(restaurantRepositoryProvider)
-          .search(
-            keyword: category.placesKeyword ?? category.label,
-            near: origin,
-          );
+          .search(foodId: category.id, near: origin);
       if (stale()) return;
       if (found.isEmpty) {
         state = state.copyWith(status: RestaurantsStatus.empty);

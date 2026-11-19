@@ -86,7 +86,7 @@ telas pequenas (375x667), onde o par de cards não cabe inteiro.
 
 O `LocalCategoryRepository` é a implementação real: o cardápio é dado local
 versionado no app (`docs/contexto.md` §8). Cada comida tem label, exemplos,
-Food Theme, foto e `placesKeyword`.
+Food Theme e foto. Os restaurantes apontam para a comida pelo `id`.
 
 | Grupo | Comidas |
 | --- | --- |
@@ -102,6 +102,11 @@ As fotos vêm do Unsplash e do Pexels (licença livre, sem crédito obrigatório
 e ficam em `assets/images/food/` (800 px de largura, JPEG). No Figma cada uma é
 um frame `photo-<nome>` na página "Assets". O teste do seed garante que toda
 comida tem foto e que todo `photo` tem arquivo.
+
+A exceção é `xis.jpg`, porque os bancos livres não têm xis de verdade. A imagem
+foi fornecida pelo time e parece ser da
+[série "Xis" de Marcelo Araujo no iStock](https://www.istockphoto.com/br/foto/xis-gm1216463533-354731317),
+que é paga. **A licença ainda precisa ser confirmada antes de distribuir o app.**
 
 O arquivo tem o nome do id da comida (`lasagna.jpg`, `ice_cream.jpg`), com
 estas exceções, que já existiam antes do cardápio:
@@ -127,7 +132,7 @@ estas exceções, que já existiam antes do cardápio:
 | --- | --- |
 | `test/models/like_game_test.dart` | Início sem curtidas e com um card atrás, curtir e passar, curtidas que somam entre rodadas, 3 curtidas encerram, comida passada não volta, rodada só com as que sobraram, passar todas traz as 16 de volta, sempre há um próximo card, swipes depois do fim ignorados, mínimo de 2 comidas |
 | `test/models/category_tree_test.dart` | A raiz tem 2 opções, grupos com mais de 2 comidas, 16 por grupo |
-| `test/models/food_category_test.dart` | O seed: 16 + 16 comidas, todas com `placesKeyword` e foto existente, ids únicos, temas diferentes para Salgado e Doce |
+| `test/models/food_category_test.dart` | O seed: 16 + 16 comidas, todas com foto existente, ids únicos, temas diferentes para Salgado e Doce |
 | `test/screens/swipe/swipe_view_model_test.dart` | O grupo dá as cartas, curtir, passar, todo swipe no histórico, 3 curtidas convergem, swipes ignorados na raiz e depois do match, recomeçar limpa o jogo, título e subtítulo só na raiz, erro do repositório |
 | `test/screens/swipe/swipe_screen_test.dart` | Home com o perfil, sem o nome do app e sem "Voltar"; toque abre o card único em tela cheia, sem título nem legenda no card; card de 354×512 no celular de 402 e menor em 375x667, sem cobrir os botões; Like Meter centralizado acima do deck; o próximo card aparece embaixo; botões coração e X; arrastar para a direita curte e para a esquerda passa; arrasto curto volta; carimbos "Curti!" e "Passo!"; Like Meter; 3 curtidas abrem `/result` com todos os swipes; "Voltar" e o voltar do Android zeram e voltam à Home; menos movimento; 375x667 sem overflow; erro; carregando |
 | `test/screens/result/result_view_model_test.dart` | Resolve o caminho em ordem, `pathLabel` com grupo e vencedora, `choiceCount` com todas as escolhas, id desconhecido e caminho vazio viram erro |

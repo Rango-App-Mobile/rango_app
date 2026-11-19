@@ -66,7 +66,7 @@ O detalhamento completo está no [acordo](acordo-projeto.md#2-benchmark-de-conco
 | Dados | Cloud Firestore | Sessões, histórico de escolhas, preferências |
 | Auth | Firebase Authentication (anônima) | Identifica a sessão sem cadastro |
 | Mapa | `flutter_map` + OpenStreetMap | Mapa real, sem chave e sem cartão |
-| Restaurantes | `FakeRestaurantRepository`; depois, Cloud Firestore | Hoje, restaurantes fictícios ao redor da pessoa; depois, os do time, por comida e distância |
+| Restaurantes | Cloud Firestore (`FirestoreRestaurantRepository`); `FakeRestaurantRepository` sem Firebase | Os do time, vindos da planilha, por comida e distância |
 | Futuro | Cloud Functions | Orquestração do modo grupo em tempo real |
 
 ## 5. Arquitetura
@@ -96,7 +96,7 @@ lib/
 | Data | `data/` | Abstrair a origem dos dados (CategoryRepository, FirestoreRepository, RestaurantRepository) | models, SDKs externos | `screens/` |
 
 Telas previstas (numeração do Figma): `swipe` (01–03, Sprint 2), `result` (04)
-e `restaurants` (05, 08, Sprint 3), `restaurant_contact` (06) e `login` (Sprint 4),
+e `restaurants` (05, 08, Sprint 3), `restaurant_contact` (06) e `login` (13–15, Sprint 4),
 `history` (07, 10, Sprint 4), `history_detail` (12) e o Profile Sheet (11, Sprint 4–5).
 A sessão anônima não tem tela: é um repositório em `data/`. Como montar a estrutura: [guia de setup](guia-setup.md), passo 3.
 
@@ -107,7 +107,7 @@ Telas em alta fidelidade e protótipo: [Figma do Rango](https://www.figma.com/de
 
 1. O usuário abre o app como **visitante**: a sessão anônima é criada automaticamente, sem cadastro.
 2. A primeira escolha é ampla (salgado vs. doce). Depois as comidas da lista escolhida aparecem uma por vez, num card único no centro, como no Tinder: arrastar para a direita (ou o botão de coração) curte, para a esquerda (ou o botão X) passa. A primeira comida a somar três curtidas é a escolhida (ex.: Salgado → Pizza).
-3. Ao convergir num tipo específico ("Deu match!"), o app busca restaurantes próximos que servem esse tipo. Por enquanto eles são fictícios; depois virão do Firestore (decisão de 2026-11-05 no §11).
+3. Ao convergir num tipo específico ("Deu match!"), o app busca restaurantes próximos que servem esse tipo. Eles vêm do Firestore, cadastrados pelo time (decisão de 2026-11-05 no §11).
 4. O usuário vê os restaurantes **no mapa** (nome, nota, distância), escolhe um e decide como pedir: delivery, mapa ou ligação.
 5. Quem **entra com conta** (pelo perfil) tem as decisões salvas no **Histórico**, estatísticas e preferências. O visitante usa o fluxo inteiro, mas nada dele é salvo.
 
@@ -117,7 +117,7 @@ Telas em alta fidelidade e protótipo: [Figma do Rango](https://www.figma.com/de
 
 - **R1:** toda sessão pertence a um usuário do Firebase Auth: anônimo (visitante) ou com conta. Só sessões de usuário com conta são salvas no Firestore; do visitante não se grava histórico, estatística nem preferência. *(E1, decisão de 2026-09-30)*
 - **R2:** a primeira escolha é Salgado vs. Doce; depois, um card por vez com as comidas da lista escolhida (16 em cada), em ordem aleatória. Curtir soma 1 curtida à comida, e as curtidas não zeram; a primeira a chegar em 3 curtidas encerra a sessão nessa comida, sem limite de cards. Passar tira a comida da sessão. Quando o baralho acaba, as comidas que sobraram são embaralhadas de novo (a última mostrada não abre a nova rodada); se todas foram passadas, as 16 voltam. *(E2-S1, decisão de 2026-11-04; substitui o duelo de 2026-10-24)*
-- **R3:** cada comida das listas tem um termo de busca. Sem o Google Places, ele ainda é repassado à busca, mas os restaurantes fictícios o ignoram; sai quando a busca passar para o Firestore. *(E2-S1, decisão de 2026-11-05)*
+- **R3:** a busca usa o id da comida do match: aparecem os restaurantes cuja lista `foods` contém esse id. Não há termo de busca por texto. *(E3-S7, decisão de 2026-11-12)*
 - **R4:** a recomendação considera só restaurantes a até **3 km** da localização atual (até 20 resultados), ordenados do mais perto ao mais longe; o mais perto abre selecionado no mapa. A posição é usada só na busca e não é salva. *(E3-S3, decisão de 2026-10-29)*
 - **R5:** "Pedir no delivery" abre o link do iFood cadastrado para o restaurante; sem ele, o primeiro outro link cadastrado; sem nenhum, uma busca "<nome> delivery" no Google. Só links `https` saem do app. *(E3-S5, decisão de 2026-10-29)*
 
@@ -129,17 +129,19 @@ Telas em alta fidelidade e protótipo: [Figma do Rango](https://www.figma.com/de
 users/{uid}                       # só usuário com conta (visitante não grava)
   createdAt
   preferences: { deliveryApp, notifications }
-users/{uid}/sessions/{sessionId}
-  startedAt, finishedAt
-  choices: [{ level, optionA, optionB, chosen, at }]
-  result: { categoryId, label, placesQuery }
-  restaurant: { placeId, name, cuisine, rating }   # escolhido na tela de contato
-  channel: delivery | call                         # alimenta o "Pedir de novo"
-restaurants/{placeId}             # cadastrado à mão pelo time; o app só lê
+  termsVersion, termsAcceptedAt                   # aceite dos termos (cadastro ou tela "Quase lá")
+users/{uid}/sessions/{autoId}     # uma por "Pedir no delivery"/"Ligar" na tela 06 (E2-S4)
+  foodId                                          # id da comida do match
+  restaurantId, restaurantName, cuisine?          # escolhido na tela de contato
+  channel: delivery | call                        # alimenta o "Pedir de novo"
+  decidedAt                                       # hora do servidor; leitura: 100 mais recentes
+restaurants/{placeId}             # vem da planilha do time (ou à mão); o app só lê
+  name, location (geopoint), foods: [id da comida], cuisine, address, rating?, phone?
   deliveryLinks: { ifood?, others: [url] }        # R5: iFood → outros → busca no Google
+  active, source: sheet, updatedAt                # active falso: saiu da planilha
 ```
 
-Os restaurantes reais ainda não estão no banco. A história E3-S7 acrescenta a `restaurants` o nome, a posição (`location`), as comidas (`foods`), o endereço e o telefone.
+Os restaurantes reais entram pela sincronização da planilha (`docs/restaurantes.md`). Sem o Firebase configurado, o app mostra os fictícios.
 
 Cardápio (raiz, Salgado e Doce, e 16 comidas em cada): dado local versionado no app, no `LocalCategoryRepository` (`lib/data/`). Mover para o Firestore é decisão futura (§12).
 
@@ -210,6 +212,7 @@ Rituais e frentes: [time-e-rituais.md](time-e-rituais.md).
 | 2026-10-15 | Tokens do design system em `lib/core/theme/` (ThemeExtensions `AppColors`, `AppTextStyles`, `FoodColors` e constantes `AppSpace`/`AppRadius`/`AppShadows`); `lib/app/theme/app_theme.dart` só monta o `ThemeData` | Os widgets compartilhados de `lib/core/widgets/` precisam dos tokens, e `core/` não importa `app/` |
 | 2026-10-24 | O voltar das telas de escolha sai do fluxo e volta à Home com a sessão zerada (não desfaz a última escolha); a Tab Bar só aparece na Home (nível 1) e no Histórico | Segue a doc da Top Bar do Figma: o fluxo é curto (três escolhas) e recomeçar é mais simples que desfazer passo a passo. A Tab Bar some nas escolhas como no mock da tela 02 e na E8-S5 |
 | 2026-10-24 | As chaves de API do Firebase saem do git e vêm do `env.json` (`FIREBASE_ANDROID_API_KEY`, `FIREBASE_IOS_API_KEY`); `google-services.json`, `GoogleService-Info.plist` e `firebase.json` não são mais versionados e o `firebase_options.dart` passa a ser escrito à mão. Sem as chaves o app roda com `FakeAuthRepository` | O secret scanning do GitHub abriu alertas para as chaves commitadas. Elas foram trocadas e restringidas por app no Google Cloud; mantê-las fora do git evita novos alertas e segue o padrão de `env.json` + `--dart-define-from-file` já previsto para chaves |
+| 2026-11-05 | `firebase.json` é versionado somente para apontar `firestore.rules` e definir as portas dos emuladores Auth e Firestore; não adicionar o bloco `flutter` gerado pelo FlutterFire | A suíte das regras precisa carregar a configuração dos emuladores no CI, mantendo fora do git a configuração FlutterFire gerada e credenciais |
 | 2026-10-24 | A árvore binária (Salgado → Massa → Macarrão) dá lugar a Salgado vs. Doce seguido de duelos "quem ganha fica" em listas planas de 16 comidas cada (R2); o repositório local passa a se chamar `LocalCategoryRepository`, porque o cardápio no app é a implementação real, não um fake | Com a árvore, cada comida nova exigia um nível intermediário e a sessão era sempre o mesmo caminho de três escolhas. O duelo aceita 32 comidas sem novos níveis e só termina quando a pessoa confirma o gosto três vezes seguidas |
 | 2026-10-24 | A `PLACES_API_KEY` sai do `env.example.json` e do `Env` até a história que trouxer a busca de restaurantes | O app ainda não usa o Places; nenhuma credencial fica configurada sem uso. A fonte dos restaurantes (Places ou base própria) volta a ser discutida nessa história |
 | 2026-10-29 | Mapa com `google_maps_flutter`; restaurantes do Google Places (API New, Text Search) chamado direto do app com `dio`. Uma chave por plataforma no `env.json` (`GOOGLE_ANDROID_API_KEY`, `GOOGLE_IOS_API_KEY`, `ANDROID_CERT_SHA1`), restrita por app, serve ao Maps SDK e ao Places | A política do Places proíbe mostrar os resultados num mapa que não seja do Google. Chamar direto evita o plano Blaze e o deploy de Functions; a chave restrita por app é o risco aceito |
@@ -225,12 +228,24 @@ Rituais e frentes: [time-e-rituais.md](time-e-rituais.md).
 | 2026-11-04 | O conteúdo rola por trás da Top Bar e da Tab Bar, sob um blur progressivo, e voltar e perfil viram vidro (`color/glass/*`). A Top Bar das abas perde o nome do app e fica só com o perfil. No mapa não há blur nem degradê: ele vai limpo até o topo | O corte do conteúdo formava uma linha no topo das telas, e repetir o nome do app o tempo todo não acrescentava nada. Blur sobre o mapa nativo do Google não é confiável, principalmente no Android |
 | 2026-11-05 | Saem o Google Maps e o Google Places (substitui as decisões de 2026-10-29 sobre eles). O mapa passa a usar `flutter_map` com o OpenStreetMap, nas cores originais e com o crédito sempre visível. Até a E3-S7, os restaurantes são os fictícios do `FakeRestaurantRepository`. Saem as chaves `GOOGLE_*` e `ANDROID_CERT_SHA1`, e o `dio` | O Google exige uma forma de pagamento cadastrada mesmo dentro da cota gratuita, e o time decidiu não usar cartão. O OpenStreetMap não pede chave nem cartão, e a proibição de mostrar dados do Places fora do mapa do Google deixa de valer. O servidor público de mapas não tem garantia de disponibilidade: se atrapalhar, trocar de provedor é mudar uma URL |
 | 2026-11-05 | Os restaurantes reais serão cadastrados pelo time no Firestore, vindos de uma planilha, cada um com sua posição e as comidas que serve. O app mostra os que servem a comida do match a até 3 km da pessoa, sem busca por texto. O Rango é um app local: fora da região cadastrada, mostra "Nenhum lugar perto" | É um app para os comércios da região, sem API paga e com os dados sob controle do time. O acordo do projeto ainda cita o Google Places: fica para o time alinhar com o professor |
+| 2026-11-05 | A planilha é sincronizada com o Firestore por um Google Apps Script instalado nela, uma vez por dia e por um botão no menu. O código fica em `tools/restaurant_sync/`, e a chave da conta de serviço nas propriedades do script. As comidas são deduzidas do texto da planilha, com uma coluna opcional de correção. Linha que sai da planilha desativa o restaurante em vez de apagá-lo | Rotina agendada no Firebase exige Cloud Functions, que só funciona no plano Blaze, com cartão. O Apps Script é gratuito e fica à mão de quem cuida da planilha, ao custo de o código rodar fora do repositório e de quem edita a planilha poder ler a chave |
+| 2026-11-06 | O login opcional é por e-mail e senha, Google e Apple. As telas estão no Figma, no fluxo 06 (13 Entrar, 14 Criar conta, 15 Recuperar senha) | Apple e Google entram com um toque, e o e-mail atende quem não quer usar nenhum dos dois. Já existe uma conta Apple Developer, e a App Store pede uma opção como a da Apple de quem oferece o login do Google |
+| 2026-11-06 | No Profile Sheet, o visitante vê só o convite para entrar e o Sobre, sem estatísticas nem preferências. O desenho antigo mostrava números e dizia que o histórico ficava salvo no aparelho | Segue R1: sem conta nada é salvo, então não há número para mostrar |
+| 2026-11-10 | O login entra em duas partes: e-mail e senha primeiro (E1-S3); Google e Apple depois, numa story própria. Até lá, os dois botões aparecem desligados | Google e Apple pedem dois pacotes novos e configuração no console do Firebase e na conta da Apple. O e-mail já entrega a conta sem depender disso |
+| 2026-11-12 | O app passa a ler os restaurantes do Firestore (E3-S7): consulta por `foods` contendo o id da comida, até 500 documentos, e o corte de 3 km é feito no celular. Sai o termo de busca das comidas (`placesKeyword`) | Uma região tem poucas dezenas de lugares; ler os da comida e filtrar no celular evita índice geográfico. Se a base crescer, a troca é uma consulta por geohash |
+| 2026-11-12 | A decisão de quem tem conta é salva em `users/{uid}/sessions` quando a pessoa toca em "Pedir no delivery" ou "Ligar" na tela 06, uma vez por abertura da tela, com comida, restaurante, canal e hora. As escolhas de cada swipe (`choices`) não são salvas por enquanto, e o Histórico lê as 100 decisões mais recentes | Tocar em pedir ou ligar é o momento em que a decisão de fato aconteceu. Sem uso para as escolhas intermediárias, gravá-las só gastaria leituras e escrita; o limite segura o custo por leitura até haver paginação |
+| 2026-11-12 | Google e Apple (E1-S4) entram com um pacote novo só, o `google_sign_in`. A Apple usa o próprio `firebase_auth` (`AppleAuthProvider`), sem `sign_in_with_apple`, e o botão dela aparece só no iOS. O visitante liga a conta ao seu `uid`; se a conta já existe, entra nela e o visitante fica para trás | Um pacote a menos para manter: o `firebase_auth` já abre a folha da Apple no iOS. No Android, entrar com a Apple pediria configuração extra e quase ninguém usa. O visitante não tem nada salvo (R1), então trocar de `uid` não perde nada |
+| 2026-11-12 | O Flutter do projeto e do CI sobe de 3.44.4 para 3.47.9 (substitui a versão fixada no #95) | O `google_sign_in_ios` compatível com o Firebase iOS SDK 13 (o 6.4.0, com GoogleSignIn 10) exige o Flutter 3.47; com o 6.3.8 o build do iOS não resolve as dependências (`gtm-session-fetcher` 3 contra 4). Quem roda o app precisa atualizar o Flutter local |
+| 2026-11-14 | O botão da Apple passa a ser o nativo do iOS (`ASAuthorizationAppleIDButton`, por platform view), e o do Google segue o guia de marca com o "G" oficial; os dois com 44 de altura. Entra o `sign_in_with_apple`, só como botão de reserva fora do iOS. O login continua pelo `AppleAuthProvider` (substitui em parte a decisão de 2026-11-12) | A App Store exige o botão aprovado pela Apple, e o desenhado pelo pacote saía com a fonte grande demais. 44 é a altura recomendada pela HIG |
+| 2026-11-14 | Splash nativa (`flutter_native_splash`) e tela de carregamento animada do Figma (00 Loading: o xis montado em loop, no verde pistache), na abertura e durante qualquer login. Entra o `flutter_svg` para as camadas. A splash fica no verde, não no creme previsto na E8-S6 | Segue o Figma; a splash e a animação usam o mesmo fundo e o mesmo xis, sem salto visual |
+| 2026-11-14 | Criar conta pede Nome, e-mail e senha confirmados e o aceite dos Termos de Uso e da Política de Privacidade (switch, texto num modal). Qualquer login de conta sem aceite passa pela tela "Quase lá" (nome + termos); recusar volta a visitante. O aceite fica em `users/{uid}` (`termsVersion`, `termsAcceptedAt`). O e-mail de verificação é enviado, mas não bloqueia o uso | A App Store e a Play Store pedem termos e política aceitos; Google e Apple nem sempre mandam o nome, que aparecia como e-mail. O texto está em `docs/termos-e-privacidade.md` (e em PDF para as lojas) e pode ser lido a qualquer momento no Profile Sheet |
+| 2026-11-14 | "Excluir conta" no Profile Sheet, direto: confirmação, carregamento em tela cheia, apaga `users/{uid}` e o histórico e apaga a conta, voltando a visitante. Não pede login de novo: se o último login tem mais de uns 5 minutos, só o Google renova em silêncio; Apple e senha pedem para sair e entrar de novo. O token da Apple não é revogado | Exigência da App Store (5.1.1(v)) e pedido de um fluxo sem etapas. O Firebase só apaga conta com login recente, e revogar a Apple precisa da folha dela; contornar os dois exige servidor (Cloud Functions, plano Blaze com cartão) |
+| 2026-11-14 | As leituras do Firestore do Histórico desligam o retry automático do Riverpod, e as regras de `firestore.rules` são publicadas pelo `firebase deploy --only firestore:rules` (`.firebaserc` aponta para o `rango-f0485`) | O retry deixava o Histórico carregando por minutos e escondia o erro; as regras do console não eram as do repositório e recusavam tudo |
 
 ## 12. Em aberto
 
 - Integrantes e frente de cada um (reunião de 24/09 à noite).
 - Árvore de categorias local ou no Firestore (editável sem publicar o app).
-- Método de login: e-mail, Google e/ou Apple (E6-S3 e E1-S3).
 - O que as notificações avisam (a preferência existe no perfil; o envio é futuro).
 - Fotos das comidas: licença das fotos do Figma ou banco próprio (E8-S7).
 - Nome definitivo e identidade (frente de marketing, Sprint 2).

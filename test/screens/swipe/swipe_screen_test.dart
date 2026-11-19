@@ -3,12 +3,16 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:rango_app/app/theme/app_theme.dart';
+import 'package:rango_app/core/widgets/avatar_button.dart';
 import 'package:rango_app/core/widgets/food_card.dart';
+import 'package:rango_app/data/auth_repository.dart';
 import 'package:rango_app/data/category_repository.dart';
+import 'package:rango_app/data/fake_auth_repository.dart';
 import 'package:rango_app/data/local_category_repository.dart';
 import 'package:rango_app/models/category_tree.dart';
 import 'package:rango_app/models/food_category.dart';
 import 'package:rango_app/models/like_state.dart';
+import 'package:rango_app/screens/profile/profile_sheet.dart';
 import 'package:rango_app/screens/swipe/swipe_screen.dart';
 import 'package:rango_app/screens/swipe/swipe_view_model.dart';
 import 'package:rango_app/screens/swipe/widgets/food_card_deck.dart';
@@ -29,6 +33,7 @@ Future<void> pumpScreen(
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
+        authRepositoryProvider.overrideWithValue(FakeAuthRepository()),
         categoryRepositoryProvider.overrideWithValue(LocalCategoryRepository()),
         deckRandomProvider.overrideWithValue(InOrderRandom()),
       ],
@@ -110,6 +115,15 @@ Future<void> likeSpaghettiUntilMatch(WidgetTester tester) async {
 }
 
 void main() {
+  testWidgets('the avatar opens the Profile Sheet', (tester) async {
+    await pumpScreen(tester);
+
+    await tester.tap(find.byType(AvatarButton));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(ProfileSheet), findsOneWidget);
+  });
+
   testWidgets('root shows the options, the Top Bar Principal, no Voltar', (
     tester,
   ) async {

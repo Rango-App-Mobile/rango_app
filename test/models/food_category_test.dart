@@ -92,12 +92,11 @@ void main() {
       expect(countOf('sweet'), 16);
     });
 
-    test('gives every food a Places keyword and a photo', () {
+    test('gives every food a photo', () {
       final foods = LocalCategoryRepository.seed.where(
         (c) => c.parentId == 'savory' || c.parentId == 'sweet',
       );
       for (final food in foods) {
-        expect(food.placesKeyword, isNotEmpty, reason: food.id);
         expect(food.photo, isNotNull, reason: food.id);
       }
     });

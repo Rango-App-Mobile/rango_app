@@ -50,8 +50,8 @@ Firestore data model in `docs/contexto.md` §8.
   identifying `userAgentPackageName` and the visible credit (`MapCredit`); the
   tile policy requires both. Tests never load real tiles.
 - No Google Maps or Places: they need a payment method (`docs/contexto.md` §11,
-  2026-11-05). `FakeRestaurantRepository` is the default until the team's
-  restaurants are in Firestore (E3-S7).
+  2026-11-05). Restaurants come from Firestore (`FirestoreRestaurantRepository`,
+  filled by the sheet sync); `FakeRestaurantRepository` only without Firebase.
 - Any future call over the network has an explicit timeout, and URLs or headers
   that carry a key are never logged.
 
