@@ -17,7 +17,7 @@ quê.
 | 2 | A folha sobe da base em 350 ms sobre um véu escuro a 45%, cobrindo também a Tab Bar | `showModalBottomSheet` no navigator raiz. Com "reduzir movimento" ligado, abre sem animação |
 | 3 | Visitante: "Visitante", "Entrar ou criar conta" e o aviso de que nada fica salvo | `ProfileViewModel` segue o usuário em `AuthRepository.watchUser()`, e `ProfileState.fromUser` decide o que mostrar. O botão fecha a folha e abre o login (`docs/login.md`) |
 | 3' | Com conta: nome, e-mail e foto no cabeçalho | Sem foto, ou se ela falhar ao carregar, aparece o ícone de visitante. Sem nome, o e-mail ocupa o lugar dele |
-| 3'' | Com conta: rangos decididos, comida favorita e restaurante favorito | `profileStatsProvider` resume o histórico e os rótulos do cardápio já carregados |
+| 3'' | Com conta: rangos decididos, comida favorita e restaurante favorito | `profileStatsProvider` resume os mesmos providers do Histórico. A seção fica no conteúdo rolável do perfil |
 | 3''' | Com conta: "Sair da conta" | `ProfileViewModel.signOut`; a folha vira a de visitante sozinha |
 | 3'''' | Conta de e-mail e senha com o e-mail ainda não confirmado: aviso "Confirme seu e-mail" e "Reenviar" | `ProfileState.needsVerification` (`usesPassword && !emailVerified`). "Reenviar" chama `ProfileViewModel.resendVerification`, que chama `AuthRepository.resendVerification`; o sucesso mostra o SnackBar "Link reenviado." |
 | 3''''' | Sempre, com ou sem conta: "Termos e Privacidade" | Abre a mesma folha dos termos do cadastro (`showTermsSheet`, em `lib/core/widgets/terms_acceptance.dart`), com o texto de `docs/termos-e-privacidade.md`. As lojas pedem a política acessível dentro do app |
@@ -50,7 +50,8 @@ As três estatísticas aparecem só para quem tem conta, conforme R1. O total e 
 favoritos são calculados a partir das até 100 decisões mais recentes que
 `historyEntriesProvider` carrega para a aba Histórico. Se o provedor ainda não
 foi usado, o perfil inicia essa leitura compartilhada; a aba reutiliza o mesmo
-resultado. Não há uma segunda consulta nem mudança no limite. A comida usa o
+resultado. Não há uma segunda consulta nem mudança no limite. A seção informa
+que os valores se baseiam nas até 100 decisões mais recentes. A comida usa o
 rótulo atual do cardápio. Se uma categoria antiga não existir mais, aparece
 "Comida indisponível". Sem decisões, os três valores ficam neutros (traço), sem
 mostrar um zero isolado. Uma falha de leitura tem mensagem e ação "Tentar de
@@ -104,12 +105,12 @@ mostra dado nenhum.
 
 | Arquivo | Cobre |
 |---|---|
-| `test/models/profile_stats_test.dart` | Contagem; favoritos; desempate por recência; histórico vazio; categorias removidas e nomes vazios |
+| `test/models/profile_stats_test.dart` | Contagem; favoritos; desempate por recência; ordem estável para nome vazio; histórico vazio; categorias removidas |
 | `test/screens/profile/profile_view_model_test.dart` | Visitante; conta com nome, e-mail e foto; os casos sem nome; erro sem novas tentativas; seguir o usuário; sair da conta |
 | `test/screens/profile/profile_view_model_delete_test.dart` | Ordem da exclusão (reautenticar, dados, conta), cancelamento e falhas |
 | `test/screens/profile/profile_sheet_delete_test.dart` | A linha só com conta, o diálogo (campo de senha só para senha), SnackBar de sucesso e erros |
 | `test/data/firebase_auth_repository_delete_test.dart`, `test/data/fake_auth_repository_delete_test.dart` | Reautenticação por provedor, cancelamento, revogação da Apple, exclusão e mapeamento de erros |
-| `test/screens/profile/profile_sheet_test.dart` | Véu, raio e posição; 350 ms e reduzir movimento; os três jeitos de fechar; os dois modos; estatísticas, vazio, erro e retry; tela pequena e nome longo |
+| `test/screens/profile/profile_sheet_test.dart` | Véu, raio e posição; 350 ms e reduzir movimento; os três jeitos de fechar; os dois modos; estatísticas, escopo de 100, vazio, erro, retry e carregamento em tela pequena com texto grande; nome longo |
 | `test/data/firebase_auth_repository_test.dart` | Nome, e-mail e foto vindos do Firebase |
 | `test/screens/history/history_screen_test.dart`, `test/screens/swipe/swipe_screen_test.dart` | O Avatar Button abre a folha nas duas abas |
 

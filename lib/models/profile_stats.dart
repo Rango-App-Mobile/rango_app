@@ -26,14 +26,14 @@ abstract class ProfileStats with _$ProfileStats {
       final latestAt = restaurantLatestAt[entry.restaurantId];
       final previousName = restaurantNames[entry.restaurantId];
       final name = entry.restaurantName.trim();
+      final normalizedName = name.isEmpty ? 'Restaurante indisponível' : name;
       if (latestAt == null ||
           previousName == null ||
           entry.decidedAt.isAfter(latestAt) ||
-          (entry.decidedAt == latestAt && name.compareTo(previousName) < 0)) {
+          (entry.decidedAt == latestAt &&
+              normalizedName.compareTo(previousName) < 0)) {
         restaurantLatestAt[entry.restaurantId] = entry.decidedAt;
-        restaurantNames[entry.restaurantId] = name.isEmpty
-            ? 'Restaurante indisponível'
-            : name;
+        restaurantNames[entry.restaurantId] = normalizedName;
       }
     }
 

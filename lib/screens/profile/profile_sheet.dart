@@ -83,11 +83,11 @@ class ProfileSheet extends ConsumerWidget {
                 email: state.subtitle ?? state.name,
                 onResend: () => unawaited(_resend(context, ref)),
               ),
-            if (!state.isGuest) const ProfileStatsSection(),
             Flexible(
               child: SingleChildScrollView(
                 child: Column(
                   children: [
+                    if (!state.isGuest) const ProfileStatsSection(),
                     if (state.isGuest)
                       const _GuestInvitation()
                     else ...[

@@ -39,27 +39,40 @@ class _StatsGrid extends StatelessWidget {
         color: context.colors.bgMuted,
         borderRadius: BorderRadius.circular(AppRadius.card),
       ),
-      child: Row(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
         spacing: AppSpace.xs,
         children: [
-          Expanded(
-            child: _Stat(
-              value: stats.decisionCount == 0
-                  ? '—'
-                  : stats.decisionCount.toString(),
-              label: 'rangos decididos',
-            ),
+          Row(
+            spacing: AppSpace.xs,
+            children: [
+              Expanded(
+                child: _Stat(
+                  value: stats.decisionCount == 0
+                      ? '—'
+                      : stats.decisionCount.toString(),
+                  label: 'rangos decididos',
+                ),
+              ),
+              Expanded(
+                child: _Stat(
+                  value: stats.favoriteFood ?? '—',
+                  label: 'comida favorita',
+                ),
+              ),
+              Expanded(
+                child: _Stat(
+                  value: stats.favoriteRestaurant ?? '—',
+                  label: 'restaurante favorito',
+                ),
+              ),
+            ],
           ),
-          Expanded(
-            child: _Stat(
-              value: stats.favoriteFood ?? '—',
-              label: 'comida favorita',
-            ),
-          ),
-          Expanded(
-            child: _Stat(
-              value: stats.favoriteRestaurant ?? '—',
-              label: 'restaurante favorito',
+          Text(
+            'Com base nas até 100 decisões mais recentes.',
+            textAlign: TextAlign.center,
+            style: context.textStyles.caption.copyWith(
+              color: context.colors.textSecondary,
             ),
           ),
         ],
@@ -125,10 +138,12 @@ class _StatsLoading extends StatelessWidget {
               dimension: AppSpace.md,
               child: CircularProgressIndicator(strokeWidth: 2),
             ),
-            Text(
-              'Carregando estatísticas…',
-              style: context.textStyles.caption.copyWith(
-                color: context.colors.textSecondary,
+            Flexible(
+              child: Text(
+                'Carregando estatísticas…',
+                style: context.textStyles.caption.copyWith(
+                  color: context.colors.textSecondary,
+                ),
               ),
             ),
           ],

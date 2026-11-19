@@ -9,7 +9,11 @@ import 'package:rango_app/core/error/failure.dart';
 import 'package:rango_app/core/widgets/rango_loading_view.dart';
 import 'package:rango_app/data/account_repository.dart';
 import 'package:rango_app/data/auth_repository.dart';
+import 'package:rango_app/data/category_repository.dart';
 import 'package:rango_app/data/fake_auth_repository.dart';
+import 'package:rango_app/data/fake_history_repository.dart';
+import 'package:rango_app/data/history_repository.dart';
+import 'package:rango_app/data/local_category_repository.dart';
 import 'package:rango_app/models/app_user.dart';
 import 'package:rango_app/screens/profile/profile_sheet.dart';
 
@@ -46,6 +50,10 @@ Future<void> _open(WidgetTester tester, AppUser user) async {
       overrides: [
         authRepositoryProvider.overrideWithValue(_auth),
         accountRepositoryProvider.overrideWithValue(_accounts),
+        historyRepositoryProvider.overrideWithValue(
+          FakeHistoryRepository(entries: const []),
+        ),
+        categoryRepositoryProvider.overrideWithValue(LocalCategoryRepository()),
       ],
       child: MaterialApp(
         theme: AppTheme.light,

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -49,6 +51,18 @@ class _FailOnceHistoryRepository implements HistoryRepository {
   Future<void> save(String uid, HistoryEntry entry) async {}
 }
 
+class _PendingHistoryRepository implements HistoryRepository {
+  final _entries = Completer<List<HistoryEntry>>();
+
+  void complete(List<HistoryEntry> entries) => _entries.complete(entries);
+
+  @override
+  Future<List<HistoryEntry>> fetchAll(String uid) => _entries.future;
+
+  @override
+  Future<void> save(String uid, HistoryEntry entry) async {}
+}
+
 AuthRepository _stub(AppUser user) {
   final repository = _MockAuthRepository();
   when(repository.watchUser).thenAnswer((_) => Stream.value(user));
@@ -63,6 +77,8 @@ Future<void> _open(
   CategoryRepository? categoryRepository,
   Size size = const Size(402, 874),
   bool disableAnimations = false,
+  double textScale = 1,
+  bool settle = true,
 }) async {
   tester.view
     ..physicalSize = size
@@ -83,9 +99,13 @@ Future<void> _open(
       child: MaterialApp(
         theme: AppTheme.light,
         builder: (context, child) => MediaQuery(
-          data: MediaQuery.of(
-            context,
-          ).copyWith(disableAnimations: disableAnimations),
+          data:
+              MediaQuery.of(
+                context,
+              ).copyWith(
+                disableAnimations: disableAnimations,
+                textScaler: TextScaler.linear(textScale),
+              ),
           child: child!,
         ),
         home: Scaffold(
@@ -102,7 +122,12 @@ Future<void> _open(
     ),
   );
   await tester.tap(find.text('ABRIR'));
-  await tester.pumpAndSettle();
+  if (settle) {
+    await tester.pumpAndSettle();
+  } else {
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 400));
+  }
 }
 
 Future<void> _openGuest(WidgetTester tester, {Size? size}) => _open(
@@ -366,6 +391,10 @@ void main() {
       expect(find.text('rangos decididos'), findsOneWidget);
       expect(find.text('comida favorita'), findsOneWidget);
       expect(find.text('restaurante favorito'), findsOneWidget);
+      expect(
+        find.text('Com base nas até 100 decisões mais recentes.'),
+        findsOneWidget,
+      );
     });
 
     testWidgets('shows neutral values when the account has no decisions', (
@@ -375,6 +404,25 @@ void main() {
 
       expect(find.text('0'), findsNothing);
       expect(find.text('—'), findsNWidgets(3));
+    });
+
+    testWidgets('loading stats fit a small screen with large text', (
+      tester,
+    ) async {
+      final repository = _PendingHistoryRepository();
+      await _open(
+        tester,
+        historyRepository: repository,
+        size: const Size(320, 480),
+        textScale: 2,
+        settle: false,
+      );
+
+      expect(find.text('Carregando estatísticas…'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+
+      repository.complete(const []);
+      await tester.pumpAndSettle();
     });
 
     testWidgets('shows a retry when the history cannot be loaded', (

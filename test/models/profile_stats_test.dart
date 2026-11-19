@@ -82,6 +82,39 @@ void main() {
     expect(stats.favoriteRestaurant, 'Xis do Centro');
   });
 
+  test(
+    'uses the same valid restaurant name when tied entries are reordered',
+    () {
+      final decidedAt = DateTime(2026, 11, 12);
+      final blankName = _entry(
+        id: '1',
+        foodId: 'pizza',
+        restaurantId: 'p1',
+        restaurantName: '  ',
+        decidedAt: decidedAt,
+      );
+      final validName = _entry(
+        id: '2',
+        foodId: 'pizza',
+        restaurantId: 'p1',
+        restaurantName: 'A Pizza',
+        decidedAt: decidedAt,
+      );
+
+      final blankFirst = ProfileStats.fromHistory(
+        entries: [blankName, validName],
+        categories: categories,
+      );
+      final validFirst = ProfileStats.fromHistory(
+        entries: [validName, blankName],
+        categories: categories,
+      );
+
+      expect(blankFirst.favoriteRestaurant, 'A Pizza');
+      expect(validFirst.favoriteRestaurant, 'A Pizza');
+    },
+  );
+
   test('keeps empty history neutral', () {
     final stats = ProfileStats.fromHistory(
       entries: const [],
