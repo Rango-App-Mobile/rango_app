@@ -59,7 +59,7 @@ Uma história só entra na sprint se:
 
 ## Definition of Done (DoD)
 
-- **Dev:** PR aprovado por 1 pessoa, CI verde (format, analyze, test), critérios de aceitação conferidos, doc da feature atualizada, issue fechada (o `Closes #N` fecha).
+- **Dev:** PR aprovado por 1 pessoa, CI verde (format, analyze, test e `android-release`), critérios de aceitação conferidos, doc da feature atualizada, issue fechada (o `Closes #N` fecha).
 - **Marketing/produto:** entregável publicado ou anexado na issue, revisado por outra pessoa, métrica do brief registrada quando houver.
 
 ## Limites de trabalho

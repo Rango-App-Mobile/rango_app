@@ -48,8 +48,8 @@ android {
 
     buildTypes {
         release {
-            // Debug keys when there is no upload key, so `flutter run --release`
-            // still works. The Play Store rejects a bundle signed this way.
+            // Demo APKs use the debug key when no upload key is configured.
+            // Configure a release key before store distribution.
             signingConfig = if (keystorePropertiesFile.exists()) {
                 signingConfigs.getByName("release")
             } else {
