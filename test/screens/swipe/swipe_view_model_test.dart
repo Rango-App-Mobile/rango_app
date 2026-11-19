@@ -2,7 +2,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:rango_app/data/category_repository.dart';
+import 'package:rango_app/data/fake_sound_player.dart';
 import 'package:rango_app/data/local_category_repository.dart';
+import 'package:rango_app/data/sound_player.dart';
 import 'package:rango_app/models/food_category.dart';
 import 'package:rango_app/screens/swipe/swipe_state.dart';
 import 'package:rango_app/screens/swipe/swipe_view_model.dart';
@@ -16,15 +18,18 @@ FoodCategory _byId(String id) =>
 
 void main() {
   late ProviderContainer container;
+  late FakeSoundPlayer sounds;
 
   SwipeViewModel viewModel() => container.read(swipeViewModelProvider.notifier);
   SwipeState state() => container.read(swipeViewModelProvider).requireValue;
 
   setUp(() {
+    sounds = FakeSoundPlayer();
     container = ProviderContainer.test(
       overrides: [
         categoryRepositoryProvider.overrideWithValue(LocalCategoryRepository()),
         deckRandomProvider.overrideWithValue(InOrderRandom()),
+        soundPlayerProvider.overrideWithValue(sounds),
       ],
     );
   });
@@ -78,6 +83,25 @@ void main() {
 
     expect(state().game?.passedIds, {'spaghetti'});
     expect(state().game?.current.id, 'pizza');
+  });
+
+  test('a like and a pass each play their own sound', () async {
+    await container.read(swipeViewModelProvider.future);
+    viewModel()
+      ..choose(_byId('savory'))
+      ..like()
+      ..pass();
+
+    expect(sounds.played, [Sound.like, Sound.pass]);
+  });
+
+  test('the swipe that converges plays the win sound instead', () async {
+    await container.read(swipeViewModelProvider.future);
+    viewModel().choose(_byId('savory'));
+    favor('pizza');
+
+    expect(sounds.played.last, Sound.win);
+    expect(sounds.played.where((s) => s == Sound.win), hasLength(1));
   });
 
   test('every swipe goes into the history', () async {

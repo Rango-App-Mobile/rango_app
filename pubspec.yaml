@@ -29,6 +29,7 @@ environment:
 # versions available, run `flutter pub outdated`.
 dependencies:
   # Cupertino Icons font, used with the CupertinoIcons class for iOS style icons.
+  audioplayers: ^6.8.1
   cloud_firestore: ^7.1.0
   cupertino_icons: ^1.0.8
   firebase_auth: ^7.0.0
@@ -93,6 +94,8 @@ flutter:
     - assets/images/google_g.png
     # Placeholder text of the Terms of Use (docs/login.md).
     - assets/legal/terms.txt
+    # Short sound effects: like, pass and win (docs/swipe.md).
+    - assets/sounds/
 
 
 flutter_launcher_icons:
