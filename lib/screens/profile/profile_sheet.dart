@@ -14,8 +14,11 @@ import 'package:rango_app/core/widgets/scrim.dart';
 import 'package:rango_app/core/widgets/terms_acceptance.dart';
 import 'package:rango_app/screens/profile/profile_state.dart';
 import 'package:rango_app/screens/profile/profile_view_model.dart';
+import 'package:rango_app/screens/profile/widgets/about_rango_sheet.dart';
 import 'package:rango_app/screens/profile/widgets/delete_account_dialog.dart';
 import 'package:rango_app/screens/profile/widgets/profile_avatar.dart';
+import 'package:rango_app/screens/profile/widgets/profile_stats_section.dart';
+import 'package:rango_app/screens/profile/widgets/verification_notice.dart';
 
 /// Opens the Profile Sheet over the whole app, Tab Bar included. It closes
 /// through the X, by dragging it down or by tapping the veil.
@@ -80,6 +83,7 @@ class ProfileSheet extends ConsumerWidget {
               child: SingleChildScrollView(
                 child: Column(
                   children: [
+                    if (!state.isGuest) const ProfileStatsSection(),
                     if (state.isGuest)
                       const _GuestInvitation()
                     else ...[
@@ -105,6 +109,11 @@ class ProfileSheet extends ConsumerWidget {
                       icon: Icons.description_outlined,
                       label: 'Termos e Privacidade',
                       onTap: () => unawaited(showTermsSheet(context)),
+                    ),
+                    ListRow(
+                      icon: Icons.info_outline,
+                      label: 'Sobre o Rango',
+                      onTap: () => unawaited(showAboutRangoSheet(context)),
                     ),
                   ],
                 ),
