@@ -12,9 +12,6 @@ abstract class ProfileState with _$ProfileState {
     required String name,
     String? subtitle,
     String? photoUrl,
-
-    /// A password account whose e-mail is not confirmed yet.
-    @Default(false) bool needsVerification,
   }) = _ProfileState;
 
   factory ProfileState.fromUser(AppUser user) {
@@ -27,7 +24,6 @@ abstract class ProfileState with _$ProfileState {
       name: hasName ? name : user.email ?? 'Sua conta',
       subtitle: hasName ? user.email : null,
       photoUrl: user.photoUrl,
-      needsVerification: user.usesPassword && !user.emailVerified,
     );
   }
 

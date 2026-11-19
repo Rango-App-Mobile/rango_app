@@ -82,6 +82,10 @@ primeiro card seja sempre Macarrão e o de trás, Pizza.
 O arrasto é só horizontal: na raiz, a página continua rolando na vertical em
 telas pequenas (375x667), onde o par de cards não cabe inteiro.
 
+## Sons
+
+Três efeitos curtos em `assets/sounds/` (MP3 escolhidos pelo time): `like.mp3` ao curtir, `pass.mp3` ao passar e `win.mp3` no último swipe, o que fecha o match (toca no lugar do de curtir). `SwipeViewModel._swipe` pede o som ao `SoundPlayer` (`lib/data/sound_player.dart`, implementação `AudioplayersSoundPlayer`, pacote `audioplayers`). O player nunca lança erro: sem áudio, fica em silêncio. Os testes usam `FakeSoundPlayer` e conferem a ordem dos sons em `swipe_view_model_test.dart`.
+
 ## O cardápio
 
 O `LocalCategoryRepository` é a implementação real: o cardápio é dado local

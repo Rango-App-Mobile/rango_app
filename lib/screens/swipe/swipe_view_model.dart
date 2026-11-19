@@ -1,7 +1,9 @@
+import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:rango_app/data/category_repository.dart';
+import 'package:rango_app/data/sound_player.dart';
 import 'package:rango_app/models/category_tree.dart';
 import 'package:rango_app/models/food_category.dart';
 import 'package:rango_app/models/like_game.dart';
@@ -46,19 +48,25 @@ class SwipeViewModel extends AsyncNotifier<SwipeState> {
 
   /// Swipe right (or the heart button) on the card on top.
   // Closures, not tear-offs: `_game` is unset until the user picks a group.
-  void like() => _swipe((game) => _game.like(game));
+  void like() => _swipe((game) => _game.like(game), Sound.like);
 
   /// Swipe left (or the X button) on the card on top.
-  void pass() => _swipe((game) => _game.pass(game));
+  void pass() => _swipe((game) => _game.pass(game), Sound.pass);
 
   void reset() => state = AsyncData(_initialState());
 
-  void _swipe(LikeState Function(LikeState) apply) {
+  void _swipe(LikeState Function(LikeState) apply, Sound sound) {
     final current = state.requireValue;
     final game = current.game;
     if (game == null || game.isOver) return;
 
     final next = apply(game);
+    // Fire and forget: the player never throws and the swipe must not wait.
+    unawaited(
+      ref
+          .read(soundPlayerProvider)
+          .play(next.winner != null ? Sound.win : sound),
+    );
     state = AsyncData(
       current.copyWith(
         history: [...current.history, game.current],

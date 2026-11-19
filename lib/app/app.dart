@@ -18,8 +18,12 @@ class RangoApp extends ConsumerWidget {
       routerConfig: ref.watch(routerProvider),
       // The whole app waits for the anonymous session (guest mode): nothing
       // behind it may run without a Firebase user.
-      builder: (context, child) =>
-          isReady && child != null ? child : const StartupScreen(),
+      // A tap outside a text field closes the keyboard, on every screen.
+      builder: (context, child) => GestureDetector(
+        behavior: HitTestBehavior.translucent,
+        onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+        child: isReady && child != null ? child : const StartupScreen(),
+      ),
     );
   }
 }

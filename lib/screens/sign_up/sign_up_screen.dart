@@ -51,7 +51,8 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
     final alert = state.alert;
 
     ref.listen(signUpViewModelProvider.select((s) => s.done), (_, done) {
-      if (done) context.pop();
+      // The login screen is underneath: the app is the destination, not it.
+      if (done) Navigator.of(context).popUntil((route) => route.isFirst);
     });
     ref.listen(signUpViewModelProvider.select((s) => s.needsTerms), (_, needs) {
       if (needs) context.pushReplacement('/accept-terms');
