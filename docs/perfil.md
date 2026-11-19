@@ -28,7 +28,7 @@ quê.
 | Regra | Onde é garantida | Por quê ali |
 |---|---|---|
 | Visitante não vê estatísticas nem preferências | `ProfileSheet`, pelo `ProfileState.isGuest` | Sem conta nada é salvo (R1), então não há o que mostrar |
-| Estatísticas reutilizam o Histórico e só contam com dados já carregados | `profileStatsProvider` observa `historyEntriesProvider` e `categoriesProvider` | Evita uma segunda leitura do Firestore e respeita o limite atual de 100 decisões |
+| Estatísticas usam os mesmos dados do Histórico | `profileStatsProvider` observa `historyEntriesProvider` e `categoriesProvider` | O perfil compartilha uma única leitura do histórico com a aba e respeita o limite atual de 100 decisões |
 | Empate em comida ou restaurante favorito | `ProfileStats.fromHistory` prefere o registro mais recente; empate de data usa o nome e depois o id em ordem alfabética | O mesmo histórico sempre produz o mesmo resultado, sem nova decisão de produto |
 | O que aparece como nome e subtítulo | `ProfileState.fromUser` | É regra, não desenho: testada sem montar widget |
 | Nome, e-mail e foto vêm do provedor de login | `FirebaseAuthRepository._toAppUser` | É o único lugar que conhece o `User` do Firebase. O nome é o `displayName` do usuário; se estiver vazio, o primeiro `displayName` não vazio de `providerData` (a Apple e o Google às vezes só o guardam no provedor). Se ainda assim faltar, a tela "Quase lá" (`docs/login.md`) pede o nome logo após o login |
@@ -48,11 +48,13 @@ endereço próprio e abre por cima de qualquer tela raiz, sem mudar a rota atual
 
 As três estatísticas aparecem só para quem tem conta, conforme R1. O total e os
 favoritos são calculados a partir das até 100 decisões mais recentes que
-`historyEntriesProvider` já carrega; não há coleção, campo nem leitura extra do
-Firestore. A comida usa o rótulo atual do cardápio. Se uma categoria antiga não
-existir mais, aparece "Comida indisponível". Sem decisões, os três valores ficam
-neutros (traço), sem mostrar um zero isolado. Uma falha de leitura tem mensagem
-e ação "Tentar de novo".
+`historyEntriesProvider` carrega para a aba Histórico. Se o provedor ainda não
+foi usado, o perfil inicia essa leitura compartilhada; a aba reutiliza o mesmo
+resultado. Não há uma segunda consulta nem mudança no limite. A comida usa o
+rótulo atual do cardápio. Se uma categoria antiga não existir mais, aparece
+"Comida indisponível". Sem decisões, os três valores ficam neutros (traço), sem
+mostrar um zero isolado. Uma falha de leitura tem mensagem e ação "Tentar de
+novo".
 
 ## Excluir conta
 

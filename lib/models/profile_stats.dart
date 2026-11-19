@@ -1,13 +1,17 @@
+import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:rango_app/models/food_category.dart';
 import 'package:rango_app/models/history_entry.dart';
 
+part 'profile_stats.freezed.dart';
+
 /// A summary of the account's locally cached history.
-class ProfileStats {
-  const ProfileStats({
-    required this.decisionCount,
-    this.favoriteFood,
-    this.favoriteRestaurant,
-  });
+@freezed
+abstract class ProfileStats with _$ProfileStats {
+  const factory ProfileStats({
+    required int decisionCount,
+    String? favoriteFood,
+    String? favoriteRestaurant,
+  }) = _ProfileStats;
 
   factory ProfileStats.fromHistory({
     required List<HistoryEntry> entries,
@@ -54,10 +58,6 @@ class ProfileStats {
           : restaurantNames[favoriteRestaurantId] ?? 'Restaurante indisponível',
     );
   }
-
-  final int decisionCount;
-  final String? favoriteFood;
-  final String? favoriteRestaurant;
 }
 
 String? _favoriteId(

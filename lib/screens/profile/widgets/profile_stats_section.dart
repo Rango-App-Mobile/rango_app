@@ -7,7 +7,7 @@ import 'package:rango_app/core/widgets/rango_button.dart';
 import 'package:rango_app/models/profile_stats.dart';
 import 'package:rango_app/screens/profile/profile_view_model.dart';
 
-/// Account-only summary of the decisions already loaded for the History tab.
+/// Account-only summary from the history provider shared with the History tab.
 class ProfileStatsSection extends ConsumerWidget {
   const ProfileStatsSection({super.key});
 

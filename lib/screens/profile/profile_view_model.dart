@@ -17,8 +17,8 @@ final profileViewModelProvider =
       retry: (_, _) => null,
     );
 
-/// Reuses the history and menu already owned by the app; opening the profile
-/// does not add a Firestore query or expand the 100-entry history window.
+/// Shares the history and menu providers used by the History tab. This keeps
+/// one history query and the existing 100-entry window for both screens.
 final profileStatsProvider = FutureProvider<ProfileStats>((ref) async {
   final entriesFuture = ref.watch(historyEntriesProvider.future);
   final categoriesFuture = ref.watch(categoriesProvider.future);
