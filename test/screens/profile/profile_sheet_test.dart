@@ -99,13 +99,10 @@ Future<void> _open(
       child: MaterialApp(
         theme: AppTheme.light,
         builder: (context, child) => MediaQuery(
-          data:
-              MediaQuery.of(
-                context,
-              ).copyWith(
-                disableAnimations: disableAnimations,
-                textScaler: TextScaler.linear(textScale),
-              ),
+          data: MediaQuery.of(context).copyWith(
+            disableAnimations: disableAnimations,
+            textScaler: TextScaler.linear(textScale),
+          ),
           child: child!,
         ),
         home: Scaffold(
@@ -391,6 +388,27 @@ void main() {
       expect(find.text('rangos decididos'), findsOneWidget);
       expect(find.text('comida favorita'), findsOneWidget);
       expect(find.text('restaurante favorito'), findsOneWidget);
+      expect(
+        find.text('Com base nas até 100 decisões mais recentes.'),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('shows the count for the full 100-decision window', (
+      tester,
+    ) async {
+      final entries = List<HistoryEntry>.generate(
+        100,
+        (index) => FakeHistoryRepository
+            .sample[index % FakeHistoryRepository.sample.length]
+            .copyWith(id: 'h$index'),
+      );
+      await _open(
+        tester,
+        historyRepository: FakeHistoryRepository(entries: entries),
+      );
+
+      expect(find.text('100'), findsOneWidget);
       expect(
         find.text('Com base nas até 100 decisões mais recentes.'),
         findsOneWidget,
