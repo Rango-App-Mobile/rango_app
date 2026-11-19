@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:package_info_plus/package_info_plus.dart';
-import 'package:rango_app/data/app_info_repository.dart';
+import 'package:rango_app/data/package_info_app_info_repository.dart';
 
 void main() {
   group('PackageInfoAppInfoRepository', () {
