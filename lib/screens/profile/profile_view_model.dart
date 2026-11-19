@@ -5,6 +5,9 @@ import 'package:rango_app/core/error/failure.dart';
 import 'package:rango_app/data/account_repository.dart';
 import 'package:rango_app/data/app_info_repository.dart';
 import 'package:rango_app/data/auth_repository.dart';
+import 'package:rango_app/data/category_repository.dart';
+import 'package:rango_app/data/history_repository.dart';
+import 'package:rango_app/models/profile_stats.dart';
 import 'package:rango_app/screens/profile/profile_state.dart';
 
 /// Riverpod's automatic retry is off: the session was already created behind
@@ -14,6 +17,16 @@ final profileViewModelProvider =
       ProfileViewModel.new,
       retry: (_, _) => null,
     );
+
+/// Shares the history and menu providers used by the History tab. This keeps
+/// one history query and the existing 100-entry window for both screens.
+final profileStatsProvider = FutureProvider<ProfileStats>((ref) async {
+  final entriesFuture = ref.watch(historyEntriesProvider.future);
+  final categoriesFuture = ref.watch(categoriesProvider.future);
+  final entries = await entriesFuture;
+  final categories = await categoriesFuture;
+  return ProfileStats.fromHistory(entries: entries, categories: categories);
+}, retry: (_, _) => null);
 
 /// Follows the user, so the sheet changes by itself after sign-in and
 /// sign-out.
@@ -43,6 +56,13 @@ class ProfileViewModel extends StreamNotifier<ProfileState> {
     } on Failure {
       return false;
     }
+  }
+
+  /// Reloads the data providers used by the statistics panel.
+  void retryStatistics() {
+    ref
+      ..invalidate(historyEntriesProvider)
+      ..invalidate(categoriesProvider);
   }
 
   /// Deletes the account and its data without asking anything. Null when it

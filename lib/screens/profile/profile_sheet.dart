@@ -17,6 +17,7 @@ import 'package:rango_app/screens/profile/profile_view_model.dart';
 import 'package:rango_app/screens/profile/widgets/about_rango_sheet.dart';
 import 'package:rango_app/screens/profile/widgets/delete_account_dialog.dart';
 import 'package:rango_app/screens/profile/widgets/profile_avatar.dart';
+import 'package:rango_app/screens/profile/widgets/profile_stats_section.dart';
 import 'package:rango_app/screens/profile/widgets/verification_notice.dart';
 
 /// Opens the Profile Sheet over the whole app, Tab Bar included. It closes
@@ -87,6 +88,7 @@ class ProfileSheet extends ConsumerWidget {
               child: SingleChildScrollView(
                 child: Column(
                   children: [
+                    if (!state.isGuest) const ProfileStatsSection(),
                     if (state.isGuest)
                       const _GuestInvitation()
                     else ...[
