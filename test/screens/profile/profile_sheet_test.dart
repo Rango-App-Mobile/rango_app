@@ -4,12 +4,18 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:rango_app/app/theme/app_theme.dart';
+import 'package:rango_app/core/error/failure.dart';
 import 'package:rango_app/core/theme/app_colors.dart';
 import 'package:rango_app/core/theme/app_radius.dart';
 import 'package:rango_app/core/widgets/scrim.dart';
 import 'package:rango_app/data/auth_repository.dart';
+import 'package:rango_app/data/category_repository.dart';
 import 'package:rango_app/data/fake_auth_repository.dart';
+import 'package:rango_app/data/fake_history_repository.dart';
+import 'package:rango_app/data/history_repository.dart';
+import 'package:rango_app/data/local_category_repository.dart';
 import 'package:rango_app/models/app_user.dart';
+import 'package:rango_app/models/history_entry.dart';
 import 'package:rango_app/screens/profile/profile_sheet.dart';
 
 const _account = AppUser(
@@ -26,6 +32,23 @@ class _MockAuthRepository extends Mock implements AuthRepository {
   }
 }
 
+class _FailOnceHistoryRepository implements HistoryRepository {
+  _FailOnceHistoryRepository(this.entries);
+
+  final List<HistoryEntry> entries;
+  int requests = 0;
+
+  @override
+  Future<List<HistoryEntry>> fetchAll(String uid) async {
+    requests++;
+    if (requests == 1) throw const NetworkFailure();
+    return entries;
+  }
+
+  @override
+  Future<void> save(String uid, HistoryEntry entry) async {}
+}
+
 AuthRepository _stub(AppUser user) {
   final repository = _MockAuthRepository();
   when(repository.watchUser).thenAnswer((_) => Stream.value(user));
@@ -36,6 +59,8 @@ AuthRepository _stub(AppUser user) {
 Future<void> _open(
   WidgetTester tester, {
   AuthRepository? repository,
+  HistoryRepository? historyRepository,
+  CategoryRepository? categoryRepository,
   Size size = const Size(402, 874),
   bool disableAnimations = false,
 }) async {
@@ -48,6 +73,12 @@ Future<void> _open(
     ProviderScope(
       overrides: [
         authRepositoryProvider.overrideWithValue(repository ?? _stub(_account)),
+        historyRepositoryProvider.overrideWithValue(
+          historyRepository ?? FakeHistoryRepository(entries: const []),
+        ),
+        categoryRepositoryProvider.overrideWithValue(
+          categoryRepository ?? LocalCategoryRepository(),
+        ),
       ],
       child: MaterialApp(
         theme: AppTheme.light,
@@ -315,6 +346,54 @@ void main() {
       await _open(tester, repository: repository);
 
       expect(find.text('Visitante'), findsOneWidget);
+    });
+  });
+
+  group('statistics', () {
+    testWidgets('shows the count and the most recent favorites', (
+      tester,
+    ) async {
+      await _open(
+        tester,
+        historyRepository: FakeHistoryRepository(
+          entries: FakeHistoryRepository.sample,
+        ),
+      );
+
+      expect(find.text('9'), findsOneWidget);
+      expect(find.text('Macarrão'), findsOneWidget);
+      expect(find.text('Cantina da Nona'), findsOneWidget);
+      expect(find.text('rangos decididos'), findsOneWidget);
+      expect(find.text('comida favorita'), findsOneWidget);
+      expect(find.text('restaurante favorito'), findsOneWidget);
+    });
+
+    testWidgets('shows neutral values when the account has no decisions', (
+      tester,
+    ) async {
+      await _open(tester);
+
+      expect(find.text('0'), findsNothing);
+      expect(find.text('—'), findsNWidgets(3));
+    });
+
+    testWidgets('shows a retry when the history cannot be loaded', (
+      tester,
+    ) async {
+      final repository = _FailOnceHistoryRepository(
+        FakeHistoryRepository.sample,
+      );
+      await _open(tester, historyRepository: repository);
+
+      expect(
+        find.text('Não foi possível carregar as estatísticas.'),
+        findsOneWidget,
+      );
+      await tester.tap(find.text('Tentar de novo'));
+      await tester.pumpAndSettle();
+
+      expect(repository.requests, 2);
+      expect(find.text('9'), findsOneWidget);
     });
   });
 
