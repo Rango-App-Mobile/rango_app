@@ -34,16 +34,6 @@ class ProfileViewModel extends StreamNotifier<ProfileState> {
     }
   }
 
-  /// Whether the link was sent.
-  Future<bool> resendVerification() async {
-    try {
-      await ref.read(authRepositoryProvider).resendVerification();
-      return true;
-    } on Failure {
-      return false;
-    }
-  }
-
   /// Deletes the account and its data without asking anything. Null when it
   /// is gone; otherwise why it stayed, ready to show.
   ///

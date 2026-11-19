@@ -18,7 +18,7 @@ perfil em `docs/perfil.md`.
 | 2 | Entrar: e-mail, senha e "Entrar" | `LoginViewModel.submit` chama `AuthRepository.signIn` |
 | 2' | "Ainda não tem conta? Criar conta" | `push('/signup')`: o voltar da tela de criar conta devolve para o login |
 | 3 | Criar conta: nome, e-mail, confirmar e-mail, senha, confirmar senha, o interruptor dos termos e "Criar conta" | `SignUpViewModel.submit` valida e chama `AuthRepository.signUp`, que também envia o e-mail de confirmação. Depois, `AccountRepository.acceptTerms` registra o aceite |
-| 4 | Deu certo: volta para a tela de onde saiu, já com a conta | A tela dá `pop` quando o estado vira `done`. O Profile Sheet passa a mostrar a pessoa sozinho, porque segue `AuthRepository.watchUser()` |
+| 4 | Deu certo: volta para a tela de onde saiu, já com a conta | A tela dá `popUntil` na primeira rota quando o estado vira `done` (Criar conta não deixa o Entrar aberto por baixo). O Profile Sheet passa a mostrar a pessoa sozinho, porque segue `AuthRepository.watchUser()` |
 | 5 | "Esqueci minha senha" → Recuperar senha, com o e-mail já digitado | `/password-reset` recebe o e-mail pelo `extra` da rota |
 | 6 | "Enviar link" → "Confira seu e-mail" | `AuthRepository.sendPasswordReset`. A senha nova é criada na página do Firebase, fora do app |
 | 2'' | Em Entrar ou Criar conta, "Continuar com o Google" ou "Continuar com a Apple" | `continueWithGoogle` / `continueWithApple` do ViewModel chamam `AuthRepository.signInWithGoogle` / `signInWithApple`. Abre a folha do Google ou da Apple; deu certo, segue o passo 4 |
@@ -39,7 +39,7 @@ ou cadastro está em andamento, o voltar fica bloqueado (veja "Carregando").
 | Nome obrigatório, e-mail com cara de e-mail, senha com 8 caracteres ou mais | `SignUpViewModel` e `AuthFormState` | Valida antes de gastar uma chamada, e é testável sem tela |
 | "Os e-mails não são iguais.", "As senhas não são iguais." e "Aceite os termos para criar a conta." | `SignUpViewModel.submit` (`confirmEmailError`, `confirmPasswordError`, `termsError`) | Mesma razão. O interruptor (`termsAccepted`) vive no estado e sobrevive à edição dos campos |
 | O aceite dos termos fica gravado na conta | `AccountRepository.acceptTerms`, chamado pelo `SignUpViewModel` depois do cadastro | Se a gravação falhar, o cadastro não é desfeito (a conta já existe e tentar de novo diria "e-mail em uso") |
-| O cadastro não falha se o e-mail de confirmação não sair | `FirebaseAuthRepository.signUp` | A conta já existe; o Profile Sheet oferece "Reenviar" (`docs/perfil.md`) |
+| O cadastro não falha se o e-mail de confirmação não sair | `FirebaseAuthRepository.signUp` | A conta já existe. O app não confirma o e-mail nem cobra isso: não há aviso nem "Reenviar" no Profile Sheet |
 | Cada erro aparece junto do que o causou | `AuthFormState.failed` | Um lugar só para as três telas: credencial e senha fraca no campo Senha, e-mail em uso ou inválido no campo E-mail, rede e inesperado no aviso do topo |
 | "E-mail ou senha incorretos" serve para os dois casos | `FirebaseAuthRepository._toFailure` | O Firebase não diz qual dos dois errou, e dizer ajudaria a descobrir quem tem conta |
 | Recuperar senha confirma o envio mesmo sem conta naquele e-mail | `FirebaseAuthRepository.sendPasswordReset` | Mesma razão: a tela não revela quem está cadastrado |

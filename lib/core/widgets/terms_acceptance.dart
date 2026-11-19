@@ -42,7 +42,7 @@ class _TermsAcceptanceState extends State<TermsAcceptance> {
             Switch.adaptive(
               value: widget.value,
               onChanged: widget.onChanged,
-              activeTrackColor: colors.actionAccent,
+              activeTrackColor: colors.textDanger,
             ),
             Expanded(
               // The whole label opens the text, not only the link words.

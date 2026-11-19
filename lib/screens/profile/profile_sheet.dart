@@ -16,7 +16,6 @@ import 'package:rango_app/screens/profile/profile_state.dart';
 import 'package:rango_app/screens/profile/profile_view_model.dart';
 import 'package:rango_app/screens/profile/widgets/delete_account_dialog.dart';
 import 'package:rango_app/screens/profile/widgets/profile_avatar.dart';
-import 'package:rango_app/screens/profile/widgets/verification_notice.dart';
 
 /// Opens the Profile Sheet over the whole app, Tab Bar included. It closes
 /// through the X, by dragging it down or by tapping the veil.
@@ -77,11 +76,6 @@ class ProfileSheet extends ConsumerWidget {
           children: [
             const _Handle(),
             _Header(state: state),
-            if (state.needsVerification)
-              VerificationNotice(
-                email: state.subtitle ?? state.name,
-                onResend: () => unawaited(_resend(context, ref)),
-              ),
             Flexible(
               child: SingleChildScrollView(
                 child: Column(
@@ -149,20 +143,6 @@ Future<void> _delete(BuildContext context, WidgetRef ref) async {
   // No SnackBar: the splash and the guest mode already say it, and the
   // SnackBar would sit under the Tab Bar's blur.
   sheet.pop();
-}
-
-Future<void> _resend(BuildContext context, WidgetRef ref) async {
-  final messenger = ScaffoldMessenger.of(context);
-  final sent = await ref
-      .read(profileViewModelProvider.notifier)
-      .resendVerification();
-  messenger.showSnackBar(
-    SnackBar(
-      content: Text(
-        sent ? 'Link reenviado.' : 'Não foi possível reenviar. Tente de novo.',
-      ),
-    ),
-  );
 }
 
 class _Handle extends StatelessWidget {
