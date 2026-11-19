@@ -20,6 +20,7 @@ quê.
 | 3'' | Com conta: "Sair da conta" | `ProfileViewModel.signOut`; a folha vira a de visitante sozinha |
 | 3''' | Conta de e-mail e senha com o e-mail ainda não confirmado: aviso "Confirme seu e-mail" e "Reenviar" | `ProfileState.needsVerification` (`usesPassword && !emailVerified`). "Reenviar" chama `ProfileViewModel.resendVerification`, que chama `AuthRepository.resendVerification`; o sucesso mostra o SnackBar "Link reenviado." |
 | 3'''' | Sempre, com ou sem conta: "Termos e Privacidade" | Abre a mesma folha dos termos do cadastro (`showTermsSheet`, em `lib/core/widgets/terms_acceptance.dart`), com o texto de `docs/termos-e-privacidade.md`. As lojas pedem a política acessível dentro do app |
+| 3''''' | Sempre, com ou sem conta: "Sobre o Rango" | Abre uma folha com a descrição do app e a versão instalada, obtida de `PackageInfoAppInfoRepository` via `package_info_plus`. Se a leitura falhar, há uma tentativa manual |
 | 4 | Fecha pelo X, arrastando para baixo ou tocando no véu | O X dá `pop`; arrastar e tocar no véu são do próprio `showModalBottomSheet` |
 
 ## Onde cada regra mora
@@ -31,6 +32,7 @@ quê.
 | Nome, e-mail e foto vêm do provedor de login | `FirebaseAuthRepository._toAppUser` | É o único lugar que conhece o `User` do Firebase. O nome é o `displayName` do usuário; se estiver vazio, o primeiro `displayName` não vazio de `providerData` (a Apple e o Google às vezes só o guardam no provedor). Se ainda assim faltar, a tela "Quase lá" (`docs/login.md`) pede o nome logo após o login |
 | A folha cobre a Tab Bar | `useRootNavigator: true` | O shell das abas tem navigator próprio, e a Tab Bar ficaria por cima do véu |
 | O X sempre fica visível | O cabeçalho fica fora da rolagem; só o convite rola | Em tela pequena com texto grande, o conteúdo não pode empurrar a saída para fora |
+| A versão mostrada é a instalada no aparelho | `AppInfoRepository`, `PackageInfoAppInfoRepository` e `appVersionProvider` | O valor vem dos metadados incluídos no build, em vez de uma versão duplicada no layout |
 
 O Firebase não avisa quando o e-mail é confirmado no app de e-mail
 (`userChanges()` não emite). Por isso o `ProfileViewModel` chama
@@ -92,6 +94,7 @@ mostra dado nenhum.
 | `test/screens/profile/profile_view_model_test.dart` | Visitante; conta com nome, e-mail e foto; os casos sem nome; erro sem novas tentativas; seguir o usuário; sair da conta |
 | `test/screens/profile/profile_view_model_delete_test.dart` | Ordem da exclusão (reautenticar, dados, conta), cancelamento e falhas |
 | `test/screens/profile/profile_sheet_delete_test.dart` | A linha só com conta, o diálogo (campo de senha só para senha), SnackBar de sucesso e erros |
+| `test/data/app_info_repository_test.dart`, `test/screens/profile/profile_sheet_test.dart` | A versão vem dos metadados do app, a folha Sobre aparece para visitante e conta, e a leitura tem recuperação manual |
 | `test/data/firebase_auth_repository_delete_test.dart`, `test/data/fake_auth_repository_delete_test.dart` | Reautenticação por provedor, cancelamento, revogação da Apple, exclusão e mapeamento de erros |
 | `test/screens/profile/profile_sheet_test.dart` | Véu, raio e posição; 350 ms e reduzir movimento; os três jeitos de fechar; os dois modos; tela pequena e nome longo |
 | `test/data/firebase_auth_repository_test.dart` | Nome, e-mail e foto vindos do Firebase |
@@ -104,4 +107,3 @@ mostra dado nenhum.
 | Foto da pessoa no próprio Avatar Button da Top Bar | Junto com o login por Google e Apple (`docs/login.md`) |
 | Estatísticas com conta | E10-S2 |
 | Preferências com conta | E10-S3 |
-| "Sobre o Rango" e Privacidade | E10-S4 |
