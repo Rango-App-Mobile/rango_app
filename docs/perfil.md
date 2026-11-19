@@ -87,7 +87,7 @@ aparelho não puderem ser lidos, a folha mostra uma mensagem e permite tentar de
 novo. `package_info_plus` fornece os metadados em iOS e Android.
 
 `test/screens/profile/about_rango_sheet_test.dart` cobre acesso nos dois modos,
-a versão exibida e a recuperação após falha; `test/data/app_info_repository_test.dart`
+a versão exibida e a recuperação após falha; `test/data/package_info_app_info_repository_test.dart`
 cobre o valor retornado pelo repositório.
 
 ## Erros
@@ -108,7 +108,7 @@ mostra dado nenhum.
 | `test/screens/profile/profile_sheet_test.dart` | Véu, raio e posição; 350 ms e reduzir movimento; os três jeitos de fechar; os dois modos; tela pequena e nome longo |
 | `test/data/firebase_auth_repository_test.dart` | Nome, e-mail e foto vindos do Firebase |
 | `test/screens/history/history_screen_test.dart`, `test/screens/swipe/swipe_screen_test.dart` | O Avatar Button abre a folha nas duas abas |
-| `test/data/app_info_repository_test.dart`, `test/screens/profile/about_rango_sheet_test.dart` | Versão instalada; About acessível para visitante e conta; recuperação após falha |
+| `test/data/package_info_app_info_repository_test.dart`, `test/screens/profile/about_rango_sheet_test.dart` | Versão instalada; About acessível para visitante e conta; recuperação após falha |
 
 ## O que não está aqui
 
