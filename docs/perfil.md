@@ -78,6 +78,18 @@ Functions, que exige o plano Blaze com cartão (`docs/contexto.md` §11). Revoga
 pelo app exigiria abrir a folha da Apple, e a exclusão não pede login. Se a
 revisão da App Store cobrar a revogação, ela entra por uma função no servidor.
 
+## Sobre o Rango
+
+Visitante e conta têm a linha "Sobre o Rango" no Perfil. Ela abre uma folha
+com uma descrição curta do app e a versão instalada, lida de
+`PackageInfoAppInfoRepository` por `appVersionProvider`. Se os metadados do
+aparelho não puderem ser lidos, a folha mostra uma mensagem e permite tentar de
+novo. `package_info_plus` fornece os metadados em iOS e Android.
+
+`test/screens/profile/about_rango_sheet_test.dart` cobre acesso nos dois modos,
+a versão exibida e a recuperação após falha; `test/data/package_info_app_info_repository_test.dart`
+cobre o valor retornado pelo repositório.
+
 ## Erros
 
 A sessão já existe quando a folha abre, porque o app inteiro espera por ela
@@ -96,6 +108,7 @@ mostra dado nenhum.
 | `test/screens/profile/profile_sheet_test.dart` | Véu, raio e posição; 350 ms e reduzir movimento; os três jeitos de fechar; os dois modos; tela pequena e nome longo |
 | `test/data/firebase_auth_repository_test.dart` | Nome, e-mail e foto vindos do Firebase |
 | `test/screens/history/history_screen_test.dart`, `test/screens/swipe/swipe_screen_test.dart` | O Avatar Button abre a folha nas duas abas |
+| `test/data/package_info_app_info_repository_test.dart`, `test/screens/profile/about_rango_sheet_test.dart` | Versão instalada; About acessível para visitante e conta; recuperação após falha |
 
 ## O que não está aqui
 
@@ -104,4 +117,3 @@ mostra dado nenhum.
 | Foto da pessoa no próprio Avatar Button da Top Bar | Junto com o login por Google e Apple (`docs/login.md`) |
 | Estatísticas com conta | E10-S2 |
 | Preferências com conta | E10-S3 |
-| "Sobre o Rango" e Privacidade | E10-S4 |

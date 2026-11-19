@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:rango_app/core/error/failure.dart';
 import 'package:rango_app/data/account_repository.dart';
+import 'package:rango_app/data/app_info_repository.dart';
 import 'package:rango_app/data/auth_repository.dart';
 import 'package:rango_app/screens/profile/profile_state.dart';
 
@@ -79,3 +80,8 @@ class ProfileViewModel extends StreamNotifier<ProfileState> {
     }
   }
 }
+
+final appVersionProvider = FutureProvider<String>(
+  (ref) => ref.watch(appInfoRepositoryProvider).fetchVersion(),
+  retry: (_, _) => null,
+);

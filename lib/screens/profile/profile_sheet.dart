@@ -14,6 +14,7 @@ import 'package:rango_app/core/widgets/scrim.dart';
 import 'package:rango_app/core/widgets/terms_acceptance.dart';
 import 'package:rango_app/screens/profile/profile_state.dart';
 import 'package:rango_app/screens/profile/profile_view_model.dart';
+import 'package:rango_app/screens/profile/widgets/about_rango_sheet.dart';
 import 'package:rango_app/screens/profile/widgets/delete_account_dialog.dart';
 import 'package:rango_app/screens/profile/widgets/profile_avatar.dart';
 import 'package:rango_app/screens/profile/widgets/verification_notice.dart';
@@ -111,6 +112,11 @@ class ProfileSheet extends ConsumerWidget {
                       icon: Icons.description_outlined,
                       label: 'Termos e Privacidade',
                       onTap: () => unawaited(showTermsSheet(context)),
+                    ),
+                    ListRow(
+                      icon: Icons.info_outline,
+                      label: 'Sobre o Rango',
+                      onTap: () => unawaited(showAboutRangoSheet(context)),
                     ),
                   ],
                 ),
