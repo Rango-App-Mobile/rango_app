@@ -134,7 +134,7 @@ void main() {
       final restaurants = _MockRestaurants();
       when(
         () => restaurants.search(
-          keyword: any(named: 'keyword'),
+          foodId: any(named: 'foodId'),
           near: any(named: 'near'),
         ),
       ).thenAnswer((_) => Completer<List<Restaurant>>().future);
@@ -173,7 +173,7 @@ void main() {
       final restaurants = _MockRestaurants();
       when(
         () => restaurants.search(
-          keyword: any(named: 'keyword'),
+          foodId: any(named: 'foodId'),
           near: any(named: 'near'),
         ),
       ).thenAnswer((_) => pending.future);
@@ -369,7 +369,7 @@ void main() {
       final restaurants = _MockRestaurants();
       when(
         () => restaurants.search(
-          keyword: any(named: 'keyword'),
+          foodId: any(named: 'foodId'),
           near: any(named: 'near'),
         ),
       ).thenAnswer((_) async => []);
@@ -385,7 +385,7 @@ void main() {
       await tester.pumpAndSettle();
       verify(
         () => restaurants.search(
-          keyword: any(named: 'keyword'),
+          foodId: any(named: 'foodId'),
           near: any(named: 'near'),
         ),
       ).called(2);
@@ -399,7 +399,7 @@ void main() {
       final restaurants = _MockRestaurants();
       when(
         () => restaurants.search(
-          keyword: any(named: 'keyword'),
+          foodId: any(named: 'foodId'),
           near: any(named: 'near'),
         ),
       ).thenThrow(const NetworkFailure());
@@ -410,12 +410,12 @@ void main() {
 
       when(
         () => restaurants.search(
-          keyword: any(named: 'keyword'),
+          foodId: any(named: 'foodId'),
           near: any(named: 'near'),
         ),
       ).thenAnswer(
         (_) async => FakeRestaurantRepository().search(
-          keyword: 'x',
+          foodId: 'x',
           near: _origin,
         ),
       );

@@ -1,28 +1,29 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rango_app/core/error/failure.dart';
+import 'package:rango_app/data/auth_repository.dart';
 import 'package:rango_app/data/delivery_link_repository.dart';
 import 'package:rango_app/data/external_link_launcher.dart';
+import 'package:rango_app/data/fake_auth_repository.dart';
 import 'package:rango_app/data/fake_delivery_link_repository.dart';
 import 'package:rango_app/data/fake_external_link_launcher.dart';
+import 'package:rango_app/data/fake_history_repository.dart';
 import 'package:rango_app/data/fake_restaurant_repository.dart';
+import 'package:rango_app/data/history_repository.dart';
 import 'package:rango_app/data/restaurant_repository.dart';
+import 'package:rango_app/models/app_user.dart';
 import 'package:rango_app/models/delivery_links.dart';
 import 'package:rango_app/models/geo_point.dart';
+import 'package:rango_app/models/order_channel.dart';
 import 'package:rango_app/models/restaurant.dart';
 import 'package:rango_app/models/restaurant_contact_args.dart';
 import 'package:rango_app/screens/restaurant_contact/restaurant_contact_view_model.dart';
 
 class _StubRestaurantRepository extends FakeRestaurantRepository {
-  _StubRestaurantRepository({
-    this.phone,
-    this.phoneFails = false,
-    this.photoFails = false,
-  });
+  _StubRestaurantRepository({this.phone, this.phoneFails = false});
 
   final String? phone;
   final bool phoneFails;
-  final bool photoFails;
   final List<String> photoRequests = [];
 
   @override
@@ -34,16 +35,17 @@ class _StubRestaurantRepository extends FakeRestaurantRepository {
   @override
   Future<String?> fetchPhotoUri(String photoName) async {
     photoRequests.add(photoName);
-    if (photoFails) throw const NetworkFailure();
     return 'https://photos.example/$photoName';
   }
 }
 
-class _FailingDeliveryLinkRepository extends FakeDeliveryLinkRepository {
+class _SignedIn extends FakeAuthRepository {
+  _SignedIn(this._user);
+
+  final AppUser _user;
+
   @override
-  Future<DeliveryLinks?> linksFor(String placeId) async {
-    throw const NetworkFailure();
-  }
+  Future<AppUser> ensureSignedIn() async => _user;
 }
 
 const restaurant = Restaurant(
@@ -53,20 +55,32 @@ const restaurant = Restaurant(
   photoName: 'places/p1/photos/a',
 );
 const args = RestaurantContactArgs(restaurant: restaurant);
+const pizzaArgs = RestaurantContactArgs(
+  restaurant: restaurant,
+  foodId: 'pizza',
+);
+const account = AppUser(uid: 'u1', isAnonymous: false);
+const guest = AppUser(uid: 'g1', isAnonymous: true);
 
 ({ProviderContainer container, FakeExternalLinkLauncher launcher}) setUp_({
   RestaurantRepository? repository,
-  DeliveryLinkRepository? linksRepository,
   Map<String, DeliveryLinks> links = const {},
+  AppUser user = guest,
+  HistoryRepository? history,
 }) {
   final launcher = FakeExternalLinkLauncher();
   final container = ProviderContainer.test(
     overrides: [
+      authRepositoryProvider.overrideWithValue(_SignedIn(user)),
+      currentUserProvider.overrideWithValue(AsyncData(user)),
+      historyRepositoryProvider.overrideWithValue(
+        history ?? FakeHistoryRepository(entries: const []),
+      ),
       restaurantRepositoryProvider.overrideWithValue(
         repository ?? _StubRestaurantRepository(),
       ),
       deliveryLinkRepositoryProvider.overrideWithValue(
-        linksRepository ?? FakeDeliveryLinkRepository(links),
+        FakeDeliveryLinkRepository(links),
       ),
       externalLinkLauncherProvider.overrideWithValue(launcher),
     ],
@@ -172,59 +186,6 @@ void main() {
     expect(other.photoRequests, isEmpty);
   });
 
-  test('keeps the phone when delivery links fail', () async {
-    final (:container, launcher: _) = setUp_(
-      repository: _StubRestaurantRepository(phone: '(51) 3333-0000'),
-      linksRepository: _FailingDeliveryLinkRepository(),
-    );
-    await settle(container, args);
-
-    final state = container.read(restaurantContactViewModelProvider(args));
-    expect(state.loadingDetails, isFalse);
-    expect(state.phoneUri, Uri.parse('tel:5133330000'));
-    expect(
-      state.deliveryUri,
-      Uri.https('www.google.com', '/search', {
-        'q': 'Cantina da Nona delivery',
-      }),
-    );
-  });
-
-  test('keeps the iFood link when the phone lookup fails', () async {
-    final (:container, launcher: _) = setUp_(
-      repository: _StubRestaurantRepository(phoneFails: true),
-      links: {'p1': const DeliveryLinks(ifood: 'https://ifood.com.br/x')},
-    );
-    await settle(container, args);
-
-    final state = container.read(restaurantContactViewModelProvider(args));
-    expect(state.loadingDetails, isFalse);
-    expect(state.phoneUri, isNull);
-    expect(state.deliveryUri, Uri.parse('https://ifood.com.br/x'));
-  });
-
-  test('finishes loading when restaurant details cannot be fetched', () async {
-    final (:container, launcher: _) = setUp_(
-      repository: _StubRestaurantRepository(
-        phoneFails: true,
-        photoFails: true,
-      ),
-      linksRepository: _FailingDeliveryLinkRepository(),
-    );
-    await settle(container, args);
-
-    final state = container.read(restaurantContactViewModelProvider(args));
-    expect(state.loadingDetails, isFalse);
-    expect(state.phoneUri, isNull);
-    expect(state.photoUri, isNull);
-    expect(
-      state.deliveryUri,
-      Uri.https('www.google.com', '/search', {
-        'q': 'Cantina da Nona delivery',
-      }),
-    );
-  });
-
   test('orderDelivery and callRestaurant open the right uris', () async {
     final (:container, :launcher) = setUp_(
       repository: _StubRestaurantRepository(phone: '(51) 3333-0000'),
@@ -268,5 +229,86 @@ void main() {
       container.read(restaurantContactViewModelProvider(args)).openFailed,
       isFalse,
     );
+  });
+
+  group('saving the decision', () {
+    test('an account user ordering saves it as delivery', () async {
+      final history = FakeHistoryRepository(entries: const []);
+      final (:container, :launcher) = setUp_(user: account, history: history);
+      await settle(container, pizzaArgs);
+
+      await container
+          .read(restaurantContactViewModelProvider(pizzaArgs).notifier)
+          .orderDelivery();
+
+      final saved = history.saved.single;
+      expect(saved.foodId, 'pizza');
+      expect(saved.restaurantId, 'p1');
+      expect(saved.restaurantName, 'Cantina da Nona');
+      expect(saved.channel, OrderChannel.delivery);
+      expect(launcher.opened, hasLength(1));
+    });
+
+    test('an account user calling saves it as call', () async {
+      final history = FakeHistoryRepository(entries: const []);
+      final (:container, launcher: _) = setUp_(
+        repository: _StubRestaurantRepository(phone: '5133330000'),
+        user: account,
+        history: history,
+      );
+      await settle(container, pizzaArgs);
+
+      await container
+          .read(restaurantContactViewModelProvider(pizzaArgs).notifier)
+          .callRestaurant();
+
+      expect(history.saved.single.channel, OrderChannel.call);
+    });
+
+    test('a second tap does not save again', () async {
+      final history = FakeHistoryRepository(entries: const []);
+      final (:container, :launcher) = setUp_(
+        repository: _StubRestaurantRepository(phone: '5133330000'),
+        user: account,
+        history: history,
+      );
+      await settle(container, pizzaArgs);
+      final notifier = container.read(
+        restaurantContactViewModelProvider(pizzaArgs).notifier,
+      );
+
+      await notifier.orderDelivery();
+      await notifier.orderDelivery();
+      await notifier.callRestaurant();
+
+      expect(history.saved, hasLength(1));
+      expect(launcher.opened, hasLength(3));
+    });
+
+    test('a guest never saves (R1) but still orders', () async {
+      final history = FakeHistoryRepository(entries: const []);
+      final (:container, :launcher) = setUp_(history: history);
+      await settle(container, pizzaArgs);
+
+      await container
+          .read(restaurantContactViewModelProvider(pizzaArgs).notifier)
+          .orderDelivery();
+
+      expect(history.saved, isEmpty);
+      expect(launcher.opened, hasLength(1));
+    });
+
+    test('the Histórico reloads with the new decision', () async {
+      final (:container, launcher: _) = setUp_(user: account);
+      expect(await container.read(historyEntriesProvider.future), isEmpty);
+      await settle(container, pizzaArgs);
+
+      await container
+          .read(restaurantContactViewModelProvider(pizzaArgs).notifier)
+          .orderDelivery();
+
+      final entries = await container.read(historyEntriesProvider.future);
+      expect(entries.single.restaurantId, 'p1');
+    });
   });
 }

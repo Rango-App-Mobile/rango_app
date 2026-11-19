@@ -36,6 +36,7 @@ dart run build_runner watch --delete-conflicting-outputs   # while developing
 flutter run --dart-define-from-file=env.json   # env.json is local, never committed
 flutter test                                   # everything
 flutter test test/screens/swipe                # one screen
+node --test test/restaurant_sync_test.mjs      # sheet sync (Apps Script), no network
 
 dart format .
 flutter analyze
@@ -64,6 +65,7 @@ lib/screens/<screen>/         one folder per screen, View + ViewModel side by si
   <screen>_state.dart         screen state (freezed), when more than a value
   widgets/                    widgets used only by this screen
 test/                         mirrors lib/
+tools/restaurant_sync/        Apps Script that syncs the team's sheet to Firestore
 docs/                         canonical context, process, feature docs, marketing
 .github/backlog/backlog.yml   source of the backlog (epics, stories, sprints)
 .github/workflows/            CI, backlog sync, board automation, sprint report

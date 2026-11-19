@@ -169,6 +169,26 @@ epics:
           - "Sair da conta volta ao modo visitante"
           - "Erros de login (rede, credencial inválida, conta já existente) têm mensagem e saída"
 
+      - id: E1-S4
+        title: "Como usuário, quero entrar com Google ou Apple"
+        sprint: 5
+        frente: dev
+        area: auth
+        priority: alta
+        estimate: 3
+        description: >
+          Liga os botões "Continuar com o Google" e "Continuar com a Apple" das telas Entrar
+          e Criar conta. Google usa o pacote google_sign_in (Android e iOS); Apple usa só o
+          firebase_auth (AppleAuthProvider) e aparece só no iOS. O visitante liga a conta ao
+          uid anônimo; se a conta já existe, entra nela (o visitante não tem nada salvo, R1).
+        acceptance:
+          - "Visitante entra com Google no Android e no iOS e volta para onde estava"
+          - "Visitante entra com Apple no iOS; no Android o botão da Apple não aparece"
+          - "Conta nova mantém o uid do visitante; conta que já existe entra sem erro"
+          - "Fechar a folha do Google ou da Apple volta ao formulário sem mensagem de erro"
+          - "Sem rede ou erro inesperado mostram o alerta do formulário"
+          - "Sair da conta também sai do Google, para o próximo toque mostrar a escolha de conta"
+
   - id: E2
     title: "Swipe convergente (do amplo ao específico)"
     frente: dev
@@ -375,11 +395,14 @@ epics:
         estimate: 5
         description: >
           Trocar os restaurantes fictícios pelos que o time cadastrou numa planilha: cada um com
-          nome, posição, comidas, endereço, telefone e links de delivery. Um script importa a
-          planilha para `restaurants` no Firestore, e o app mostra os que servem a comida do
-          match a até 3 km da pessoa, sem busca por texto (contexto.md §11, 2026-11-05).
+          nome, posição, comidas, endereço, telefone e links de delivery. Um Apps Script instalado
+          na planilha grava em `restaurants` no Firestore todo dia e por um botão, e o app mostra
+          os que servem a comida do match a até 3 km da pessoa, sem busca por texto (contexto.md
+          §11, 2026-11-05).
         acceptance:
           - "O script valida a planilha (coordenadas e comidas do menu) antes de gravar e pode rodar de novo sem duplicar"
+          - "O script roda sozinho uma vez por dia e também por um botão na planilha"
+          - "Planilha vazia ou sem uma coluna obrigatória não altera nada no banco, e o erro aparece na planilha"
           - "A chave da conta de serviço do script fica fora do git"
           - "O mapa mostra só os restaurantes que servem a comida do match, a até 3 km, do mais perto ao mais longe"
           - "Telefone e links de delivery vêm do cadastro do restaurante"

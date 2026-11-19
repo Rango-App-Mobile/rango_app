@@ -15,7 +15,8 @@ widget, e os arquivos que orientam humanos e agentes (`AGENTS.md`,
 **O que fica de fora de propósito:** Firebase, Google Places e permissão de
 localização. Cada um tem a sua história (ver [Próximos passos](#próximos-passos)).
 
-> Validado em 24/09/2026 com **Flutter 3.44.4 (stable) / Dart 3.12.2**. As
+> Validado em 24/09/2026 com **Flutter 3.44.4 (stable) / Dart 3.12.2**. Desde
+> 12/11/2026 o projeto usa o **Flutter 3.47.9 / Dart 3.13** (o mesmo do CI). As
 > versões de pacote citadas são as que o `flutter pub add` resolveu nesse dia;
 > as suas podem ser mais novas. Não copie versão deste guia para o
 > `pubspec.yaml`: deixe o `pub add` escolher.

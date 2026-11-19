@@ -3,9 +3,12 @@ import 'package:rango_app/data/category_repository.dart';
 import 'package:rango_app/data/history_repository.dart';
 import 'package:rango_app/screens/history/history_state.dart';
 
+// Riverpod's automatic retry is off: it would keep this in loading for
+// ~40s and hide the error state.
 final historyViewModelProvider =
     AsyncNotifierProvider<HistoryViewModel, HistoryState>(
       HistoryViewModel.new,
+      retry: (_, _) => null,
     );
 
 class HistoryViewModel extends AsyncNotifier<HistoryState> {

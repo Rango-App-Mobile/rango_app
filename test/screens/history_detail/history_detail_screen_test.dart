@@ -3,10 +3,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:rango_app/app/theme/app_theme.dart';
+import 'package:rango_app/data/auth_repository.dart';
 import 'package:rango_app/data/category_repository.dart';
 import 'package:rango_app/data/fake_history_repository.dart';
 import 'package:rango_app/data/history_repository.dart';
 import 'package:rango_app/data/local_category_repository.dart';
+import 'package:rango_app/models/app_user.dart';
 import 'package:rango_app/screens/history_detail/history_detail_screen.dart';
 
 Future<void> _pump(
@@ -24,6 +26,9 @@ Future<void> _pump(
       retry: (_, _) => null,
       overrides: [
         categoryRepositoryProvider.overrideWithValue(LocalCategoryRepository()),
+        currentUserProvider.overrideWithValue(
+          const AsyncData(AppUser(uid: 'u1', isAnonymous: false)),
+        ),
         historyRepositoryProvider.overrideWithValue(FakeHistoryRepository()),
       ],
       child: MaterialApp.router(
