@@ -53,6 +53,14 @@ void main() {
       findsOneWidget,
     );
     expect(find.text('1. Quem somos'), findsOneWidget);
+    expect(
+      find.textContaining('Localização. Com a sua permissão'),
+      findsOneWidget,
+    );
+    expect(
+      find.textContaining('Histórico (só com conta). Quando você toca em'),
+      findsOneWidget,
+    );
 
     await tester.tap(find.byIcon(Icons.close));
     await tester.pumpAndSettle();

@@ -15,11 +15,6 @@ final profileViewModelProvider =
       retry: (_, _) => null,
     );
 
-final appVersionProvider = FutureProvider<String>(
-  (ref) => ref.watch(appInfoRepositoryProvider).fetchVersion(),
-  retry: (_, _) => null,
-);
-
 /// Follows the user, so the sheet changes by itself after sign-in and
 /// sign-out.
 class ProfileViewModel extends StreamNotifier<ProfileState> {
@@ -85,3 +80,8 @@ class ProfileViewModel extends StreamNotifier<ProfileState> {
     }
   }
 }
+
+final appVersionProvider = FutureProvider<String>(
+  (ref) => ref.watch(appInfoRepositoryProvider).fetchVersion(),
+  retry: (_, _) => null,
+);

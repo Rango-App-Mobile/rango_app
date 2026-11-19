@@ -7,7 +7,6 @@ import 'package:rango_app/app/theme/app_theme.dart';
 import 'package:rango_app/core/theme/app_colors.dart';
 import 'package:rango_app/core/theme/app_radius.dart';
 import 'package:rango_app/core/widgets/scrim.dart';
-import 'package:rango_app/data/app_info_repository.dart';
 import 'package:rango_app/data/auth_repository.dart';
 import 'package:rango_app/data/fake_auth_repository.dart';
 import 'package:rango_app/models/app_user.dart';
@@ -27,22 +26,6 @@ class _MockAuthRepository extends Mock implements AuthRepository {
   }
 }
 
-class _FakeAppInfoRepository implements AppInfoRepository {
-  @override
-  Future<String> fetchVersion() async => '1.2.3';
-}
-
-class _FailOnceAppInfoRepository implements AppInfoRepository {
-  int calls = 0;
-
-  @override
-  Future<String> fetchVersion() async {
-    calls++;
-    if (calls == 1) throw StateError('temporary platform failure');
-    return '1.2.3';
-  }
-}
-
 AuthRepository _stub(AppUser user) {
   final repository = _MockAuthRepository();
   when(repository.watchUser).thenAnswer((_) => Stream.value(user));
@@ -55,7 +38,6 @@ Future<void> _open(
   AuthRepository? repository,
   Size size = const Size(402, 874),
   bool disableAnimations = false,
-  AppInfoRepository? appInfoRepository,
 }) async {
   tester.view
     ..physicalSize = size
@@ -66,9 +48,6 @@ Future<void> _open(
     ProviderScope(
       overrides: [
         authRepositoryProvider.overrideWithValue(repository ?? _stub(_account)),
-        appInfoRepositoryProvider.overrideWithValue(
-          appInfoRepository ?? _FakeAppInfoRepository(),
-        ),
       ],
       child: MaterialApp(
         theme: AppTheme.light,
@@ -95,69 +74,13 @@ Future<void> _open(
   await tester.pumpAndSettle();
 }
 
-Future<void> _openGuest(
-  WidgetTester tester, {
-  Size? size,
-  AppInfoRepository? appInfoRepository,
-}) => _open(
+Future<void> _openGuest(WidgetTester tester, {Size? size}) => _open(
   tester,
   repository: FakeAuthRepository(),
   size: size ?? const Size(402, 874),
-  appInfoRepository: appInfoRepository,
 );
 
 void main() {
-  group('about', () {
-    testWidgets('a guest can open About and see the installed version', (
-      tester,
-    ) async {
-      await _openGuest(tester);
-
-      expect(find.text('Sobre o Rango'), findsOneWidget);
-      await tester.ensureVisible(find.text('Sobre o Rango'));
-      await tester.tap(find.text('Sobre o Rango'));
-      await tester.pumpAndSettle();
-
-      expect(find.text('Versão 1.2.3'), findsOneWidget);
-      expect(
-        find.text(
-          'O Rango ajuda você a decidir o que comer e encontrar '
-          'restaurantes próximos.',
-        ),
-        findsOneWidget,
-      );
-    });
-
-    testWidgets('an account can open About', (tester) async {
-      await _open(tester);
-
-      expect(find.text('Sobre o Rango'), findsOneWidget);
-      await tester.ensureVisible(find.text('Sobre o Rango'));
-      await tester.tap(find.text('Sobre o Rango'));
-      await tester.pumpAndSettle();
-
-      expect(find.text('Versão 1.2.3'), findsOneWidget);
-    });
-
-    testWidgets('can retry when the version is temporarily unavailable', (
-      tester,
-    ) async {
-      final repository = _FailOnceAppInfoRepository();
-      await _openGuest(tester, appInfoRepository: repository);
-
-      await tester.ensureVisible(find.text('Sobre o Rango'));
-      await tester.tap(find.text('Sobre o Rango'));
-      await tester.pumpAndSettle();
-
-      expect(find.text('Não foi possível carregar a versão.'), findsOneWidget);
-      await tester.tap(find.text('Tentar novamente'));
-      await tester.pumpAndSettle();
-
-      expect(find.text('Versão 1.2.3'), findsOneWidget);
-      expect(repository.calls, 2);
-    });
-  });
-
   group('terms and privacy', () {
     Future<void> opensTheTerms(WidgetTester tester) async {
       await tester.ensureVisible(find.text('Termos e Privacidade'));
