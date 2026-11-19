@@ -8,6 +8,7 @@ import 'package:rango_app/data/external_link_launcher.dart';
 import 'package:rango_app/data/history_repository.dart';
 import 'package:rango_app/data/restaurant_repository.dart';
 import 'package:rango_app/models/app_user.dart';
+import 'package:rango_app/models/delivery_links.dart';
 import 'package:rango_app/models/history_entry.dart';
 import 'package:rango_app/models/order_channel.dart';
 import 'package:rango_app/models/restaurant_contact_args.dart';
@@ -37,15 +38,12 @@ class RestaurantContactViewModel extends Notifier<RestaurantContactState> {
 
   Future<void> _loadDetails() async {
     final restaurant = args.restaurant;
-    final photoName = restaurant.photoName;
     final repository = ref.read(restaurantRepositoryProvider);
     final links = ref.read(deliveryLinkRepositoryProvider);
     final (phone, deliveryLinks, photo) = await (
       _phone(repository),
-      links.linksFor(restaurant.placeId),
-      args.photoUri == null && photoName != null
-          ? repository.fetchPhotoUri(photoName)
-          : Future<String?>.value(),
+      _deliveryLinks(links, restaurant.placeId),
+      _photo(repository, restaurant.photoName),
     ).wait;
     if (!ref.mounted) return;
     state = state.copyWith(
@@ -54,6 +52,29 @@ class RestaurantContactViewModel extends Notifier<RestaurantContactState> {
       links: deliveryLinks,
       photoUri: state.photoUri ?? photo,
     );
+  }
+
+  Future<DeliveryLinks?> _deliveryLinks(
+    DeliveryLinkRepository repository,
+    String placeId,
+  ) async {
+    try {
+      return await repository.linksFor(placeId);
+    } on Failure {
+      return null;
+    }
+  }
+
+  Future<String?> _photo(
+    RestaurantRepository repository,
+    String? photoName,
+  ) async {
+    if (args.photoUri != null || photoName == null) return null;
+    try {
+      return await repository.fetchPhotoUri(photoName);
+    } on Failure {
+      return null;
+    }
   }
 
   Future<String?> _phone(RestaurantRepository repository) async {
