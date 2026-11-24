@@ -110,6 +110,11 @@ class ProfileSheet extends ConsumerWidget {
                       onTap: () => unawaited(showTermsSheet(context)),
                     ),
                     ListRow(
+                      icon: Icons.restaurant_menu,
+                      label: 'Como funciona o app',
+                      onTap: () => _openOnboarding(context),
+                    ),
+                    ListRow(
                       icon: Icons.info_outline,
                       label: 'Sobre o Rango',
                       onTap: () => unawaited(showAboutRangoSheet(context)),
@@ -123,6 +128,14 @@ class ProfileSheet extends ConsumerWidget {
       ),
     );
   }
+}
+
+/// Closes the sheet and pushes the onboarding over the app; finishing it pops
+/// back to where the person was.
+void _openOnboarding(BuildContext context) {
+  final router = GoRouter.of(context);
+  Navigator.of(context).pop();
+  unawaited(router.push('/onboarding'));
 }
 
 Future<void> _delete(BuildContext context, WidgetRef ref) async {

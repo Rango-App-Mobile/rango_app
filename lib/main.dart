@@ -11,8 +11,11 @@ import 'package:rango_app/data/fake_delivery_link_repository.dart';
 import 'package:rango_app/data/fake_history_repository.dart';
 import 'package:rango_app/data/fake_restaurant_repository.dart';
 import 'package:rango_app/data/history_repository.dart';
+import 'package:rango_app/data/onboarding_repository.dart';
 import 'package:rango_app/data/restaurant_repository.dart';
+import 'package:rango_app/data/shared_prefs_onboarding_repository.dart';
 import 'package:rango_app/firebase_options.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -20,10 +23,16 @@ Future<void> main() async {
   if (firebaseOptions != null) {
     await Firebase.initializeApp(options: firebaseOptions);
   }
+  // Read once here so the router can ask "was the onboarding seen?" without
+  // waiting.
+  final prefs = await SharedPreferences.getInstance();
   runApp(
     ProviderScope(
       // Without the Firebase key in env.json the app still runs, on fakes.
       overrides: [
+        onboardingRepositoryProvider.overrideWithValue(
+          SharedPrefsOnboardingRepository(prefs),
+        ),
         if (firebaseOptions == null) ...[
           authRepositoryProvider.overrideWithValue(FakeAuthRepository()),
           accountRepositoryProvider.overrideWithValue(FakeAccountRepository()),
