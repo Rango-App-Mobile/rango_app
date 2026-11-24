@@ -284,6 +284,27 @@ epics:
           - "Comida passada não volta na sessão; se todas forem passadas, a lista inteira volta"
           - "O Like Meter mostra as curtidas da comida de cima"
           - "Os botões têm rótulo para leitor de tela ('Curtir Macarrão', 'Passar Macarrão')"
+      - id: E2-S6
+        title: "Como pessoa nova, quero entender como o app funciona logo na primeira abertura"
+        sprint: 6
+        frente: dev
+        area: swipe
+        priority: media
+        estimate: 5
+        done: true
+        description: >
+          Onboarding de três páginas animadas na primeira abertura, que também reabre pelo botão
+          "Como funciona o app" do Perfil: escolher entre doce e salgado, curtir ou passar até
+          dar match (R2) e que os restaurantes são locais de Porto Alegre, até 3 km (R4). O "já
+          viu" fica salvo só no aparelho, porque o visitante não grava nada online (R1).
+          Figma: seção "07 · Onboarding". Docs: docs/onboarding.md.
+        acceptance:
+          - "Na primeira abertura o app mostra o onboarding antes da Home; nas seguintes abre direto na Home"
+          - "Pular e Começar marcam o onboarding como visto; na primeira abertura vão para a Home e, se aberto pelo Perfil, voltam ao Perfil"
+          - "O Perfil (visitante e com conta) tem a linha 'Como funciona o app', que abre o onboarding"
+          - "As três páginas mostram, em loop, escolher doce ou salgado, curtir e passar até o match e os restaurantes de Porto Alegre"
+          - "Com Reduzir Movimento ligado as páginas ficam no estado final e Próximo troca de página sem animar"
+          - "A barra de progresso indica a página e a ilustração é ignorada por leitor de tela"
 
   - id: E3
     title: "Recomendação de restaurantes reais"
@@ -908,6 +929,7 @@ epics:
         priority: baixa
         estimate: 5
         description: >
-          Primeira abertura do app apresenta o Rango e sugere o login; quem recusar segue como
+          Primeira abertura do app apresenta o Rango e sugere o login (o onboarding explicativo
+          já existe, E2-S6; aqui entra só a sugestão de login); quem recusar segue como
           visitante (decisão de 2026-09-30). Precisa de desenho da frente de Produto.
         acceptance: []
