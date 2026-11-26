@@ -18,7 +18,6 @@ import 'package:rango_app/screens/profile/widgets/about_rango_sheet.dart';
 import 'package:rango_app/screens/profile/widgets/delete_account_dialog.dart';
 import 'package:rango_app/screens/profile/widgets/profile_avatar.dart';
 import 'package:rango_app/screens/profile/widgets/profile_stats_section.dart';
-import 'package:rango_app/screens/profile/widgets/verification_notice.dart';
 
 /// Opens the Profile Sheet over the whole app, Tab Bar included. It closes
 /// through the X, by dragging it down or by tapping the veil.
@@ -111,6 +110,11 @@ class ProfileSheet extends ConsumerWidget {
                       onTap: () => unawaited(showTermsSheet(context)),
                     ),
                     ListRow(
+                      icon: Icons.restaurant_menu,
+                      label: 'Como funciona o app',
+                      onTap: () => _openOnboarding(context),
+                    ),
+                    ListRow(
                       icon: Icons.info_outline,
                       label: 'Sobre o Rango',
                       onTap: () => unawaited(showAboutRangoSheet(context)),
@@ -124,6 +128,14 @@ class ProfileSheet extends ConsumerWidget {
       ),
     );
   }
+}
+
+/// Closes the sheet and pushes the onboarding over the app; finishing it pops
+/// back to where the person was.
+void _openOnboarding(BuildContext context) {
+  final router = GoRouter.of(context);
+  Navigator.of(context).pop();
+  unawaited(router.push('/onboarding'));
 }
 
 Future<void> _delete(BuildContext context, WidgetRef ref) async {

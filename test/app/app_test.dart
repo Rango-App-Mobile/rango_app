@@ -3,6 +3,7 @@ import 'dart:ui' show Tristate;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:rango_app/app/app.dart';
@@ -16,12 +17,15 @@ import 'package:rango_app/data/fake_auth_repository.dart';
 import 'package:rango_app/data/fake_delivery_link_repository.dart';
 import 'package:rango_app/data/fake_history_repository.dart';
 import 'package:rango_app/data/fake_location_repository.dart';
+import 'package:rango_app/data/fake_onboarding_repository.dart';
 import 'package:rango_app/data/fake_restaurant_repository.dart';
 import 'package:rango_app/data/history_repository.dart';
 import 'package:rango_app/data/local_category_repository.dart';
 import 'package:rango_app/data/location_repository.dart';
+import 'package:rango_app/data/onboarding_repository.dart';
 import 'package:rango_app/data/restaurant_repository.dart';
 import 'package:rango_app/models/app_user.dart';
+import 'package:rango_app/screens/onboarding/onboarding_screen.dart';
 import 'package:rango_app/screens/restaurants/widgets/restaurant_map.dart';
 import 'package:rango_app/screens/startup/startup_screen.dart';
 import 'package:rango_app/screens/swipe/swipe_screen.dart';
@@ -34,7 +38,10 @@ class _MockAuthRepository extends Mock implements AuthRepository {}
 final Finder homeTab = find.bySemanticsLabel('Home, aba 1 de 2');
 final Finder historyTab = find.bySemanticsLabel('Histórico, aba 2 de 2');
 
-Future<void> pumpApp(WidgetTester tester) async {
+Future<void> pumpApp(
+  WidgetTester tester, {
+  List<Override> extraOverrides = const [],
+}) async {
   tester.view
     ..physicalSize = const Size(402, 874)
     ..devicePixelRatio = 1;
@@ -65,6 +72,7 @@ Future<void> pumpApp(WidgetTester tester) async {
           FakeDeliveryLinkRepository(),
         ),
         useTileMapProvider.overrideWithValue(false),
+        ...extraOverrides,
       ],
       child: const RangoApp(),
     ),
@@ -98,6 +106,27 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byType(StartupScreen), findsNothing);
+    expect(find.byType(SwipeScreen), findsOneWidget);
+  });
+
+  testWidgets('the first open goes to the onboarding, then to Home', (
+    tester,
+  ) async {
+    final onboarding = FakeOnboardingRepository(seen: false);
+    await pumpApp(
+      tester,
+      extraOverrides: [
+        onboardingRepositoryProvider.overrideWithValue(onboarding),
+      ],
+    );
+
+    expect(find.byType(OnboardingScreen), findsOneWidget);
+    expect(find.byType(SwipeScreen), findsNothing);
+
+    await tester.tap(find.text('Pular'));
+    await tester.pumpAndSettle();
+
+    expect(onboarding.hasSeen, isTrue);
     expect(find.byType(SwipeScreen), findsOneWidget);
   });
 

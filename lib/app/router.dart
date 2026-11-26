@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:rango_app/app/app_shell.dart';
+import 'package:rango_app/data/onboarding_repository.dart';
 import 'package:rango_app/models/restaurant_contact_args.dart';
 import 'package:rango_app/screens/accept_terms/accept_terms_screen.dart';
 import 'package:rango_app/screens/history/history_screen.dart';
 import 'package:rango_app/screens/history_detail/history_detail_screen.dart';
 import 'package:rango_app/screens/login/login_screen.dart';
+import 'package:rango_app/screens/onboarding/onboarding_screen.dart';
 import 'package:rango_app/screens/password_reset/password_reset_screen.dart';
 import 'package:rango_app/screens/restaurant_contact/restaurant_contact_screen.dart';
 import 'package:rango_app/screens/restaurants/restaurants_screen.dart';
@@ -26,6 +28,14 @@ final routerProvider = Provider<GoRouter>((ref) {
   return GoRouter(
     navigatorKey: rootKey,
     initialLocation: '/home',
+    // First open: the onboarding comes before anything else. `read`, not
+    // `watch`: the answer is only needed when navigating, and `markSeen` must
+    // not rebuild the router.
+    redirect: (context, state) =>
+        !ref.read(onboardingRepositoryProvider).hasSeen &&
+            state.matchedLocation != '/onboarding'
+        ? '/onboarding'
+        : null,
     routes: [
       StatefulShellRoute.indexedStack(
         builder: (context, state, shell) => AppShell(navigationShell: shell),
@@ -47,6 +57,11 @@ final routerProvider = Provider<GoRouter>((ref) {
             ],
           ),
         ],
+      ),
+      GoRoute(
+        path: '/onboarding',
+        parentNavigatorKey: rootKey,
+        builder: (context, state) => const OnboardingScreen(),
       ),
       GoRoute(
         path: '/login',
